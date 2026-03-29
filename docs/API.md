@@ -1,0 +1,584 @@
+# API接口文档
+
+> **文档版本**: V1.0
+> **创建日期**: 2026-03-30
+> **最后更新**: 2026-03-30
+> **基础路径**: http://localhost:8080/api
+
+---
+
+## 1. 接口概述
+
+### 1.1 基础信息
+
+| 项目 | 说明 |
+|------|------|
+| 基础路径 | /api |
+| 数据格式 | JSON |
+| 字符编码 | UTF-8 |
+| 认证方式 | 无 (预留) |
+
+### 1.2 统一响应格式
+
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {},
+    "timestamp": 1709136000000
+}
+```
+
+### 1.3 响应码说明
+
+| 响应码 | 说明 |
+|--------|------|
+| 200 | 成功 |
+| 400 | 请求参数错误 |
+| 401 | 未授权 |
+| 403 | 禁止访问 |
+| 404 | 资源不存在 |
+| 500 | 服务器内部错误 |
+
+### 1.4 错误码定义
+
+| 错误码 | 说明 |
+|--------|------|
+| 1001 | FTP连接错误 |
+| 1002 | 文件解析错误 |
+| 1003 | 数据校验错误 |
+| 1004 | 数据库操作错误 |
+
+---
+
+## 2. FTP配置接口
+
+### 2.1 分页查询
+
+**请求**
+```
+GET /api/ftp/config/page
+```
+
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| pageNum | Integer | 否 | 页码 (默认1) |
+| pageSize | Integer | 否 | 每页条数 (默认10) |
+| configName | String | 否 | 配置名称 (模糊匹配) |
+| status | Integer | 否 | 状态 (1=启用, 0=禁用) |
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "records": [
+            {
+                "id": 1,
+                "configName": "测试FTP",
+                "host": "192.168.1.100",
+                "port": 21,
+                "username": "ftpuser",
+                "password": "******",
+                "scanPath": "/data/reports",
+                "filePattern": "*.xlsx",
+                "scanInterval": 300,
+                "status": 1,
+                "remark": "",
+                "deleted": 0,
+                "createTime": "2026-03-29 10:00:00",
+                "updateTime": "2026-03-29 10:00:00"
+            }
+        ],
+        "total": 1,
+        "size": 10,
+        "current": 1,
+        "pages": 1
+    }
+}
+```
+
+### 2.2 获取启用列表
+
+**请求**
+```
+GET /api/ftp/config/list/enabled
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": [
+        {
+            "id": 1,
+            "configName": "测试FTP",
+            "host": "192.168.1.100",
+            "port": 21
+        }
+    ]
+}
+```
+
+### 2.3 获取详情
+
+**请求**
+```
+GET /api/ftp/config/{id}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "id": 1,
+        "configName": "测试FTP",
+        "host": "192.168.1.100",
+        "port": 21,
+        "username": "ftpuser",
+        "password": "ftppass",
+        "scanPath": "/data/reports",
+        "filePattern": "*.xlsx",
+        "scanInterval": 300,
+        "status": 1,
+        "remark": "测试用FTP配置",
+        "deleted": 0,
+        "createTime": "2026-03-29 10:00:00",
+        "updateTime": "2026-03-29 10:00:00"
+    }
+}
+```
+
+### 2.4 新增配置
+
+**请求**
+```
+POST /api/ftp/config
+Content-Type: application/json
+```
+
+**请求体**
+```json
+{
+    "configName": "测试FTP",
+    "host": "192.168.1.100",
+    "port": 21,
+    "username": "ftpuser",
+    "password": "ftppass",
+    "scanPath": "/data/reports",
+    "filePattern": "*.xlsx",
+    "scanInterval": 300,
+    "status": 1,
+    "remark": "测试用FTP配置"
+}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": null
+}
+```
+
+### 2.5 更新配置
+
+**请求**
+```
+PUT /api/ftp/config
+Content-Type: application/json
+```
+
+**请求体**
+```json
+{
+    "id": 1,
+    "configName": "测试FTP",
+    "host": "192.168.1.100",
+    "port": 21,
+    "username": "ftpuser",
+    "password": "newpass",
+    "scanPath": "/data/reports",
+    "filePattern": "*.xlsx",
+    "scanInterval": 300,
+    "status": 1,
+    "remark": "更新备注"
+}
+```
+
+### 2.6 删除配置
+
+**请求**
+```
+DELETE /api/ftp/config/{id}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": null
+}
+```
+
+### 2.7 测试连接
+
+**请求**
+```
+POST /api/ftp/config/test/{id}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": true
+}
+```
+
+---
+
+## 3. 报表配置接口
+
+### 3.1 分页查询
+
+**请求**
+```
+GET /api/report/config/page
+```
+
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| pageNum | Integer | 否 | 页码 (默认1) |
+| pageSize | Integer | 否 | 每页条数 (默认10) |
+| reportName | String | 否 | 报表名称 (模糊匹配) |
+| status | Integer | 否 | 状态 (1=启用, 0=禁用) |
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "records": [
+            {
+                "id": 1,
+                "reportCode": "SALES_REPORT",
+                "reportName": "销售报表",
+                "ftpConfigId": 1,
+                "ftpConfigName": "测试FTP",
+                "filePattern": "sales_*.xlsx",
+                "sheetIndex": 0,
+                "headerRow": 0,
+                "dataStartRow": 1,
+                "columnMappings": [
+                    {
+                        "excelColumn": "A",
+                        "fieldName": "order_id",
+                        "fieldType": "STRING"
+                    }
+                ],
+                "outputTable": "t_sales_data",
+                "outputMode": "APPEND",
+                "status": 1,
+                "remark": ""
+            }
+        ],
+        "total": 1,
+        "size": 10,
+        "current": 1
+    }
+}
+```
+
+### 3.2 获取详情
+
+**请求**
+```
+GET /api/report/config/{id}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "id": 1,
+        "reportCode": "SALES_REPORT",
+        "reportName": "销售报表",
+        "ftpConfigId": 1,
+        "ftpConfigName": "测试FTP",
+        "filePattern": "sales_*.xlsx",
+        "sheetIndex": 0,
+        "headerRow": 0,
+        "dataStartRow": 1,
+        "columnMappings": [
+            {
+                "excelColumn": "A",
+                "fieldName": "order_id",
+                "fieldType": "STRING",
+                "dateFormat": "",
+                "scale": null
+            }
+        ],
+        "outputTable": "t_sales_data",
+        "outputMode": "APPEND",
+        "status": 1,
+        "remark": "销售数据报表配置"
+    }
+}
+```
+
+### 3.3 新增配置
+
+**请求**
+```
+POST /api/report/config
+Content-Type: application/json
+```
+
+**请求体**
+```json
+{
+    "reportCode": "SALES_REPORT",
+    "reportName": "销售报表",
+    "ftpConfigId": 1,
+    "filePattern": "sales_*.xlsx",
+    "sheetIndex": 0,
+    "headerRow": 0,
+    "dataStartRow": 1,
+    "columnMappings": [
+        {
+            "excelColumn": "A",
+            "fieldName": "order_id",
+            "fieldType": "STRING",
+            "dateFormat": "",
+            "scale": null
+        }
+    ],
+    "outputTable": "t_sales_data",
+    "outputMode": "APPEND",
+    "status": 1,
+    "remark": "销售数据报表配置"
+}
+```
+
+### 3.4 更新配置
+
+**请求**
+```
+PUT /api/report/config
+Content-Type: application/json
+```
+
+### 3.5 删除配置
+
+**请求**
+```
+DELETE /api/report/config/{id}
+```
+
+---
+
+## 4. 任务接口
+
+### 4.1 分页查询
+
+**请求**
+```
+GET /api/task/page
+```
+
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| pageNum | Integer | 否 | 页码 (默认1) |
+| pageSize | Integer | 否 | 每页条数 (默认10) |
+| taskType | String | 否 | 任务类型 |
+| taskName | String | 否 | 任务名称 |
+| status | String | 否 | 状态 |
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "records": [
+            {
+                "id": 1,
+                "taskType": "FTP_SCAN",
+                "taskName": "FTP扫描任务",
+                "reportConfigId": 1,
+                "fileName": "sales_20260329.xlsx",
+                "filePath": "/data/reports/sales_20260329.xlsx",
+                "status": "SUCCESS",
+                "totalRows": 1000,
+                "successRows": 998,
+                "failedRows": 2,
+                "errorMessage": "",
+                "startTime": "2026-03-29 10:00:00",
+                "endTime": "2026-03-29 10:01:30",
+                "duration": 90000
+            }
+        ],
+        "total": 1,
+        "size": 10,
+        "current": 1
+    }
+}
+```
+
+### 4.2 任务重试
+
+**请求**
+```
+POST /api/task/retry/{id}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": null
+}
+```
+
+### 4.3 任务取消
+
+**请求**
+```
+POST /api/task/cancel/{id}
+```
+
+### 4.4 删除任务
+
+**请求**
+```
+DELETE /api/task/{id}
+```
+
+---
+
+## 5. 日志接口
+
+### 5.1 分页查询
+
+**请求**
+```
+GET /api/log/page
+```
+
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| taskExecutionId | Long | 是 | 任务执行ID |
+| pageNum | Integer | 否 | 页码 (默认1) |
+| pageSize | Integer | 否 | 每页条数 (默认20) |
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "records": [
+            {
+                "id": 1,
+                "taskExecutionId": 1,
+                "logLevel": "INFO",
+                "logMessage": "开始处理文件: sales_20260329.xlsx",
+                "createTime": "2026-03-29 10:00:00"
+            }
+        ],
+        "total": 10,
+        "size": 20,
+        "current": 1
+    }
+}
+```
+
+### 5.2 获取日志列表
+
+**请求**
+```
+GET /api/log/list/{taskExecutionId}
+```
+
+---
+
+## 6. 数据实体
+
+### 6.1 FtpConfig
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long | 主键ID |
+| configName | String | 配置名称 |
+| host | String | FTP主机 |
+| port | Integer | 端口 |
+| username | String | 用户名 |
+| password | String | 密码 |
+| scanPath | String | 扫描路径 |
+| filePattern | String | 文件匹配模式 |
+| scanInterval | Integer | 扫描间隔(秒) |
+| status | Integer | 状态 |
+| remark | String | 备注 |
+| deleted | Integer | 删除标记 |
+| createTime | Date | 创建时间 |
+| updateTime | Date | 更新时间 |
+
+### 6.2 ReportConfig
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long | 主键ID |
+| reportCode | String | 报表编码 |
+| reportName | String | 报表名称 |
+| ftpConfigId | Long | FTP配置ID |
+| filePattern | String | 文件匹配模式 |
+| sheetIndex | Integer | Sheet索引 |
+| headerRow | Integer | 表头行号 |
+| dataStartRow | Integer | 数据起始行 |
+| columnMapping | String | 列映射配置(JSON) |
+| outputTable | String | 输出表名 |
+| outputMode | String | 输出模式 |
+| status | Integer | 状态 |
+
+### 6.3 TaskExecution
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| id | Long | 主键ID |
+| taskType | String | 任务类型 |
+| taskName | String | 任务名称 |
+| reportConfigId | Long | 报表配置ID |
+| fileName | String | 文件名 |
+| filePath | String | 文件路径 |
+| status | String | 状态 |
+| totalRows | Integer | 总行数 |
+| successRows | Integer | 成功行数 |
+| failedRows | Integer | 失败行数 |
+| errorMessage | String | 错误信息 |
+| startTime | Date | 开始时间 |
+| endTime | Date | 结束时间 |
+| duration | Long | 执行时长(毫秒) |
+
+---
+
+## 7. 变更记录
+
+| 日期 | 版本 | 变更内容 | 作者 |
+|------|------|----------|------|
+| 2026-03-30 | V1.0 | 初始版本创建 | - |
