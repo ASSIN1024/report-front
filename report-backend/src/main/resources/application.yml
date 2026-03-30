@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: 8082
 
 spring:
   profiles:
@@ -11,6 +11,18 @@ spring:
     multipart:
       max-file-size: 100MB
       max-request-size: 100MB
+  quartz:
+    job-store-type: memory
+    wait-for-jobs-to-complete-on-shutdown: true
+    overwrite-existing-jobs: true
+    startup-delay: 10s
+  task:
+    execution:
+      pool:
+        core-size: 2
+        max-size: 10
+        queue-capacity: 100
+        thread-name-prefix: async-log-
 
 logging:
   level:

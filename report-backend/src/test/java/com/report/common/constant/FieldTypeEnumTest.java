@@ -1,33 +1,33 @@
 package com.report.common.constant;
 
-import org.junit.jupiter.api.Test;
+import org.junit.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.Assert.*;
 
 public class FieldTypeEnumTest {
 
     @Test
-    public void testGetType() {
-        assertEquals("STRING", FieldTypeEnum.STRING.getType());
-        assertEquals("INTEGER", FieldTypeEnum.INTEGER.getType());
-        assertEquals("DECIMAL", FieldTypeEnum.DECIMAL.getType());
-        assertEquals("DATE", FieldTypeEnum.DATE.getType());
-        assertEquals("DATETIME", FieldTypeEnum.DATETIME.getType());
+    public void testGetCode() {
+        assertEquals("STRING", FieldTypeEnum.STRING.getCode());
+        assertEquals("INTEGER", FieldTypeEnum.INTEGER.getCode());
+        assertEquals("DECIMAL", FieldTypeEnum.DECIMAL.getCode());
+        assertEquals("DATE", FieldTypeEnum.DATE.getCode());
+        assertEquals("DATETIME", FieldTypeEnum.DATETIME.getCode());
     }
 
     @Test
-    public void testGetDescription() {
-        assertEquals("字符串", FieldTypeEnum.STRING.getDescription());
-        assertEquals("整数", FieldTypeEnum.INTEGER.getDescription());
-        assertEquals("小数", FieldTypeEnum.DECIMAL.getDescription());
-        assertEquals("日期", FieldTypeEnum.DATE.getDescription());
-        assertEquals("日期时间", FieldTypeEnum.DATETIME.getDescription());
+    public void testGetDesc() {
+        assertEquals("字符串", FieldTypeEnum.STRING.getDesc());
+        assertEquals("整数", FieldTypeEnum.INTEGER.getDesc());
+        assertEquals("小数", FieldTypeEnum.DECIMAL.getDesc());
+        assertEquals("日期", FieldTypeEnum.DATE.getDesc());
+        assertEquals("日期时间", FieldTypeEnum.DATETIME.getDesc());
     }
 
     @Test
-    public void testFindByType() {
-        assertEquals(FieldTypeEnum.STRING, FieldTypeEnum.findByType("STRING"));
-        assertEquals(FieldTypeEnum.INTEGER, FieldTypeEnum.findByType("INTEGER"));
-        assertNull(FieldTypeEnum.findByType("UNKNOWN"));
+    public void testGetByCode() {
+        assertEquals(FieldTypeEnum.STRING, FieldTypeEnum.getByCode("STRING"));
+        assertEquals(FieldTypeEnum.INTEGER, FieldTypeEnum.getByCode("INTEGER"));
+        assertNull(FieldTypeEnum.getByCode("UNKNOWN"));
     }
 }

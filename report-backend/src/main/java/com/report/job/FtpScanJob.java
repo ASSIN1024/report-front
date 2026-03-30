@@ -10,13 +10,17 @@ import com.report.service.ReportConfigService;
 import com.report.service.TaskService;
 import com.report.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.net.ftp.FTPClient;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
 
 @Slf4j
@@ -37,8 +41,6 @@ public class FtpScanJob implements Job {
 
     @Autowired
     private DataProcessJob dataProcessJob;
-
-    private static final String PROCESSED_FILES_TABLE = "processed_files";
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -66,14 +68,15 @@ public class FtpScanJob implements Job {
         log.info("开始扫描FTP配置: {}, 主机: {}, 路径: {}",
                 ftpConfig.getConfigName(), ftpConfig.getHost(), ftpConfig.getScanPath());
 
-        boolean connected = FtpUtil.testConnection(ftpConfig);
-        if (!connected) {
-            log.error("FTP连接失败: {}", ftpConfig.getConfigName());
-            return;
-        }
-
+        FTPClient ftpClient = null;
         try {
-            List<String> files = FtpUtil.listFiles(ftpConfig);
+            ftpClient = FtpUtil.connect(ftpConfig);
+            if (ftpClient == null || !ftpClient.isConnected()) {
+                log.error("FTP连接失败: {}", ftpConfig.getConfigName());
+                return;
+            }
+
+            List<String> files = FtpUtil.listFiles(ftpClient, ftpConfig.getScanPath(), ftpConfig.getFilePattern());
             if (files == null || files.isEmpty()) {
                 log.info("FTP目录为空: {}", ftpConfig.getScanPath());
                 return;
@@ -87,19 +90,22 @@ public class FtpScanJob implements Job {
             );
 
             for (ReportConfig reportConfig : reportConfigs) {
-                matchAndProcessFiles(ftpConfig, reportConfig, files);
+                matchAndProcessFiles(ftpClient, ftpConfig, reportConfig, files);
             }
 
+        } catch (Exception e) {
+            log.error("FTP扫描异常: {}", ftpConfig.getConfigName(), e);
         } finally {
-            FtpUtil.disconnect(ftpConfig);
+            FtpUtil.disconnect(ftpClient);
         }
     }
 
-    private void matchAndProcessFiles(FtpConfig ftpConfig, ReportConfig reportConfig, List<String> files) {
+    private void matchAndProcessFiles(FTPClient ftpClient, FtpConfig ftpConfig, ReportConfig reportConfig, List<String> files) {
         String pattern = reportConfig.getFilePattern();
         String filePattern = pattern.replace("*", ".*").replace("?", ".");
 
-        for (String fileName : files) {
+        for (String filePath : files) {
+            String fileName = new File(filePath).getName();
             if (!fileName.matches(filePattern)) {
                 continue;
             }
@@ -109,7 +115,6 @@ public class FtpScanJob implements Job {
                 continue;
             }
 
-            String filePath = ftpConfig.getScanPath() + "/" + fileName;
             log.info("检测到新文件: {}, 报表配置: {}", fileName, reportConfig.getReportName());
 
             TaskExecution task = taskService.createTask(
@@ -121,10 +126,11 @@ public class FtpScanJob implements Job {
             );
 
             try {
-                File localFile = FtpUtil.downloadFile(ftpConfig, fileName);
-                if (localFile != null && isFileComplete(localFile)) {
+                File localFile = downloadToLocalFile(ftpClient, filePath, fileName);
+                if (localFile != null && localFile.exists()) {
                     dataProcessJob.processFile(task.getId(), reportConfig, localFile);
                     markFileAsProcessed(reportConfig.getId(), fileName);
+                    localFile.delete();
                 }
             } catch (Exception e) {
                 log.error("文件处理失败: {}", fileName, e);
@@ -133,18 +139,16 @@ public class FtpScanJob implements Job {
         }
     }
 
-    private boolean isFileComplete(File file) {
-        if (file == null || !file.exists()) {
-            return false;
+    private File downloadToLocalFile(FTPClient ftpClient, String remotePath, String fileName) throws IOException {
+        byte[] data = FtpUtil.downloadFile(ftpClient, remotePath);
+        if (data == null || data.length == 0) {
+            return null;
         }
-        long size = file.length();
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        File tempFile = File.createTempFile("ftp_", "_" + fileName);
+        try (FileOutputStream fos = new FileOutputStream(tempFile)) {
+            fos.write(data);
         }
-        long newSize = file.length();
-        return size == newSize && size > 0;
+        return tempFile;
     }
 
     private boolean isFileProcessed(Long reportConfigId, String fileName) {

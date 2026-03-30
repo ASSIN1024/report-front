@@ -17,4 +17,6 @@ public interface LogService extends IService<TaskExecutionLog> {
     void logError(Long taskExecutionId, String message);
 
     List<TaskExecutionLog> listByTaskExecutionId(Long taskExecutionId);
+
+    void saveLog(Long taskExecutionId, String logLevel, String logMessage);
 }

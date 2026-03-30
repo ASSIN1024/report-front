@@ -1,13 +1,11 @@
-const { defineConfig } = require('@vue/cli-service')
-
-module.exports = defineConfig({
-  transpileDependencies: true,
+module.exports = {
+  transpileDependencies: [],
   lintOnSave: false,
   devServer: {
     port: 8081,
     proxy: {
       '/api': {
-        target: 'http://localhost:8080',
+        target: 'http://localhost:8082',
         changeOrigin: true
       }
     }
@@ -15,8 +13,8 @@ module.exports = defineConfig({
   css: {
     loaderOptions: {
       sass: {
-        additionalData: `@import "@/styles/variables.scss";`
+        prependData: `@import "@/styles/variables.scss";`
       }
     }
   }
-})
+}

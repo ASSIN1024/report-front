@@ -1,12 +1,17 @@
 package com.report.util;
 
+import cn.hutool.core.util.StrUtil;
+import cn.hutool.json.JSONArray;
+import cn.hutool.json.JSONObject;
+import cn.hutool.json.JSONUtil;
+import com.report.entity.ReportConfig;
 import com.report.entity.dto.ColumnMapping;
+import com.report.entity.dto.FieldMapping;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -124,7 +129,15 @@ public class ExcelUtil {
                     return cell.getBooleanCellValue();
                     
                 case FORMULA:
-                    return getCellValue(cell.getCachedFormulaResultValue(), mapping);
+                    try {
+                        Workbook wb = cell.getSheet().getWorkbook();
+                        FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+                        CellValue evaluatedValue = evaluator.evaluate(cell);
+                        return getCellValue(evaluatedValue, mapping);
+                    } catch (Exception e) {
+                        log.warn("公式计算失败: {}", e.getMessage());
+                        return null;
+                    }
                     
                 default:
                     return null;
@@ -189,5 +202,238 @@ public class ExcelUtil {
             index = index / 26 - 1;
         }
         return sb.toString();
+    }
+
+    public static List<Map<String, Object>> readExcel(File file, ReportConfig reportConfig, List<FieldMapping> columnMappings) throws IOException {
+        List<Map<String, Object>> result = new ArrayList<>();
+        try (FileInputStream fis = new FileInputStream(file);
+             Workbook workbook = WorkbookFactory.create(fis)) {
+            
+            int sheetIndex = reportConfig.getSheetIndex() != null ? reportConfig.getSheetIndex() : 0;
+            int headerRow = reportConfig.getHeaderRow() != null ? reportConfig.getHeaderRow() : 0;
+            int dataStartRow = reportConfig.getDataStartRow() != null ? reportConfig.getDataStartRow() : 1;
+            
+            Sheet sheet = workbook.getSheetAt(sheetIndex);
+            Map<Integer, FieldMapping> columnIndexMap = buildColumnIndexMap(sheet, headerRow, columnMappings);
+            
+            for (int i = dataStartRow; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) {
+                    continue;
+                }
+                Map<String, Object> rowData = parseRowData(row, columnIndexMap);
+                if (!rowData.isEmpty()) {
+                    result.add(rowData);
+                }
+            }
+        }
+        return result;
+    }
+
+    private static Map<Integer, FieldMapping> buildColumnIndexMap(Sheet sheet, int headerRow, List<FieldMapping> columnMappings) {
+        Map<Integer, FieldMapping> map = new HashMap<>();
+        Row row = sheet.getRow(headerRow);
+        if (row == null) {
+            for (int i = 0; i < columnMappings.size(); i++) {
+                FieldMapping mapping = columnMappings.get(i);
+                String col = mapping.getExcelColumn();
+                if (StrUtil.isNotBlank(col)) {
+                    int index = col.toUpperCase().charAt(0) - 'A';
+                    map.put(index, mapping);
+                }
+            }
+            return map;
+        }
+        
+        for (Cell cell : row) {
+            String columnName = getCellValueAsString(cell);
+            if (StrUtil.isNotBlank(columnName)) {
+                for (FieldMapping mapping : columnMappings) {
+                    if (columnName.trim().equalsIgnoreCase(mapping.getExcelColumn() != null ? mapping.getExcelColumn().trim() : "")) {
+                        map.put(cell.getColumnIndex(), mapping);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        if (map.isEmpty()) {
+            for (int i = 0; i < columnMappings.size(); i++) {
+                FieldMapping mapping = columnMappings.get(i);
+                String col = mapping.getExcelColumn();
+                if (StrUtil.isNotBlank(col)) {
+                    int index = col.toUpperCase().charAt(0) - 'A';
+                    map.put(index, mapping);
+                }
+            }
+        }
+        
+        return map;
+    }
+
+    private static Map<String, Object> parseRowData(Row row, Map<Integer, FieldMapping> columnIndexMap) {
+        Map<String, Object> rowData = new HashMap<>();
+        boolean hasData = false;
+        
+        for (Map.Entry<Integer, FieldMapping> entry : columnIndexMap.entrySet()) {
+            int colIndex = entry.getKey();
+            FieldMapping mapping = entry.getValue();
+            
+            Cell cell = row.getCell(colIndex);
+            Object value = getCellValueByMapping(cell, mapping);
+            
+            if (value != null) {
+                hasData = true;
+            }
+            rowData.put(mapping.getFieldName(), value);
+        }
+        
+        return hasData ? rowData : new HashMap<>();
+    }
+
+    private static Object getCellValueByMapping(Cell cell, FieldMapping mapping) {
+        if (cell == null) {
+            return null;
+        }
+        
+        String fieldType = mapping.getFieldType() != null ? mapping.getFieldType() : "STRING";
+        
+        try {
+            switch (cell.getCellType()) {
+                case STRING:
+                    String strValue = cell.getStringCellValue();
+                    return convertStringValue(strValue, fieldType, mapping.getDateFormat());
+                    
+                case NUMERIC:
+                    if (DateUtil.isCellDateFormatted(cell)) {
+                        return cell.getDateCellValue();
+                    }
+                    double numValue = cell.getNumericCellValue();
+                    return convertNumericValue(numValue, fieldType, mapping.getScale());
+                    
+                case BOOLEAN:
+                    return cell.getBooleanCellValue();
+                    
+                case FORMULA:
+                    try {
+                        Workbook wb = cell.getSheet().getWorkbook();
+                        FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
+                        CellValue evaluatedValue = evaluator.evaluate(cell);
+                        return convertCellValue(evaluatedValue, fieldType, mapping);
+                    } catch (Exception e) {
+                        log.warn("公式计算失败: {}", e.getMessage());
+                        return null;
+                    }
+                    
+                default:
+                    return null;
+            }
+        } catch (Exception e) {
+            log.warn("解析单元格值失败: {}", e.getMessage());
+            return null;
+        }
+    }
+
+    private static Object convertStringValue(String strValue, String fieldType, String dateFormat) {
+        if (StrUtil.isBlank(strValue)) {
+            return null;
+        }
+        strValue = strValue.trim();
+        
+        try {
+            switch (fieldType.toUpperCase()) {
+                case "INTEGER":
+                    return Long.parseLong(strValue.replaceAll("[,，]", ""));
+                case "DECIMAL":
+                    return new BigDecimal(strValue.replaceAll("[,，]", ""));
+                case "DATE":
+                case "DATETIME":
+                    String pattern = StrUtil.isNotBlank(dateFormat) ? dateFormat : "yyyy-MM-dd";
+                    return new SimpleDateFormat(pattern).parse(strValue);
+                default:
+                    return strValue;
+            }
+        } catch (Exception e) {
+            log.warn("字符串转换失败: value={}, type={}", strValue, fieldType);
+            return strValue;
+        }
+    }
+
+    private static Object convertNumericValue(double numValue, String fieldType, Integer scale) {
+        switch (fieldType.toUpperCase()) {
+            case "INTEGER":
+                return (long) numValue;
+            case "DECIMAL":
+                int s = scale != null ? scale : 2;
+                return BigDecimal.valueOf(numValue).setScale(s, BigDecimal.ROUND_HALF_UP);
+            default:
+                return numValue;
+        }
+    }
+
+    private static Object convertCellValue(CellValue cellValue, String fieldType, FieldMapping mapping) {
+        if (cellValue == null) {
+            return null;
+        }
+        
+        switch (cellValue.getCellType()) {
+            case STRING:
+                return convertStringValue(cellValue.getStringValue(), fieldType, mapping.getDateFormat());
+            case NUMERIC:
+                return convertNumericValue(cellValue.getNumberValue(), fieldType, mapping.getScale());
+            case BOOLEAN:
+                return cellValue.getBooleanValue();
+            default:
+                return null;
+        }
+    }
+
+    private static String getCellValueAsString(Cell cell) {
+        if (cell == null) {
+            return null;
+        }
+        
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                if (DateUtil.isCellDateFormatted(cell)) {
+                    return new SimpleDateFormat("yyyy-MM-dd").format(cell.getDateCellValue());
+                }
+                return String.valueOf((long) cell.getNumericCellValue());
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            default:
+                return null;
+        }
+    }
+
+    public static List<FieldMapping> parseColumnMapping(String columnMappingJson) {
+        if (StrUtil.isBlank(columnMappingJson)) {
+            return Collections.emptyList();
+        }
+        
+        List<FieldMapping> result = new ArrayList<>();
+        try {
+            JSONObject json = JSONUtil.parseObj(columnMappingJson);
+            JSONArray mappings = json.getJSONArray("mappings");
+            
+            if (mappings != null) {
+                for (int i = 0; i < mappings.size(); i++) {
+                    JSONObject item = mappings.getJSONObject(i);
+                    FieldMapping mapping = new FieldMapping();
+                    mapping.setExcelColumn(item.getStr("excelColumnName"));
+                    mapping.setFieldName(item.getStr("fieldName"));
+                    mapping.setFieldType(item.getStr("fieldType"));
+                    mapping.setDateFormat(item.getStr("dateFormat"));
+                    mapping.setScale(item.getInt("scale"));
+                    result.add(mapping);
+                }
+            }
+        } catch (Exception e) {
+            log.error("解析列映射配置失败: {}", columnMappingJson, e);
+        }
+        
+        return result;
     }
 }

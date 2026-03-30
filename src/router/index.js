@@ -33,6 +33,16 @@ const routes = [
     path: '/log',
     name: 'LogList',
     component: () => import('@/views/log/LogList.vue')
+  },
+  {
+    path: '/operation-log',
+    name: 'OperationLog',
+    component: () => import('@/views/log/OperationLog.vue')
+  },
+  {
+    path: '/system-log',
+    name: 'SystemLog',
+    component: () => import('@/views/log/SystemLog.vue')
   }
 ]
 

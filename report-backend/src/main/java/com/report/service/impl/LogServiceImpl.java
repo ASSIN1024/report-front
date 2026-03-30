@@ -50,11 +50,12 @@ public class LogServiceImpl extends ServiceImpl<TaskExecutionLogMapper, TaskExec
         return list(wrapper);
     }
 
-    private void saveLog(Long taskExecutionId, String level, String message) {
+    @Override
+    public void saveLog(Long taskExecutionId, String logLevel, String logMessage) {
         TaskExecutionLog logEntity = new TaskExecutionLog();
         logEntity.setTaskExecutionId(taskExecutionId);
-        logEntity.setLogLevel(level);
-        logEntity.setLogMessage(message);
+        logEntity.setLogLevel(logLevel);
+        logEntity.setLogMessage(logMessage);
         logEntity.setCreateTime(new Date());
         save(logEntity);
     }

@@ -109,6 +109,31 @@ CREATE TABLE sys_config (
     UNIQUE KEY uk_config_key (config_key)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置表';
 
+-- 操作日志表
+DROP TABLE IF EXISTS operation_log;
+CREATE TABLE operation_log (
+    id BIGINT NOT NULL COMMENT '主键ID',
+    module VARCHAR(50) NOT NULL COMMENT '操作模块',
+    operation_type VARCHAR(20) NOT NULL COMMENT '操作类型: CREATE-创建, UPDATE-修改, DELETE-删除, TEST-测试',
+    operation_desc VARCHAR(200) NOT NULL COMMENT '操作描述',
+    target_id VARCHAR(50) COMMENT '目标ID',
+    target_name VARCHAR(100) COMMENT '目标名称',
+    before_data TEXT COMMENT '操作前数据(JSON)',
+    after_data TEXT COMMENT '操作后数据(JSON)',
+    result TINYINT NOT NULL DEFAULT 1 COMMENT '操作结果: 0-失败, 1-成功',
+    error_msg VARCHAR(500) COMMENT '错误信息',
+    operator_ip VARCHAR(50) COMMENT '操作者IP',
+    operator_name VARCHAR(50) COMMENT '操作者名称',
+    duration BIGINT COMMENT '执行时长(毫秒)',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    PRIMARY KEY (id),
+    KEY idx_module (module),
+    KEY idx_operation_type (operation_type),
+    KEY idx_target_id (target_id),
+    KEY idx_result (result),
+    KEY idx_create_time (create_time)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志表';
+
 -- 初始化示例数据
 INSERT INTO ftp_config (id, config_name, host, port, username, password, scan_path, file_pattern, scan_interval, status, remark) VALUES
 (1, '测试FTP服务器', '192.168.1.100', 21, 'ftpuser', 'ftppass', '/data/reports', '*.xlsx', 300, 1, '测试用FTP配置');

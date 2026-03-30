@@ -19,8 +19,8 @@ export default {
         'SUCCESS': 'success',
         'FAILED': 'danger',
         'CANCELLED': 'warning',
-        '0': 'success',
-        '1': 'danger'
+        '0': 'danger',
+        '1': 'success'
       }
       return typeMap[this.status] || 'info'
     },
@@ -31,8 +31,8 @@ export default {
         'SUCCESS': '成功',
         'FAILED': '失败',
         'CANCELLED': '已取消',
-        '0': '启用',
-        '1': '禁用'
+        '0': '禁用',
+        '1': '启用'
       }
       return textMap[this.status] || this.status
     }

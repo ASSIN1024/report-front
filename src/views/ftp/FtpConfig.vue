@@ -181,10 +181,15 @@ export default {
     },
     async handleTest(row) {
       try {
-        await testFtpConnection(row.id)
-        this.$message.success('连接测试成功')
+        const res = await testFtpConnection(row.id)
+        if (res.data === true) {
+          this.$message.success('连接测试成功')
+        } else {
+          this.$message.warning('连接测试失败，请检查配置')
+        }
       } catch (error) {
-        this.$message.error('连接测试失败')
+        const errorMsg = error.message || '连接测试失败'
+        this.$message.error(errorMsg)
       }
     },
     handleDelete(row) {

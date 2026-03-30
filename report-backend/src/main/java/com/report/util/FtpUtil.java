@@ -18,6 +18,9 @@ public class FtpUtil {
 
     public static FTPClient connect(FtpConfig config) throws IOException {
         FTPClient ftpClient = new FTPClient();
+        ftpClient.setConnectTimeout(10000);
+        ftpClient.setDefaultTimeout(10000);
+        ftpClient.setDataTimeout(10000);
         ftpClient.connect(config.getHost(), config.getPort());
         ftpClient.login(config.getUsername(), config.getPassword());
         ftpClient.enterLocalPassiveMode();
@@ -116,6 +119,47 @@ public class FtpUtil {
             return ftpClient.rename(from, to);
         } finally {
             disconnect(ftpClient);
+        }
+    }
+
+    public static List<String> listFiles(FTPClient ftpClient, String path, String pattern) throws IOException {
+        List<String> files = new ArrayList<>();
+        FTPFile[] ftpFiles = ftpClient.listFiles(path);
+        for (FTPFile file : ftpFiles) {
+            if (file.isFile()) {
+                String fileName = file.getName();
+                if (pattern != null && !fileName.matches(pattern.replace("*", ".*"))) {
+                    continue;
+                }
+                files.add(path + "/" + fileName);
+            }
+        }
+        return files;
+    }
+
+    public static byte[] downloadFile(FTPClient ftpClient, String remotePath) throws IOException {
+        InputStream inputStream = null;
+        ByteArrayOutputStream outputStream = null;
+        try {
+            inputStream = ftpClient.retrieveFileStream(remotePath);
+            if (inputStream == null) {
+                throw new IOException("文件不存在: " + remotePath);
+            }
+            outputStream = new ByteArrayOutputStream();
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = inputStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
+            }
+            return outputStream.toByteArray();
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (outputStream != null) {
+                outputStream.close();
+            }
+            ftpClient.completePendingCommand();
         }
     }
 }
