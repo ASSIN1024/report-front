@@ -32,7 +32,7 @@ export default {
   },
   methods: {
     handleSizeChange(val) {
-      this.$emit('pagination', { page: this.currentPage, rows: val })
+      this.$emit('pagination', { page: 1, rows: val })
     },
     handleCurrentChange(val) {
       this.$emit('pagination', { page: val, rows: this.pageSize })
@@ -40,3 +40,19 @@ export default {
   }
 }
 </script>
+
+<style scoped>
+.pagination-container {
+  padding: 20px 0;
+  text-align: right;
+}
+.pagination-container >>> .el-pagination {
+  display: inline-block;
+}
+.pagination-container >>> .el-pagination button {
+  cursor: pointer !important;
+}
+.pagination-container >>> .el-pagination .el-pager li {
+  cursor: pointer !important;
+}
+</style>

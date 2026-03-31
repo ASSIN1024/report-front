@@ -577,9 +577,63 @@ GET /api/log/list/{taskExecutionId}
 
 ---
 
-## 7. 变更记录
+## 7. 分页功能说明
+
+### 7.1 分页组件实现
+
+**组件位置**: `src/components/Pagination.vue`
+
+**功能特性**:
+- 支持页码切换
+- 支持每页显示数量调整 (10/20/50/100)
+- 支持跳转到指定页
+- 显示总记录数
+
+**使用方式**:
+```vue
+<pagination
+  :current-page="pagination.pageNum"
+  :page-size="pagination.pageSize"
+  :total="pagination.total"
+  @pagination="handlePagination"
+/>
+```
+
+**事件处理**:
+```javascript
+handlePagination({ page, rows }) {
+  this.pagination.pageNum = page
+  this.pagination.pageSize = rows
+  this.loadData()
+}
+```
+
+### 7.2 后端分页返回格式
+
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "records": [...],
+        "total": "21",
+        "size": 10,
+        "current": 1,
+        "pages": 3
+    }
+}
+```
+
+**注意事项**:
+- `total`字段返回的是字符串类型，前端需要使用`parseInt()`转换
+- 分页参数: `pageNum`(页码), `pageSize`(每页条数)
+
+---
+
+## 8. 变更记录
 
 | 日期 | 版本 | 变更内容 | 责任人 | 关联任务ID |
 |------|------|----------|--------|------------|
 | 2026-03-30 | V1.0 | [新增] 初始版本创建 | - | - |
 | 2026-03-30 | V1.1 | [修改] 更新基础路径端口(8080→8082) | - | TASK-007 |
+| 2026-04-01 | V1.2 | [新增] 分页功能实现说明 | AI Assistant | PAGE-001 |

@@ -55,6 +55,10 @@ public class FtpConfigController {
     @DeleteMapping("/{id}")
     @OperationLogAnnotation(module = "FTP配置", operationType = "DELETE", operationDesc = "删除FTP配置")
     public Result<Void> delete(@PathVariable Long id) {
+        FtpConfig config = ftpConfigService.getById(id);
+        if (config == null) {
+            return Result.fail("FTP配置不存在");
+        }
         ftpConfigService.removeById(id);
         return Result.success();
     }

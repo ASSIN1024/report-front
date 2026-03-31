@@ -291,11 +291,69 @@ font-family: 'Helvetica Neue', Helvetica, 'PingFang SC', 'Hiragino Sans GB', 'Mi
 
 ---
 
-## 10. 变更记录
+## 10. 分页组件设计
+
+### 10.1 组件位置
+
+`src/components/Pagination.vue`
+
+### 10.2 功能特性
+
+| 功能 | 说明 |
+|------|------|
+| 页码切换 | 点击页码或使用上一页/下一页按钮 |
+| 每页条数 | 支持10/20/50/100条切换 |
+| 跳转 | 输入页码直接跳转 |
+| 总数显示 | 显示总记录数 |
+
+### 10.3 组件接口
+
+```vue
+<template>
+  <div class="pagination-container">
+    <el-pagination
+      background
+      :current-page="currentPage"
+      :page-sizes="[10, 20, 50, 100]"
+      :page-size="pageSize"
+      :total="total"
+      layout="total, sizes, prev, pager, next, jumper"
+      @size-change="handleSizeChange"
+      @current-change="handleCurrentChange"
+    />
+  </div>
+</template>
+```
+
+### 10.4 Props定义
+
+| 属性 | 类型 | 默认值 | 说明 |
+|------|------|--------|------|
+| currentPage | Number | 1 | 当前页码 |
+| pageSize | Number | 10 | 每页条数 |
+| total | Number | 0 | 总记录数 |
+
+### 10.5 事件定义
+
+| 事件名 | 参数 | 说明 |
+|--------|------|------|
+| pagination | { page, rows } | 分页变化时触发 |
+
+### 10.6 样式规范
+
+- 组件右对齐
+- 上下间距 20px
+- 按钮使用背景色样式
+- 确保按钮可点击(cursor: pointer)
+
+---
+
+## 11. 变更记录
 
 | 日期 | 版本 | 变更内容 | 责任人 | 关联任务ID |
 |------|------|----------|--------|------------|
 | 2026-03-30 | V1.0 | [新增] 初始版本创建 | - | - |
 | 2026-03-30 | V1.1 | [文档] 同步文档版本格式规范 | - | DOC-001 |
+| 2026-04-01 | V1.2 | [新增] 分页组件设计说明 | AI Assistant | PAGE-001 |
 | 2026-03-31 | V1.2 | [新增] 操作日志页面设计规范 | AI Assistant | LOG-001 |
 | 2026-03-31 | V1.2 | [新增] 系统日志页面设计规范 | AI Assistant | LOG-002 |

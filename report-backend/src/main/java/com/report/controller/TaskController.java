@@ -45,6 +45,10 @@ public class TaskController {
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
+        TaskExecution task = taskService.getById(id);
+        if (task == null) {
+            return Result.fail("任务记录不存在");
+        }
         taskService.removeById(id);
         return Result.success();
     }

@@ -139,7 +139,7 @@ export default {
         }
         const res = await getTaskPage(params)
         this.tableData = res.data.records
-        this.pagination.total = res.data.total
+        this.pagination.total = parseInt(res.data.total) || 0
       } catch (error) {
         console.error('加载数据失败', error)
       } finally {

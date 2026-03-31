@@ -92,6 +92,10 @@ public class ReportConfigController {
 
     @DeleteMapping("/{id}")
     public Result<Void> delete(@PathVariable Long id) {
+        ReportConfig config = reportConfigService.getById(id);
+        if (config == null) {
+            return Result.fail("报表配置不存在");
+        }
         reportConfigService.removeById(id);
         return Result.success();
     }
