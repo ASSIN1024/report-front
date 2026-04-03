@@ -1,8 +1,8 @@
 # 报表数据处理平台 - 项目概述
 
-> **文档版本**: V1.2
+> **文档版本**: V1.6
 > **创建日期**: 2026-03-29
-> **最后更新**: 2026-03-31
+> **最后更新**: 2026-04-03
 > **文档状态**: 进行中
 
 ---
@@ -62,7 +62,7 @@
 | Phase 3 | 前端基础框架搭建 | 2026-03-30 | ✅ 已完成 |
 | Phase 4 | 前端页面开发 | 2026-03-30 | ✅ 已完成 |
 | Phase 5 | 核心处理器开发 | 2026-03-30 | ✅ 已完成 |
-| Phase 6 | 系统集成测试 | 待定 | ⏳ 待开始 |
+| Phase 6 | 系统集成测试 | 2026-04-01 | ⏳ 进行中 |
 | Phase 7 | 部署上线 | 待定 | ⏳ 待开始 |
 
 ---
@@ -139,14 +139,114 @@
 - [x] Jackson Long转String配置 (解决JavaScript精度丢失)
 - [x] StatusTag组件状态映射修复
 
-### 4.3 待完成功能
+### 4.3 系统集成测试进度 (Phase 6)
+
+**测试开始日期**: 2026-04-01  
+**测试负责人**: AI Assistant  
+**测试计划**: [2026-04-01-system-integration-test.md](file:///home/nova/projects/report-front/docs/superpowers/plans/2026-04-01-system-integration-test.md)
+
+#### 测试任务进度
+
+| 任务ID | 测试任务 | 状态 | 通过率 | 完成日期 |
+|--------|----------|------|--------|----------|
+| Task 1 | 环境准备 | ✅ 已完成 | 100% | 2026-04-01 |
+| Task 2 | FTP配置管理测试 | ✅ 已完成 | 100% | 2026-04-01 |
+| Task 3 | 报表配置管理测试 | ✅ 已完成 | 100% | 2026-04-01 |
+| Task 4 | 任务执行测试 | ✅ 已完成 | 100% | 2026-04-02 |
+| Task 5 | 日志查询测试 | ✅ 已完成 | 100% | 2026-04-02 |
+| Task 6 | 数据管理测试 | ✅ 已完成 | 100% | 2026-04-02 |
+| Task 7 | 集成测试 | ✅ 已完成 | 100% | 2026-04-02 |
+| Task 8 | 性能测试 | ✅ 已完成 | 100% | 2026-04-02 |
+| Task 9 | 测试报告生成 | ✅ 已完成 | 100% | 2026-04-02 |
+
+#### E2E端到端验证 (Bonus)
+
+**验证日期**: 2026-04-02  
+**验证范围**: 全流程7阶段验证  
+**验证结果**: **22/22 测试通过 (100%)**  
+
+**验证阶段**:
+
+| 阶段 | 验证内容 | 结果 | 备注 |
+|------|----------|------|------|
+| Phase 1 | 数据清理 | ✅ 通过 | 清空所有业务表和日志 |
+| Phase 2 | FTP配置管理 | ✅ 3/3通过 | 查询/更新/验证 |
+| Phase 3 | 报表配置管理 | ✅ 3/3通过 | 包含新建报表配置 |
+| Phase 4 | 任务执行流程 | ✅ 通过 | 自动建表+数据处理 |
+| Phase 5 | 数据查询验证 | ✅ 通过 | 8表17055条记录 |
+| Phase 6 | 日志查询验证 | ✅ 通过 | 操作/系统/任务日志全部正常 |
+| Phase 7 | 测试报告生成 | ✅ 通过 | 标准化报告输出 |
+
+**关键成果**:
+- ✅ 自动建表机制验证通过（TableCreatorService）
+- ✅ BUG-001已解决（任务执行日志查询）
+- ✅ 多报表类型支持验证通过
+- ✅ 数据完整性100%
+
+**验证报告**: [E2E端到端测试报告](file:///home/nova/projects/report-front/test-results/e2e-test-report.md)
+
+#### 测试统计
+
+| 指标 | 数值 | 说明 |
+|------|------|------|
+| 已完成任务 | 9/9 | 100% |
+| 已执行用例 | 47/47 + 22/22(E2E) | 69项测试全部完成 |
+| 通过率 | **100%** | 无失败用例 |
+| 缺陷数 | 0 | 原BUG-001已解决 |
+
+#### 测试环境状态
+
+| 服务 | 状态 | 说明 |
+|------|------|------|
+| 后端服务 (8082) | ✅ 运行中 | HTTP 200 |
+| MySQL数据库 | ✅ 运行中 | Docker容器 |
+| FTP服务器 | ✅ 运行中 | Docker vsftpd |
+| 测试数据 | ✅ 已准备 | 3个Excel文件 (1000/5000/10000行) |
+
+#### 测试报告
+
+- [FTP配置管理测试结果](file:///home/nova/projects/report-front/test-results/ftp-config-test.md)
+- [系统集成测试执行报告](file:///home/nova/projects/report-front/test-results/integration-test-report.md)
+- [E2E端到端验证报告](file:///home/nova/projects/report-front/test-results/e2e-test-report.md)
+
+### 4.4 待完成功能
 
 | 编号 | 功能 | 优先级 | 说明 |
 |------|------|--------|------|
-| T01 | 系统集成测试 | 高 | 端到端功能测试 |
-| T02 | 数据查询接口优化 | 中 | 前端数据预览增强 |
-| T03 | 文件上传功能 | 中 | 本地文件上传测试 |
-| T04 | 系统配置接口 | 低 | 系统参数配置 |
+| T01 | ~~系统集成测试~~ | ✅ 已完成 | Phase 6全部完成 (100%) |
+| T02 | FTP文件去重机制 | ✅ 已完成 | processed_file数据库追踪方案 |
+| T03 | 数据查询接口优化 | 中 | 前端数据预览增强 |
+| T04 | 文件上传功能 | 中 | 本地文件上传测试 |
+| T05 | 系统配置接口 | 低 | 系统参数配置 |
+| T06 | 生产环境部署准备 | 高 | Docker化、性能调优、监控告警 |
+
+### 4.5 核心功能模块清单
+
+#### 新增模块 (2026-04-02)
+
+- [x] **TableCreatorService** - 自动建表服务接口
+- [x] **TableCreatorServiceImpl** - 自动建表实现（基于column_mapping动态建表）
+- [x] **CustomIdGenerator** - 自定义ID生成器（解决Docker时钟回拨问题）
+- [x] **TaskController.trigger()** - 手动触发任务执行端点
+
+#### 核心修复 (2026-04-02)
+
+- [x] ExcelUtil.parseColumnMapping() - JSON解析格式修复
+- [x] ExcelUtil日期处理 - NUMERIC/FORMULA单元格日期格式化
+- [x] DataProcessJob多格式日期解析 - parseDate()/parseDatetime()
+- [x] POI版本降级 (5.2.3→4.1.2) - 解决log4j2-slf4j冲突
+- [x] LogFileController编码问题 - StandardCharsets.UTF_8→"UTF-8"
+
+#### 去重机制 (2026-04-03)
+
+- [x] **processed_file表** - 已处理文件追踪表 (report_config_id, file_name)
+- [x] **ProcessedFileStatus枚举** - PROCESSED/FAILED/SKIPPED状态
+- [x] **ProcessedFile实体** - 已处理文件记录实体
+- [x] **ProcessedFileMapper** - MyBatis-Plus Mapper接口
+- [x] **ProcessedFileService** - 去重服务接口
+- [x] **ProcessedFileServiceImpl** - 去重服务实现（优雅降级）
+- [x] **FtpScanJob去重集成** - 自动扫描时跳过已处理文件
+- [x] **TaskController去重集成** - 手动触发时检查文件状态
 
 ---
 
@@ -426,3 +526,20 @@ npm run serve
 | 2026-04-01 | V1.3 | [新增] 任务管理模块测试完成 | AI Assistant | TASK-001 |
 | 2026-04-01 | V1.3 | [修复] 分页组件total类型转换问题 | AI Assistant | PAGE-001 |
 | 2026-04-01 | V1.3 | [新增] 分页组件样式优化 | AI Assistant | PAGE-002 |
+| 2026-04-01 | V1.4 | [新增] 系统集成测试启动 (Phase 6) | AI Assistant | TEST-001 |
+| 2026-04-01 | V1.4 | [新增] 环境准备完成 | AI Assistant | TEST-002 |
+| 2026-04-01 | V1.4 | [新增] FTP配置管理测试通过 (100%) | AI Assistant | TEST-003 |
+| 2026-04-01 | V1.4 | [新增] 报表配置管理测试通过 (100%) | AI Assistant | TEST-004 |
+| 2026-04-02 | V1.5 | [完成] Phase 6系统集成测试全部完成 (9/9任务) | AI Assistant | TEST-005 |
+| 2026-04-02 | V1.5 | [新增] E2E端到端验证通过 (22/22, 100%) | AI Assistant | TEST-006 |
+| 2026-04-02 | V1.5 | [新增] TableCreatorService自动建表机制 | AI Assistant | FEAT-001 |
+| 2026-04-02 | V1.5 | [新增] CustomIdGenerator自定义ID生成器 | AI Assistant | FEAT-002 |
+| 2026-04-02 | V1.5 | [新增] TaskController手动触发端点 | AI Assistant | FEAT-003 |
+| 2026-04-02 | V1.5 | [修复] ExcelUtil JSON解析格式问题 | AI Assistant | FIX-001 |
+| 2026-04-02 | V1.5 | [修复] ExcelUtil日期格式化问题 | AI Assistant | FIX-002 |
+| 2026-04-02 | V1.5 | [修复] POI版本兼容性问题 | AI Assistant | FIX-003 |
+| 2026-04-02 | V1.5 | [修复] BUG-001: 任务执行日志查询500错误 | AI Assistant | FIX-004 |
+| 2026-04-03 | V1.6 | [新增] FTP文件去重机制 (数据库追踪方案) | AI Assistant | DEDUP-001 |
+| 2026-04-03 | V1.6 | [新增] ProcessedFileService去重服务 | AI Assistant | DEDUP-002 |
+| 2026-04-03 | V1.6 | [新增] FtpScanJob集成去重检查 | AI Assistant | DEDUP-003 |
+| 2026-04-03 | V1.6 | [新增] TaskController手动触发去重检查 | AI Assistant | DEDUP-004 |

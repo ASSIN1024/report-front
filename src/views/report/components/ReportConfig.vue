@@ -118,6 +118,7 @@
 
 <script>
 import { getReportConfigById, saveReportConfig, updateReportConfig, getReportConfigListEnabled } from '@/api/reportConfig'
+import { getFtpConfigListEnabled } from '@/api/ftpConfig'
 
 export default {
   name: 'ReportConfig',
@@ -167,7 +168,7 @@ export default {
   methods: {
     async loadFtpConfigList() {
       try {
-        const res = await getReportConfigListEnabled()
+        const res = await getFtpConfigListEnabled()
         this.ftpConfigList = res.data
       } catch (error) {
         console.error('加载FTP配置列表失败', error)

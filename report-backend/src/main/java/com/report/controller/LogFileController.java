@@ -84,10 +84,19 @@ public class LogFileController {
         
         String fileName = logType + "-" + System.currentTimeMillis() + ".log";
         
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, 
-                        "attachment; filename=\"" + URLEncoder.encode(fileName, StandardCharsets.UTF_8) + "\"")
-                .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                .body(content);
+        try {
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, 
+                            "attachment; filename=\"" + URLEncoder.encode(fileName, "UTF-8") + "\"")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(content);
+        } catch (Exception e) {
+            log.error("编码文件名失败", e);
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.CONTENT_DISPOSITION, 
+                            "attachment; filename=\"" + fileName + "\"")
+                    .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                    .body(content);
+        }
     }
 }

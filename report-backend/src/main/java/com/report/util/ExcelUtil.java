@@ -306,7 +306,12 @@ public class ExcelUtil {
                     
                 case NUMERIC:
                     if (DateUtil.isCellDateFormatted(cell)) {
-                        return cell.getDateCellValue();
+                        java.util.Date date = cell.getDateCellValue();
+                        String dateFormat = mapping.getDateFormat();
+                        if (StrUtil.isBlank(dateFormat)) {
+                            dateFormat = "yyyy-MM-dd";
+                        }
+                        return new SimpleDateFormat(dateFormat).format(date);
                     }
                     double numValue = cell.getNumericCellValue();
                     return convertNumericValue(numValue, fieldType, mapping.getScale());
@@ -319,7 +324,7 @@ public class ExcelUtil {
                         Workbook wb = cell.getSheet().getWorkbook();
                         FormulaEvaluator evaluator = wb.getCreationHelper().createFormulaEvaluator();
                         CellValue evaluatedValue = evaluator.evaluate(cell);
-                        return convertCellValue(evaluatedValue, fieldType, mapping);
+                        return convertCellValue(evaluatedValue, fieldType, mapping, cell);
                     } catch (Exception e) {
                         log.warn("公式计算失败: {}", e.getMessage());
                         return null;
@@ -349,7 +354,8 @@ public class ExcelUtil {
                 case "DATE":
                 case "DATETIME":
                     String pattern = StrUtil.isNotBlank(dateFormat) ? dateFormat : "yyyy-MM-dd";
-                    return new SimpleDateFormat(pattern).parse(strValue);
+                    java.util.Date dateValue = new SimpleDateFormat(pattern).parse(strValue);
+                    return new SimpleDateFormat(pattern).format(dateValue);
                 default:
                     return strValue;
             }
@@ -371,7 +377,7 @@ public class ExcelUtil {
         }
     }
 
-    private static Object convertCellValue(CellValue cellValue, String fieldType, FieldMapping mapping) {
+    private static Object convertCellValue(CellValue cellValue, String fieldType, FieldMapping mapping, Cell originalCell) {
         if (cellValue == null) {
             return null;
         }
@@ -380,6 +386,14 @@ public class ExcelUtil {
             case STRING:
                 return convertStringValue(cellValue.getStringValue(), fieldType, mapping.getDateFormat());
             case NUMERIC:
+                if (originalCell != null && DateUtil.isCellDateFormatted(originalCell)) {
+                    java.util.Date date = originalCell.getDateCellValue();
+                    String dateFormat = mapping.getDateFormat();
+                    if (StrUtil.isBlank(dateFormat)) {
+                        dateFormat = "yyyy-MM-dd";
+                    }
+                    return new SimpleDateFormat(dateFormat).format(date);
+                }
                 return convertNumericValue(cellValue.getNumberValue(), fieldType, mapping.getScale());
             case BOOLEAN:
                 return cellValue.getBooleanValue();
@@ -415,20 +429,20 @@ public class ExcelUtil {
         
         List<FieldMapping> result = new ArrayList<>();
         try {
-            JSONObject json = JSONUtil.parseObj(columnMappingJson);
-            JSONArray mappings = json.getJSONArray("mappings");
+            JSONArray mappings = JSONUtil.parseArray(columnMappingJson);
             
-            if (mappings != null) {
-                for (int i = 0; i < mappings.size(); i++) {
-                    JSONObject item = mappings.getJSONObject(i);
-                    FieldMapping mapping = new FieldMapping();
-                    mapping.setExcelColumn(item.getStr("excelColumnName"));
-                    mapping.setFieldName(item.getStr("fieldName"));
-                    mapping.setFieldType(item.getStr("fieldType"));
-                    mapping.setDateFormat(item.getStr("dateFormat"));
-                    mapping.setScale(item.getInt("scale"));
-                    result.add(mapping);
+            for (int i = 0; i < mappings.size(); i++) {
+                JSONObject item = mappings.getJSONObject(i);
+                FieldMapping mapping = new FieldMapping();
+                mapping.setExcelColumn(item.getStr("excelColumn"));
+                mapping.setFieldName(item.getStr("fieldName"));
+                mapping.setFieldType(item.getStr("fieldType"));
+                mapping.setDateFormat(item.getStr("dateFormat"));
+                Object scaleObj = item.get("scale");
+                if (scaleObj != null) {
+                    mapping.setScale(Integer.parseInt(scaleObj.toString()));
                 }
+                result.add(mapping);
             }
         } catch (Exception e) {
             log.error("解析列映射配置失败: {}", columnMappingJson, e);

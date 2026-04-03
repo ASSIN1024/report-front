@@ -6,6 +6,7 @@ import com.report.entity.ReportConfig;
 import com.report.entity.TaskExecution;
 import com.report.service.FtpConfigService;
 import com.report.service.LogService;
+import com.report.service.ProcessedFileService;
 import com.report.service.ReportConfigService;
 import com.report.service.TaskService;
 import com.report.util.FtpUtil;
@@ -38,6 +39,9 @@ public class FtpScanJob implements Job {
 
     @Autowired
     private LogService logService;
+
+    @Autowired
+    private ProcessedFileService processedFileService;
 
     @Autowired
     private DataProcessJob dataProcessJob;
@@ -102,16 +106,16 @@ public class FtpScanJob implements Job {
 
     private void matchAndProcessFiles(FTPClient ftpClient, FtpConfig ftpConfig, ReportConfig reportConfig, List<String> files) {
         String pattern = reportConfig.getFilePattern();
-        String filePattern = pattern.replace("*", ".*").replace("?", ".");
+        String fileRegex = pattern.replace("*", ".*").replace("?", ".");
 
         for (String filePath : files) {
             String fileName = new File(filePath).getName();
-            if (!fileName.matches(filePattern)) {
+            if (!fileName.matches(fileRegex)) {
                 continue;
             }
 
-            if (isFileProcessed(reportConfig.getId(), fileName)) {
-                log.debug("文件已处理过，跳过: {}", fileName);
+            if (processedFileService.isFileProcessed(reportConfig.getId(), fileName)) {
+                log.info("文件已处理过，跳过: {}", fileName);
                 continue;
             }
 
@@ -129,12 +133,13 @@ public class FtpScanJob implements Job {
                 File localFile = downloadToLocalFile(ftpClient, filePath, fileName);
                 if (localFile != null && localFile.exists()) {
                     dataProcessJob.processFile(task.getId(), reportConfig, localFile);
-                    markFileAsProcessed(reportConfig.getId(), fileName);
+                    processedFileService.markAsProcessed(reportConfig.getId(), fileName, localFile.length(), task.getId());
                     localFile.delete();
                 }
             } catch (Exception e) {
                 log.error("文件处理失败: {}", fileName, e);
                 taskService.finishTask(task.getId(), "FAILED", e.getMessage());
+                processedFileService.markAsFailed(reportConfig.getId(), fileName, task.getId(), e.getMessage());
             }
         }
     }
@@ -151,10 +156,4 @@ public class FtpScanJob implements Job {
         return tempFile;
     }
 
-    private boolean isFileProcessed(Long reportConfigId, String fileName) {
-        return false;
-    }
-
-    private void markFileAsProcessed(Long reportConfigId, String fileName) {
-    }
 }

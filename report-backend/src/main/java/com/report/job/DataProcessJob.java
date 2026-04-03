@@ -10,6 +10,7 @@ import com.report.entity.dto.FieldMapping;
 import com.report.mapper.TaskExecutionMapper;
 import com.report.service.LogService;
 import com.report.service.ReportConfigService;
+import com.report.service.TableCreatorService;
 import com.report.service.TaskService;
 import com.report.util.ExcelUtil;
 import com.report.util.FtpUtil;
@@ -42,6 +43,9 @@ public class DataProcessJob {
     @Autowired
     private TaskExecutionMapper taskExecutionMapper;
 
+    @Autowired
+    private TableCreatorService tableCreatorService;
+
     private static final String TASK_TYPE_FILE_PROCESS = "FILE_PROCESS";
     private static final String TASK_TYPE_DATA_IMPORT = "DATA_IMPORT";
 
@@ -64,6 +68,10 @@ public class DataProcessJob {
             if (columnMappings == null || columnMappings.isEmpty()) {
                 throw new RuntimeException("列映射配置为空");
             }
+
+            String outputTable = reportConfig.getOutputTable();
+            logService.saveLog(taskId, "INFO", "检查目标表: " + outputTable);
+            tableCreatorService.ensureTableExists(outputTable, columnMappings);
 
             List<Map<String, Object>> dataList = ExcelUtil.readExcel(file, reportConfig, columnMappings);
             totalRows = dataList.size();
@@ -159,10 +167,6 @@ public class DataProcessJob {
 
         String strValue = String.valueOf(value).trim();
 
-        if (StrUtil.isBlank(dateFormat)) {
-            dateFormat = "yyyy-MM-dd HH:mm:ss";
-        }
-
         try {
             switch (fieldType) {
                 case "STRING":
@@ -175,9 +179,9 @@ public class DataProcessJob {
                 case "DECIMAL":
                     return new BigDecimal(strValue);
                 case "DATE":
-                    return new SimpleDateFormat(dateFormat).parse(strValue);
+                    return parseDate(strValue, dateFormat);
                 case "DATETIME":
-                    return new SimpleDateFormat(dateFormat).parse(strValue);
+                    return parseDatetime(strValue, dateFormat);
                 default:
                     return strValue;
             }
@@ -185,6 +189,42 @@ public class DataProcessJob {
             log.warn("数据类型转换失败: value={}, type={}", value, fieldType, e);
             return strValue;
         }
+    }
+
+    private Object parseDate(String strValue, String dateFormat) {
+        String[] formats;
+        if (StrUtil.isNotBlank(dateFormat)) {
+            formats = new String[]{dateFormat, "yyyy-MM-dd", "yyyy/MM/dd"};
+        } else {
+            formats = new String[]{"yyyy-MM-dd", "yyyy/MM/dd", "yyyy-MM-dd HH:mm:ss"};
+        }
+        
+        for (String fmt : formats) {
+            try {
+                java.util.Date dateValue = new SimpleDateFormat(fmt).parse(strValue);
+                return new java.sql.Date(dateValue.getTime());
+            } catch (Exception ignored) {
+            }
+        }
+        throw new RuntimeException("无法解析日期: " + strValue);
+    }
+
+    private Object parseDatetime(String strValue, String dateFormat) {
+        String[] formats;
+        if (StrUtil.isNotBlank(dateFormat)) {
+            formats = new String[]{dateFormat, "yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd HH:mm:ss"};
+        } else {
+            formats = new String[]{"yyyy-MM-dd HH:mm:ss", "yyyy/MM/dd HH:mm:ss", "yyyy-MM-dd"};
+        }
+        
+        for (String fmt : formats) {
+            try {
+                java.util.Date datetimeValue = new SimpleDateFormat(fmt).parse(strValue);
+                return new java.sql.Timestamp(datetimeValue.getTime());
+            } catch (Exception ignored) {
+            }
+        }
+        throw new RuntimeException("无法解析日期时间: " + strValue);
     }
 
     public void retryTask(Long taskId) {
