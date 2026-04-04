@@ -1,0 +1,105 @@
+{
+  "version": "1.0",
+  "lastUpdated": "2026-04-04",
+  "description": "Harness Engineering 任务清单 - Phase 1 基础建设",
+  "owner": "AI Assistant",
+  "source": "AI Agent",
+  "tasks": [
+    {
+      "id": "H-001",
+      "title": "建立 harness/ 目录结构",
+      "description": "创建 harness/ 目录及其子目录 (session-history/, templates/)",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-04",
+      "completedAt": "2026-04-04",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-002",
+      "title": "创建 tasks.json 初始版本",
+      "description": "建立结构化任务清单，使用JSON格式，抗模型腐化",
+      "status": "in_progress",
+      "priority": "high",
+      "dependsOn": ["H-001"],
+      "createdAt": "2026-04-04",
+      "completedAt": null,
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-003",
+      "title": "创建 harness/progress-notes.md",
+      "description": "进度记录文件，每次会话结束时更新",
+      "status": "pending",
+      "priority": "high",
+      "dependsOn": ["H-001"],
+      "createdAt": "2026-04-04",
+      "completedAt": null,
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-004",
+      "title": "创建 harness/session-history/ 目录",
+      "description": "归档历史会话，便于回溯和上下文恢复",
+      "status": "completed",
+      "priority": "medium",
+      "dependsOn": ["H-001"],
+      "createdAt": "2026-04-04",
+      "completedAt": "2026-04-04",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-005",
+      "title": "创建文档模板 (harness/templates/)",
+      "description": "创建标准化的文档模板，保持一致性",
+      "status": "pending",
+      "priority": "medium",
+      "dependsOn": ["H-001"],
+      "createdAt": "2026-04-04",
+      "completedAt": null,
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-006",
+      "title": "完善 AGENTS.md 知识地图",
+      "description": "基于Harness Engineering最佳实践，完善AI Agent知识地图",
+      "status": "pending",
+      "priority": "high",
+      "dependsOn": ["H-002", "H-003"],
+      "createdAt": "2026-04-04",
+      "completedAt": null,
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-007",
+      "title": "验证Harness基础结构",
+      "description": "确保所有文件创建正确，AI Agent能够正确读取和使用",
+      "status": "pending",
+      "priority": "high",
+      "dependsOn": ["H-002", "H-003", "H-005", "H-006"],
+      "createdAt": "2026-04-04",
+      "completedAt": null,
+      "assignee": "AI Assistant"
+    }
+  ],
+  "conventions": {
+    "taskStatus": {
+      "pending": "待开始",
+      "in_progress": "进行中",
+      "completed": "已完成",
+      "blocked": "被阻塞"
+    },
+    "taskPriority": {
+      "high": "高优先级",
+      "medium": "中优先级",
+      "low": "低优先级"
+    },
+    "operationRules": [
+      "任务不可删除，只改变状态",
+      "任务不可重排序，保持创建顺序",
+      "新任务只追加到数组末尾",
+      "状态转换: pending → in_progress → completed"
+    ]
+  }
+}
