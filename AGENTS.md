@@ -19,6 +19,7 @@
 **快速链接**:
 - 任务清单: [harness/tasks.json](file:///home/nova/projects/report-front/harness/tasks.json)
 - 进度记录: [harness/progress-notes.md](file:///home/nova/projects/report-front/harness/progress-notes.md)
+- 启动指南: [harness/guides/startup-script-guide.md](file:///home/nova/projects/report-front/harness/guides/startup-script-guide.md)
 - 技术规范: [docs/superpowers/specs/](file:///home/nova/projects/report-front/docs/superpowers/specs/)
 - 实施计划: [docs/superpowers/plans/](file:///home/nova/projects/report-front/docs/superpowers/plans/)
 
@@ -32,7 +33,10 @@ report-front/
 │   ├── tasks.json             # 结构化任务清单（单一事实来源）
 │   ├── progress-notes.md       # 进度记录
 │   ├── session-history/        # 会话历史归档
-│   └── templates/              # 文档模板
+│   ├── templates/              # 文档模板
+│   └── guides/                 # 操作指南
+├── scripts/
+│   └── start.sh               # 前后端启动脚本
 ├── docs/
 │   ├── superpowers/           # 主要文档区
 │   │   ├── plans/             # 实施计划
@@ -82,7 +86,8 @@ report-front/
 
 ### 2. Setup（准备）
 1. 确保开发环境正常
-2. 检查服务状态（后端8082端口、MySQL、FTP）
+2. 使用启动脚本检查服务状态：`./scripts/start.sh status`
+3. 如需启动服务：`./scripts/start.sh all`
 
 ### 3. Select Task（选择任务）
 1. 选择最高优先级的 `pending` 任务
@@ -175,6 +180,7 @@ report-front/
 
 | 情况 | 参考文档 |
 |------|----------|
+| 服务启动/停止 | [启动脚本指南](file:///home/nova/projects/report-front/harness/guides/startup-script-guide.md) |
 | 业务逻辑问题 | CLAUDE.md, docs/superpowers/specs/ |
 | API问题 | API.md |
 | 数据库问题 | schema.sql |

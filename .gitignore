@@ -34,5 +34,8 @@ logs/
 docker/vsftpd/
 docker/mysql/
 
+# PID
+.pid/
+
 # Test
 /coverage/
