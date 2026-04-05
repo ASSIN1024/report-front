@@ -55,3 +55,10 @@ export function uploadReportFile(data) {
     }
   })
 }
+
+export function triggerScan(id) {
+  return request({
+    url: `/report/config/${id}/scan`,
+    method: 'post'
+  })
+}

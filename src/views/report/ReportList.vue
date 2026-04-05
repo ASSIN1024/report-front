@@ -37,10 +37,21 @@
           <status-tag :status="String(row.status)" />
         </template>
       </el-table-column>
-      <el-table-column label="操作" width="200" fixed="right">
+      <el-table-column label="操作" width="220" fixed="right">
         <template slot-scope="{ row }">
           <el-button type="text" size="small" @click="handleEdit(row)">编辑</el-button>
           <el-button type="text" size="small" @click="handleView(row)">查看</el-button>
+          <el-button
+            v-if="row.status === 1"
+            type="text"
+            size="small"
+            style="color: #67C23A"
+            @click="handleScan(row)">立即扫描</el-button>
+          <el-button
+            v-else
+            type="text"
+            size="small"
+            disabled>立即扫描</el-button>
           <el-button type="text" size="small" style="color: #F56C6C" @click="handleDelete(row)">删除</el-button>
         </template>
       </el-table-column>
@@ -56,7 +67,7 @@
 </template>
 
 <script>
-import { getReportConfigPage, deleteReportConfig } from '@/api/reportConfig'
+import { getReportConfigPage, deleteReportConfig, triggerScan } from '@/api/reportConfig'
 import StatusTag from '@/components/StatusTag'
 import Pagination from '@/components/Pagination'
 
@@ -131,6 +142,26 @@ export default {
           this.$message.error('删除失败')
         }
       })
+    },
+    async handleScan(row) {
+      try {
+        await this.$confirm(
+          `确定要立即扫描 "${row.reportName}" 的FTP目录吗？\n请确保测试文件已放置到FTP服务器的指定目录。`,
+          '确认立即扫描',
+          {
+            confirmButtonText: '确认扫描',
+            cancelButtonText: '取消',
+            type: 'warning'
+          }
+        )
+        await triggerScan(row.id)
+        this.$message.success('扫描任务已创建，请到任务监控中查看结果')
+        this.loadData()
+      } catch (error) {
+        if (error !== 'cancel') {
+          this.$message.error(error.message || '扫描启动失败')
+        }
+      }
     }
   }
 }
