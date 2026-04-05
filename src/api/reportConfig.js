@@ -62,3 +62,19 @@ export function triggerScan(id) {
     method: 'post'
   })
 }
+
+export function validateColumnMapping(id, data) {
+  return request({
+    url: `/report/config/${id}/column-mapping/validate`,
+    method: 'post',
+    data
+  })
+}
+
+export function importColumnMapping(id, data) {
+  return request({
+    url: `/report/config/${id}/column-mapping/import`,
+    method: 'post',
+    data
+  })
+}
