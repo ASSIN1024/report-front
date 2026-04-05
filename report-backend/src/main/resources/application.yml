@@ -27,3 +27,17 @@ spring:
 logging:
   level:
     com.report: debug
+
+ftp:
+  built-in:
+    enabled: false
+    port: 2021
+    username: rpa_user
+    password: rpa_password
+    root-directory: /data/ftp-root
+    max-connections: 10
+    idle-timeout: 300
+    passive-mode: true
+    passive-port-start: 50000
+    passive-port-end: 50100
+    max-threads: 5
