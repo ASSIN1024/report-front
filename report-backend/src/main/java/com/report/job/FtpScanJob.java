@@ -46,6 +46,71 @@ public class FtpScanJob implements Job {
     @Autowired
     private DataProcessJob dataProcessJob;
 
+    public void scanReportConfig(Long reportConfigId, Long taskId) {
+        ReportConfig reportConfig = reportConfigService.getById(reportConfigId);
+        if (reportConfig == null) {
+            log.error("报表配置不存在: {}", reportConfigId);
+            taskService.finishTask(taskId, "FAILED", "报表配置不存在");
+            return;
+        }
+
+        FtpConfig ftpConfig = ftpConfigService.getById(reportConfig.getFtpConfigId());
+        if (ftpConfig == null) {
+            log.error("FTP配置不存在: {}", reportConfig.getFtpConfigId());
+            taskService.finishTask(taskId, "FAILED", "FTP配置不存在");
+            return;
+        }
+
+        FTPClient ftpClient = null;
+        try {
+            ftpClient = FtpUtil.connect(ftpConfig);
+            if (ftpClient == null || !ftpClient.isConnected()) {
+                log.error("FTP连接失败: {}", ftpConfig.getConfigName());
+                taskService.finishTask(taskId, "FAILED", "FTP连接失败");
+                return;
+            }
+
+            String scanPath = ftpConfig.getScanPath() != null ? ftpConfig.getScanPath() : "/";
+            List<String> files = FtpUtil.listFiles(ftpClient, scanPath, reportConfig.getFilePattern());
+            if (files == null || files.isEmpty()) {
+                log.info("FTP目录中没有匹配的文件: {}", scanPath);
+                taskService.finishTask(taskId, "NO_FILE", "未匹配到文件");
+                logService.saveLog(taskId, "WARN", "FTP目录 " + scanPath + " 中没有匹配 " + reportConfig.getFilePattern() + " 的文件");
+                return;
+            }
+
+            log.info("扫描到 {} 个匹配文件", files.size());
+            int processedCount = 0;
+
+            for (String filePath : files) {
+                String fileName = new File(filePath).getName();
+                log.info("处理文件: {}", fileName);
+
+                try {
+                    File localFile = downloadToLocalFile(ftpClient, filePath, fileName);
+                    if (localFile != null && localFile.exists()) {
+                        dataProcessJob.processFile(taskId, reportConfig, localFile);
+                        processedFileService.markAsProcessed(reportConfig.getId(), fileName, localFile.length(), taskId);
+                        localFile.delete();
+                        processedCount++;
+                    }
+                } catch (Exception e) {
+                    log.error("文件处理失败: {}", fileName, e);
+                    processedFileService.markAsFailed(reportConfig.getId(), fileName, taskId, e.getMessage());
+                }
+            }
+
+            taskService.finishTask(taskId, "SUCCESS", null);
+            logService.saveLog(taskId, "INFO", "扫描完成，共处理 " + processedCount + " 个文件");
+
+        } catch (Exception e) {
+            log.error("FTP扫描异常: {}", reportConfig.getReportName(), e);
+            taskService.finishTask(taskId, "FAILED", e.getMessage());
+        } finally {
+            FtpUtil.disconnect(ftpClient);
+        }
+    }
+
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
         log.info("FTP扫描任务开始执行");

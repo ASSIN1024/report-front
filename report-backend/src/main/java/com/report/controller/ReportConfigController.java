@@ -7,6 +7,7 @@ import com.report.entity.ReportConfig;
 import com.report.entity.TaskExecution;
 import com.report.entity.dto.ReportConfigDTO;
 import com.report.job.DataProcessJob;
+import com.report.job.FtpScanJob;
 import com.report.service.ReportConfigService;
 import com.report.service.TaskService;
 import lombok.extern.slf4j.Slf4j;
@@ -31,6 +32,9 @@ public class ReportConfigController {
 
     @Autowired
     private DataProcessJob dataProcessJob;
+
+    @Autowired
+    private FtpScanJob ftpScanJob;
 
     @GetMapping("/page")
     public Result<Page<ReportConfigDTO>> page(
@@ -127,5 +131,28 @@ public class ReportConfigController {
             log.error("文件上传失败", e);
             return Result.fail("文件上传失败: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/{id}/scan")
+    public Result<Long> triggerScan(@PathVariable Long id) {
+        ReportConfig config = reportConfigService.getById(id);
+        if (config == null) {
+            return Result.fail("报表配置不存在");
+        }
+        if (config.getStatus() != 1) {
+            return Result.fail("报表配置未启用");
+        }
+
+        TaskExecution task = taskService.createTask(
+            "FTP_SCAN",
+            "FTP扫描-" + config.getReportName(),
+            id,
+            null,
+            null
+        );
+
+        ftpScanJob.scanReportConfig(id, task.getId());
+
+        return Result.success(task.getId());
     }
 }
