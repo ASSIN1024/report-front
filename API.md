@@ -388,6 +388,110 @@ Content-Type: application/json
 DELETE /api/report/config/{id}
 ```
 
+### 3.6 立即扫描
+
+手动触发指定报表配置的FTP扫描。
+
+**请求**
+```
+POST /api/report/config/{id}/scan
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": 123456
+}
+```
+
+| 字段 | 类型 | 说明 |
+|------|------|------|
+| data | Long | 任务ID |
+
+**错误响应**
+```json
+{
+    "code": 400,
+    "message": "报表配置不存在或未启用"
+}
+```
+
+### 3.7 列映射JSON校验
+
+校验列映射JSON格式和完整性。
+
+**请求**
+```
+POST /api/report/config/{id}/column-mapping/validate
+Content-Type: application/json
+```
+
+**请求体**
+```json
+{
+    "json": "[{\"excelColumn\":\"A\",\"fieldName\":\"amount\",\"fieldType\":\"DECIMAL\"}]"
+}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "valid": true,
+        "errors": [],
+        "count": 1
+    }
+}
+```
+
+**校验失败响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "valid": false,
+        "errors": [
+            {"line": 1, "message": "无效的字段类型: DECIMALL", "suggestion": "有效类型: STRING, INTEGER, DECIMAL, DATE, DATETIME"}
+        ],
+        "count": 0
+    }
+}
+```
+
+### 3.8 列映射JSON导入
+
+导入列映射JSON配置到报表。
+
+**请求**
+```
+POST /api/report/config/{id}/column-mapping/import
+Content-Type: application/json
+```
+
+**请求体**
+```json
+{
+    "json": "[{\"excelColumn\":\"A\",\"fieldName\":\"amount\",\"fieldType\":\"DECIMAL\",\"cleanRules\":[{\"pattern\":\"-\",\"replace\":\"0\"}]}]"
+}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "success": true,
+        "imported": 1
+    }
+}
+```
+
 ---
 
 ## 4. 任务接口

@@ -1,0 +1,91 @@
+<h2>清洗规则配置弹窗</h2>
+<p class="subtitle">为字段配置数据清洗规则</p>
+
+<div class="mockup">
+  <div class="mockup-header">清洗规则配置</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="background: #fafafa; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+      <div style="display: flex; gap: 20px;">
+        <span><strong>字段:</strong> amount</span>
+        <span><strong>类型:</strong> DECIMAL</span>
+        <span><strong>来源:</strong> 列 A</span>
+      </div>
+    </div>
+
+    <h4 style="margin: 0 0 10px 0;">替换规则</h4>
+    <p class="subtitle" style="margin: 0 0 10px 0;">当检测到以下值时，替换为指定值</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 15px;">
+      <tr style="background: #f0f0f0;">
+        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">原始值</th>
+        <th style="padding: 10px; border: 1px solid #ddd; text-align: left;">替换为</th>
+        <th style="padding: 10px; border: 1px solid #ddd; width: 60px;"></th>
+      </tr>
+      <tr>
+        <td style="padding: 8px; border: 1px solid #ddd;"><input class="mock-input" value="-" style="width: 100%;"></td>
+        <td style="padding: 8px; border: 1px solid #ddd;"><input class="mock-input" value="0" style="width: 100%;"></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><span style="color: #ff4d4f; cursor: pointer;">删除</span></td>
+      </tr>
+      <tr style="background: #fafafa;">
+        <td style="padding: 8px; border: 1px solid #ddd;"><input class="mock-input" placeholder="输入值..." style="width: 100%;"></td>
+        <td style="padding: 8px; border: 1px solid #ddd;"><input class="mock-input" placeholder="替换为..." style="width: 100%;"></td>
+        <td style="padding: 8px; border: 1px solid #ddd; text-align: center;"><span style="color: #ff4d4f;">删除</span></td>
+      </tr>
+    </table>
+
+    <button class="mock-button" style="border: 1px dashed #999; background: transparent; color: #666;">+ 添加规则</button>
+
+    <div style="border-top: 1px solid #eee; margin-top: 20px; padding-top: 15px;">
+      <h4 style="margin: 0 0 10px 0;">验证规则 (可选)</h4>
+      <div style="display: flex; gap: 10px; align-items: center;">
+        <input type="checkbox" id="required"> <label for="required">必填校验</label>
+        <input type="checkbox" id="positive"> <label for="positive">必须为正数</label>
+        <input type="checkbox" id="range"> <label for="range">值范围:</label>
+        <input class="mock-input" placeholder="最小值" style="width: 80px;">
+        <span>-</span>
+        <input class="mock-input" placeholder="最大值" style="width: 80px;">
+      </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+      <button class="mock-button">取消</button>
+      <button class="mock-button" style="background: #1890ff; color: white;">保存规则</button>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 20px;">
+  <h3>JSON结构示例</h3>
+  <pre style="background: #1e1e1e; color: #d4d4d4; padding: 15px; border-radius: 4px; overflow-x: auto; font-size: 12px;">
+{
+  "excelColumn": "A",
+  "fieldName": "amount",
+  "fieldType": "DECIMAL",
+  "cleanRules": [
+    {"pattern": "-", "replace": "0"},
+    {"pattern": "N/A", "replace": ""}
+  ],
+  "validators": {
+    "required": true,
+    "positiveOnly": true
+  }
+}</pre>
+</div>
+
+<p class="label">点击下方选项继续</p>
+<div class="options">
+  <div class="option" data-choice="json-import" onclick="toggleSelect(this)">
+    <div class="letter">A</div>
+    <div class="content">
+      <h3>查看JSON导入向导设计</h3>
+      <p>了解如何批量导入列映射配置</p>
+    </div>
+  </div>
+  <div class="option" data-choice="scan-flow" onclick="toggleSelect(this)">
+    <div class="letter">B</div>
+    <div class="content">
+      <h3>查看立即扫描流程设计</h3>
+      <p>了解扫描触发的交互流程</p>
+    </div>
+  </div>
+</div>
