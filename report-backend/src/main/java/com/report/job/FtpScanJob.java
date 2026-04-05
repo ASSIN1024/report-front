@@ -4,6 +4,9 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.report.entity.FtpConfig;
 import com.report.entity.ReportConfig;
 import com.report.entity.TaskExecution;
+import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.EmbeddedFtpServer;
 import com.report.service.FtpConfigService;
 import com.report.service.LogService;
 import com.report.service.ProcessedFileService;
@@ -18,7 +21,6 @@ import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -45,6 +47,12 @@ public class FtpScanJob implements Job {
 
     @Autowired
     private DataProcessJob dataProcessJob;
+
+    @Autowired(required = false)
+    private BuiltInFtpConfigService builtInFtpConfigService;
+
+    @Autowired(required = false)
+    private EmbeddedFtpServer embeddedFtpServer;
 
     public void scanReportConfig(Long reportConfigId, Long taskId) {
         ReportConfig reportConfig = reportConfigService.getById(reportConfigId);
@@ -115,6 +123,10 @@ public class FtpScanJob implements Job {
     public void execute(JobExecutionContext context) throws JobExecutionException {
         log.info("FTP扫描任务开始执行");
 
+        if (embeddedFtpServer != null && embeddedFtpServer.isRunning()) {
+            scanBuiltInFtp();
+        }
+
         List<FtpConfig> enabledConfigs = ftpConfigService.list(
             new LambdaQueryWrapper<FtpConfig>()
                 .eq(FtpConfig::getStatus, 1)
@@ -131,6 +143,85 @@ public class FtpScanJob implements Job {
         }
 
         log.info("FTP扫描任务执行完成");
+    }
+
+    private void scanBuiltInFtp() {
+        if (builtInFtpConfigService == null) {
+            log.warn("内置FTP服务未配置");
+            return;
+        }
+
+        BuiltInFtpConfig config = builtInFtpConfigService.getConfig();
+        if (config == null || !config.getEnabled()) {
+            log.info("内置FTP未启用");
+            return;
+        }
+
+        log.info("开始扫描内置FTP目录: {}", config.getRootDirectory());
+
+        File ftpRoot = new File(config.getRootDirectory());
+        File uploadDir = new File(ftpRoot, "upload");
+
+        if (!uploadDir.exists() || !uploadDir.isDirectory()) {
+            log.info("内置FTP上传目录不存在: {}", uploadDir.getAbsolutePath());
+            return;
+        }
+
+        List<ReportConfig> reportConfigs = reportConfigService.list(
+            new LambdaQueryWrapper<ReportConfig>()
+                .eq(ReportConfig::getFtpConfigId, -1L)
+                .eq(ReportConfig::getStatus, 1)
+                .eq(ReportConfig::getDeleted, 0)
+        );
+
+        if (reportConfigs.isEmpty()) {
+            log.info("没有配置使用内置FTP的报表");
+            return;
+        }
+
+        for (ReportConfig reportConfig : reportConfigs) {
+            scanBuiltInFtpDirectory(reportConfig, uploadDir);
+        }
+    }
+
+    private void scanBuiltInFtpDirectory(ReportConfig reportConfig, File uploadDir) {
+        String pattern = reportConfig.getFilePattern();
+        String fileRegex = pattern.replace("*", ".*").replace("?", ".");
+
+        File[] files = uploadDir.listFiles((dir, name) -> name.matches(fileRegex));
+        if (files == null || files.length == 0) {
+            log.info("内置FTP上传目录没有匹配的文件: {}", reportConfig.getFilePattern());
+            return;
+        }
+
+        log.info("扫描到 {} 个匹配文件", files.length);
+
+        for (File file : files) {
+            String fileName = file.getName();
+            if (processedFileService.isFileProcessed(reportConfig.getId(), fileName)) {
+                log.info("文件已处理过，跳过: {}", fileName);
+                continue;
+            }
+
+            log.info("检测到新文件: {}, 报表配置: {}", fileName, reportConfig.getReportName());
+
+            TaskExecution task = taskService.createTask(
+                "FTP_SCAN",
+                "内置FTP扫描-" + reportConfig.getReportName(),
+                reportConfig.getId(),
+                fileName,
+                file.getAbsolutePath()
+            );
+
+            try {
+                dataProcessJob.processFile(task.getId(), reportConfig, file);
+                processedFileService.markAsProcessed(reportConfig.getId(), fileName, file.length(), task.getId());
+            } catch (Exception e) {
+                log.error("文件处理失败: {}", fileName, e);
+                taskService.finishTask(task.getId(), "FAILED", e.getMessage());
+                processedFileService.markAsFailed(reportConfig.getId(), fileName, task.getId(), e.getMessage());
+            }
+        }
     }
 
     private void scanFtpDirectory(FtpConfig ftpConfig) {

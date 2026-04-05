@@ -134,9 +134,30 @@ CREATE TABLE operation_log (
     KEY idx_create_time (create_time)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='操作日志表';
 
+-- 内置FTP配置表
+CREATE TABLE IF NOT EXISTS built_in_ftp_config (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键',
+    enabled TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否启用',
+    port INT NOT NULL DEFAULT 2021 COMMENT 'FTP端口',
+    username VARCHAR(64) NOT NULL DEFAULT 'rpa_user' COMMENT '用户名',
+    password VARCHAR(128) NOT NULL DEFAULT 'rpa_password' COMMENT '密码',
+    root_directory VARCHAR(256) NOT NULL DEFAULT '/data/ftp-root' COMMENT '根目录',
+    max_connections INT NOT NULL DEFAULT 10 COMMENT '最大连接数',
+    idle_timeout INT NOT NULL DEFAULT 300 COMMENT '空闲超时(秒)',
+    passive_mode TINYINT(1) NOT NULL DEFAULT 1 COMMENT '是否被动模式',
+    passive_port_start INT DEFAULT 50000 COMMENT '被动端口起始',
+    passive_port_end INT DEFAULT 50100 COMMENT '被动端口结束',
+    create_time DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='内置FTP配置';
+
 -- 初始化示例数据
 INSERT INTO ftp_config (id, config_name, host, port, username, password, scan_path, file_pattern, scan_interval, status, remark) VALUES
 (1, '测试FTP服务器', '192.168.1.100', 21, 'ftpuser', 'ftppass', '/data/reports', '*.xlsx', 300, 1, '测试用FTP配置');
+
+INSERT INTO built_in_ftp_config (id, enabled, port, username, password, root_directory, max_connections, idle_timeout, passive_mode, passive_port_start, passive_port_end) VALUES
+(1, 0, 2021, 'rpa_user', 'rpa_password', '/data/ftp-root', 10, 300, 1, 50000, 50100);
 
 INSERT INTO report_config (id, report_code, report_name, ftp_config_id, file_pattern, sheet_index, header_row, data_start_row, column_mapping, output_table, output_mode, status, remark) VALUES
 (1, 'SALES_REPORT', '销售报表', 1, 'sales_*.xlsx', 0, 0, 1, '[{"excelColumn":"A","fieldName":"order_id","fieldType":"STRING"},{"excelColumn":"B","fieldName":"product_name","fieldType":"STRING"},{"excelColumn":"C","fieldName":"quantity","fieldType":"INTEGER"},{"excelColumn":"D","fieldName":"amount","fieldType":"DECIMAL"},{"excelColumn":"E","fieldName":"order_date","fieldType":"DATE"}]', 't_sales_data', 'APPEND', 1, '销售数据报表配置');
