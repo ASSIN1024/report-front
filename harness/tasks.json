@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-05",
+  "lastUpdated": "2026-04-05T17:00",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -105,12 +105,45 @@
       "assignee": "AI Assistant"
     },
     {
-      "id": "H-010",
-      "title": "实施 Harness 上下文工程验证系统",
-      "description": "创建测试数据集、自动化测试脚本、人工评估指南和报告模板",
+      "id": "H-011",
+      "title": "任务监控增强 - 立即扫描功能",
+      "description": "在报表配置列表增加立即扫描按钮，支持手动触发FTP扫描测试",
       "status": "completed",
       "priority": "high",
       "dependsOn": [],
+      "createdAt": "2026-04-05",
+      "completedAt": "2026-04-05",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-012",
+      "title": "数据清洗规则配置",
+      "description": "在列映射中配置清洗规则，支持替换值如'-' -> '0'",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-011"],
+      "createdAt": "2026-04-05",
+      "completedAt": "2026-04-05",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-013",
+      "title": "列映射JSON导入功能",
+      "description": "支持通过JSON文本批量导入列映射配置，包含校验和预览",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-012"],
+      "createdAt": "2026-04-05",
+      "completedAt": "2026-04-05",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-014",
+      "title": "补充单元测试",
+      "description": "为新功能编写TDD测试：ColumnMappingValidator, DataCleaning, CleanRule",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-012", "H-013"],
       "createdAt": "2026-04-05",
       "completedAt": "2026-04-05",
       "assignee": "AI Assistant"
