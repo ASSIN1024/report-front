@@ -5,8 +5,10 @@ import cn.hutool.json.JSONArray;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.report.entity.ReportConfig;
+import com.report.entity.dto.CleanRule;
 import com.report.entity.dto.ColumnMapping;
 import com.report.entity.dto.FieldMapping;
+import com.report.entity.dto.Validators;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -442,6 +444,30 @@ public class ExcelUtil {
                 if (scaleObj != null) {
                     mapping.setScale(Integer.parseInt(scaleObj.toString()));
                 }
+
+                if (item.containsKey("cleanRules") && item.get("cleanRules") != null) {
+                    JSONArray rules = item.getJSONArray("cleanRules");
+                    List<CleanRule> cleanRules = new ArrayList<>();
+                    for (int j = 0; j < rules.size(); j++) {
+                        JSONObject rule = rules.getJSONObject(j);
+                        CleanRule cr = new CleanRule();
+                        cr.setPattern(rule.getStr("pattern"));
+                        cr.setReplace(rule.getStr("replace"));
+                        cleanRules.add(cr);
+                    }
+                    mapping.setCleanRules(cleanRules);
+                }
+
+                if (item.containsKey("validators") && item.get("validators") != null) {
+                    JSONObject validatorsObj = item.getJSONObject("validators");
+                    Validators validators = new Validators();
+                    validators.setRequired(validatorsObj.getBool("required"));
+                    validators.setPositiveOnly(validatorsObj.getBool("positiveOnly"));
+                    validators.setMinValue(validatorsObj.getStr("minValue"));
+                    validators.setMaxValue(validatorsObj.getStr("maxValue"));
+                    mapping.setValidators(validators);
+                }
+
                 result.add(mapping);
             }
         } catch (Exception e) {

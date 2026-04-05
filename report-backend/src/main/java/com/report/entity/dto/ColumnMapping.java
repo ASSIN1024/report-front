@@ -3,6 +3,7 @@ package com.report.entity.dto;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class ColumnMapping implements Serializable {
@@ -18,4 +19,8 @@ public class ColumnMapping implements Serializable {
     private String dateFormat;
 
     private Integer scale;
+
+    private List<CleanRule> cleanRules;
+
+    private Validators validators;
 }
