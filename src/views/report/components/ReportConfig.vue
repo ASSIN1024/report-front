@@ -50,8 +50,11 @@
       <el-card class="box-card" style="margin-top: 20px;">
         <div slot="header">
           <span>列映射配置</span>
+          <div style="float: right;" v-if="!readonly">
+            <el-button type="text" @click="handleAddColumn">+ 添加映射</el-button>
+            <el-button type="text" @click="jsonImportVisible = true">JSON导入</el-button>
+          </div>
         </div>
-        <el-button type="text" @click="handleAddColumn" v-if="!readonly">+ 添加映射</el-button>
         <el-table :data="form.columnMappings" border style="margin-top: 10px;">
           <el-table-column label="Excel列" prop="excelColumn" width="120">
             <template slot-scope="{ row, $index }">
@@ -84,6 +87,13 @@
               <el-input-number v-model="row.scale" :min="0" :max="10" :disabled="readonly" />
             </template>
           </el-table-column>
+          <el-table-column label="清洗规则" width="120" v-if="!readonly">
+            <template slot-scope="{ row, $index }">
+              <el-button type="text" @click="openCleanRules(row, $index)">
+                {{ row.cleanRules && row.cleanRules.length ? `规则 (${row.cleanRules.length})` : '配置规则' }}
+              </el-button>
+            </template>
+          </el-table-column>
           <el-table-column label="操作" width="80" v-if="!readonly">
             <template slot-scope="{ row, $index }">
               <el-button type="text" style="color: #F56C6C" @click="handleDeleteColumn($index)">删除</el-button>
@@ -113,15 +123,32 @@
         </el-form-item>
       </el-card>
     </el-form>
+
+    <CleanRulesDialog
+      :visible.sync="cleanRulesVisible"
+      :current-field="currentColumn"
+      @save="handleCleanRulesSave"
+    />
+
+    <JsonImportDialog
+      v-if="jsonImportVisible"
+      :visible.sync="jsonImportVisible"
+      :report-config-id="form.id"
+      :report-name="form.reportName"
+      @success="handleJsonImportSuccess"
+    />
   </div>
 </template>
 
 <script>
 import { getReportConfigById, saveReportConfig, updateReportConfig, getReportConfigListEnabled } from '@/api/reportConfig'
 import { getFtpConfigListEnabled } from '@/api/ftpConfig'
+import CleanRulesDialog from './CleanRulesDialog.vue'
+import JsonImportDialog from './JsonImportDialog.vue'
 
 export default {
   name: 'ReportConfig',
+  components: { CleanRulesDialog, JsonImportDialog },
   props: {
     id: String
   },
@@ -144,6 +171,10 @@ export default {
         remark: ''
       },
       ftpConfigList: [],
+      cleanRulesVisible: false,
+      currentColumnIndex: null,
+      currentColumn: {},
+      jsonImportVisible: false,
       rules: {
         reportCode: [{ required: true, message: '请输入报表编码', trigger: 'blur' }],
         reportName: [{ required: true, message: '请输入报表名称', trigger: 'blur' }],
@@ -210,6 +241,19 @@ export default {
       } catch (error) {
         console.error('保存失败', error)
       }
+    },
+    openCleanRules(row, index) {
+      this.currentColumnIndex = index
+      this.currentColumn = { ...row }
+      this.cleanRulesVisible = true
+    },
+    handleCleanRulesSave(rules) {
+      if (this.currentColumnIndex !== null) {
+        this.form.columnMappings[this.currentColumnIndex].cleanRules = rules
+      }
+    },
+    handleJsonImportSuccess() {
+      this.loadData()
     }
   }
 }
