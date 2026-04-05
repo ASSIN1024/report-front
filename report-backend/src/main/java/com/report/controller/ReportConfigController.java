@@ -9,6 +9,7 @@ import com.report.entity.dto.ReportConfigDTO;
 import com.report.job.DataProcessJob;
 import com.report.job.FtpScanJob;
 import com.report.service.ReportConfigService;
+import com.report.util.ColumnMappingValidator;
 import com.report.service.TaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,7 +18,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Slf4j
 @RestController
@@ -154,5 +157,54 @@ public class ReportConfigController {
         ftpScanJob.scanReportConfig(id, task.getId());
 
         return Result.success(task.getId());
+    }
+
+    @PostMapping("/{id}/column-mapping/validate")
+    public Result<Map<String, Object>> validateColumnMapping(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> params) {
+
+        String json = params.get("json");
+        List<ColumnMappingValidator.ValidationError> errors =
+                ColumnMappingValidator.validate(json);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("valid", errors.isEmpty());
+        result.put("errors", errors);
+        result.put("count", ColumnMappingValidator.countMappings(json));
+
+        return Result.success(result);
+    }
+
+    @PostMapping("/{id}/column-mapping/import")
+    public Result<Map<String, Object>> importColumnMapping(
+            @PathVariable Long id,
+            @RequestBody Map<String, String> params) {
+
+        ReportConfig config = reportConfigService.getById(id);
+        if (config == null) {
+            return Result.fail("报表配置不存在");
+        }
+
+        String json = params.get("json");
+        List<ColumnMappingValidator.ValidationError> errors =
+                ColumnMappingValidator.validate(json);
+
+        if (!errors.isEmpty()) {
+            Map<String, Object> result = new HashMap<>();
+            result.put("success", false);
+            result.put("errors", errors);
+            result.put("message", "校验失败");
+            return Result.success(result);
+        }
+
+        config.setColumnMapping(json);
+        reportConfigService.updateById(config);
+
+        Map<String, Object> result = new HashMap<>();
+        result.put("success", true);
+        result.put("imported", ColumnMappingValidator.countMappings(json));
+
+        return Result.success(result);
     }
 }
