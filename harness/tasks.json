@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-05T17:00",
+  "lastUpdated": "2026-04-05T21:45",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -144,6 +144,17 @@
       "status": "completed",
       "priority": "high",
       "dependsOn": ["H-012", "H-013"],
+      "createdAt": "2026-04-05",
+      "completedAt": "2026-04-05",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-FTP-INTEGRATION",
+      "title": "内置FTP服务集成",
+      "description": "集成Apache FtpServer实现RPA机器人直接上传Excel文件到本系统",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
       "createdAt": "2026-04-05",
       "completedAt": "2026-04-05",
       "assignee": "AI Assistant"

@@ -2,7 +2,7 @@
 
 > **文档版本**: V1.1
 > **创建日期**: 2026-04-04
-> **最后更新**: 2026-04-05
+> **最后更新**: 2026-04-05T21:45
 
 ---
 
@@ -148,4 +148,68 @@ harness/evaluation/
 **下一步计划**:
 - ✅ 手动功能测试验证新功能 - 后端编译通过，服务重启成功
 - ✅ 代码合并到master并推送 - 已推送到GitHub
+
+---
+
+### 2026-04-05 - 内置FTP服务集成
+
+**会话目标**: 集成Apache FtpServer实现RPA机器人直接上传Excel文件到本系统
+
+**需求背景**:
+- RPA机器人需要将Excel文件上传到专用FTP，不与外部FTP混用
+- 内置FTP作为外部FTP的备份方案，防止外部FTP服务挂掉
+- 少量并发(1-3 RPA)，但文件可能超过200MB
+
+**技术选型**: Apache FtpServer 1.2.0 (纯Java，嵌入式)
+
+**执行任务**:
+| 任务ID | 任务名称 | 状态 | 备注 |
+|--------|----------|------|------|
+| H-FTP-INTEGRATION | 内置FTP服务集成 | ✅ 完成 | 全部完成 |
+
+**实现内容**:
+- Apache FtpServer 1.2.0 依赖添加 (ftpserver-core, ftplet-api, mina-core)
+- BuiltInFtpConfig 实体和Mapper
+- BuiltInFtpConfigService 服务层
+- EmbeddedFtpServer FTP服务核心管理类
+- BuiltInFtpConfigController REST API
+- built_in_ftp_config 数据库表
+- FtpScanJob 扩展支持内置FTP扫描
+- application.yml 内置FTP默认配置
+- TDD测试: 18个新测试全部通过 (总计60个)
+
+**API接口**:
+- `GET /api/built-in-ftp/config` - 获取配置
+- `PUT /api/built-in-ftp/config` - 更新配置
+- `POST /api/built-in-ftp/start` - 启动FTP服务
+- `POST /api/built-in-ftp/stop` - 停止FTP服务
+- `GET /api/built-in-ftp/status` - 获取服务状态
+
+**Git提交**:
+- `5f105d1` - feat(ftp): Add built-in FTP server with Apache FtpServer
+- `a0d0d6e` - test(ftp): Add TDD tests for built-in FTP components
+
+**关键决策**:
+1. 使用Apache FtpServer 1.2.0 (vsftpd不适用嵌入式场景)
+2. 明文存储密码 (内网使用，风险可控)
+3. 内置FTP与外部FTP共存，分别服务不同场景
+4. 被动模式支持 (pasiveMode)
+5. 端口使用2021 (避免与21端口冲突)
+
+**文档输出**:
+- 设计文档: docs/superpowers/specs/2026-04-05-ftp-integration-design.md
+- 实施计划: docs/superpowers/plans/2026-04-05-ftp-integration-implementation.md
+
+**Harness上下文同步检查**:
+- ✅ tasks.json 任务状态已更新
+- ✅ progress-notes.md 会话记录已追加
+- ✅ API.md 接口文档 (本次为内部REST API，无需单独API.md)
+- ✅ 设计/计划文档已更新
+- ✅ Git 已提交并推送
+
+**下一步计划**:
+- ✅ 功能开发完成
+- ✅ TDD测试验证 - 60个测试全部通过
+- ✅ 代码合并到master - 已推送到GitHub
+- ✅ Harness上下文同步 - 本次更新完成
 
