@@ -1,8 +1,8 @@
 # AGENTS.md - AI Agent 知识地图
 
-> **文档版本**: V1.0
+> **文档版本**: V1.1
 > **创建日期**: 2026-04-04
-> **最后更新**: 2026-04-04
+> **最后更新**: 2026-04-05
 > **维护人**: AI Assistant
 
 ---
@@ -30,11 +30,16 @@
 ```
 report-front/
 ├── harness/                    # Harness Engineering 状态管理
+│   ├── docs/                  # 项目文档
+│   │   └── project-context.md # 项目上下文（核心）
 │   ├── tasks.json             # 结构化任务清单（单一事实来源）
 │   ├── progress-notes.md       # 进度记录
 │   ├── session-history/        # 会话历史归档
 │   ├── templates/              # 文档模板
 │   └── guides/                 # 操作指南
+│       ├── startup-script-guide.md    # 启动脚本指南
+│       ├── quick-start.md            # 快速开始
+│       └── documentation-sync-guide.md # 文档同步管理
 ├── scripts/
 │   └── start.sh               # 前后端启动脚本
 ├── docs/
@@ -181,7 +186,8 @@ report-front/
 | 情况 | 参考文档 |
 |------|----------|
 | 服务启动/停止 | [启动脚本指南](file:///home/nova/projects/report-front/harness/guides/startup-script-guide.md) |
-| 业务逻辑问题 | CLAUDE.md, docs/superpowers/specs/ |
+| 项目上下文 | [project-context.md](file:///home/nova/projects/report-front/harness/docs/project-context.md) |
+| 快速开始 | [quick-start.md](file:///home/nova/projects/report-front/harness/guides/quick-start.md) |
 | API问题 | API.md |
 | 数据库问题 | schema.sql |
 | 部署问题 | docs/superpowers/plans/ |
@@ -193,3 +199,4 @@ report-front/
 | 日期 | 版本 | 变更内容 | 责任人 |
 |------|------|----------|--------|
 | 2026-04-04 | V1.0 | 初始创建AGENTS.md知识地图 | AI Assistant |
+| 2026-04-05 | V1.1 | [优化] 更新harness目录结构，移除CLAUDE.md引用 | AI Assistant |

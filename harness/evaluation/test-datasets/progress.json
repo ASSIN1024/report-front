@@ -1,0 +1,167 @@
+{
+  "dimension": "progress",
+  "description": "开发进度测试集 - 里程碑、已完成功能、待办任务",
+  "totalCount": 12,
+  "testCases": [
+    {
+      "id": "PROG-001",
+      "category": "milestone",
+      "question": "Phase 6的里程碑是什么？",
+      "expectedAnswer": "系统集成测试",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["系统集成测试", "集成测试"]
+      }
+    },
+    {
+      "id": "PROG-002",
+      "category": "milestone",
+      "question": "哪些Phase已经完成？",
+      "expectedAnswer": "Phase 1-6 已完成",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["Phase 1", "Phase 2", "Phase 3", "Phase 4", "Phase 5", "Phase 6"]
+      }
+    },
+    {
+      "id": "PROG-003",
+      "category": "feature",
+      "question": "已完成哪些后端模块？",
+      "expectedAnswer": "项目结构、统一返回结果、异常处理、配置类、枚举类、数据库脚本、实体类、DTO类、Mapper、FTP配置、报表配置、Excel工具类、任务管理、日志管理、Druid、Quartz",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.8,
+        "keywords": ["项目结构", "FTP", "报表配置", "任务管理", "日志管理"]
+      }
+    },
+    {
+      "id": "PROG-004",
+      "category": "feature",
+      "question": "已完成哪些前端模块？",
+      "expectedAnswer": "项目结构、路由配置、状态管理、工具类、公共组件、样式文件、API接口、FTP配置页面、报表列表、报表配置、任务监控、日志列表",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.8,
+        "keywords": ["项目结构", "路由", "API", "FTP配置", "报表"]
+      }
+    },
+    {
+      "id": "PROG-005",
+      "category": "feature",
+      "question": "核心处理器包含哪些组件？",
+      "expectedAnswer": "FtpScanJob、DataProcessJob、FtpUtil扩展方法、ExcelUtil扩展方法",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["FtpScanJob", "DataProcessJob"]
+      }
+    },
+    {
+      "id": "PROG-006",
+      "category": "feature",
+      "question": "日志系统包含哪些功能？",
+      "expectedAnswer": "操作日志实体、服务、切面、注解、控制器、文件日志配置、日志工具类、日志文件服务、前端页面",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.7,
+        "keywords": ["操作日志", "文件日志", "LogUtil"]
+      }
+    },
+    {
+      "id": "PROG-007",
+      "category": "feature",
+      "question": "自动建表机制使用什么方案？",
+      "expectedAnswer": "TableCreatorService",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "hard",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["TableCreatorService"]
+      }
+    },
+    {
+      "id": "PROG-008",
+      "category": "feature",
+      "question": "去重机制使用什么方案？",
+      "expectedAnswer": "数据库追踪方案 (processed_file表)",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "hard",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["processed_file", "数据库"]
+      }
+    },
+    {
+      "id": "PROG-009",
+      "category": "todo",
+      "question": "待完成的功能有哪些？",
+      "expectedAnswer": "数据查询接口优化、文件上传功能、系统配置接口、生产环境部署准备",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.6,
+        "keywords": ["数据查询", "文件上传", "系统配置", "部署"]
+      }
+    },
+    {
+      "id": "PROG-010",
+      "category": "milestone",
+      "question": "当前项目处于哪个Phase？",
+      "expectedAnswer": "Phase 6 已完成，Phase 7 待开始",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["Phase 6"]
+      }
+    },
+    {
+      "id": "PROG-011",
+      "category": "feature",
+      "question": "FTP文件去重机制是什么时候添加的？",
+      "expectedAnswer": "2026-04-03",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["2026-04-03", "04-03"]
+      }
+    },
+    {
+      "id": "PROG-012",
+      "category": "feature",
+      "question": "E2E测试有多少个测试点？",
+      "expectedAnswer": "22个测试点全部通过",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["22"]
+      }
+    }
+  ]
+}

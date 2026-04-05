@@ -1,0 +1,202 @@
+{
+  "dimension": "architecture",
+  "description": "架构信息测试集 - 技术栈、代码组织、命名规范、架构约束",
+  "totalCount": 15,
+  "testCases": [
+    {
+      "id": "ARCH-001",
+      "category": "tech-stack",
+      "question": "后端使用的JDK版本是什么？",
+      "expectedAnswer": "JDK 1.8",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["JDK", "1.8", "Java 8"]
+      }
+    },
+    {
+      "id": "ARCH-002",
+      "category": "tech-stack",
+      "question": "前端使用的UI框架是什么？",
+      "expectedAnswer": "Element UI 2",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["Element", "UI"]
+      }
+    },
+    {
+      "id": "ARCH-003",
+      "category": "code-org",
+      "question": "Controller层应该只做什么？",
+      "expectedAnswer": "参数校验和响应封装",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "application",
+      "evaluation": {
+        "scoring": "concept-match",
+        "criteria": ["参数校验", "响应封装"]
+      }
+    },
+    {
+      "id": "ARCH-004",
+      "category": "naming",
+      "question": "Job类的命名规范是什么？",
+      "expectedAnswer": "XxxJob",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "exact-match",
+        "pattern": "XxxJob"
+      }
+    },
+    {
+      "id": "ARCH-005",
+      "category": "naming",
+      "question": "Service接口的命名规范是什么？",
+      "expectedAnswer": "XxxService",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "exact-match",
+        "pattern": "XxxService"
+      }
+    },
+    {
+      "id": "ARCH-006",
+      "category": "architecture",
+      "question": "业务逻辑应该放在哪一层？",
+      "expectedAnswer": "Service层",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "application",
+      "evaluation": {
+        "scoring": "concept-match",
+        "criteria": ["Service", "服务层"]
+      }
+    },
+    {
+      "id": "ARCH-007",
+      "category": "constraints",
+      "question": "数据库操作在哪一层？",
+      "expectedAnswer": "Mapper层",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "application",
+      "evaluation": {
+        "scoring": "concept-match",
+        "criteria": ["Mapper", "数据访问层"]
+      }
+    },
+    {
+      "id": "ARCH-008",
+      "category": "tech-stack",
+      "question": "后端使用什么ORM框架？",
+      "expectedAnswer": "MyBatis-Plus 3.x",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["MyBatis-Plus", "MyBatis"]
+      }
+    },
+    {
+      "id": "ARCH-009",
+      "category": "tech-stack",
+      "question": "前端状态管理方案是什么？",
+      "expectedAnswer": "Vuex 3",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["Vuex"]
+      }
+    },
+    {
+      "id": "ARCH-010",
+      "category": "tech-stack",
+      "question": "使用什么数据库连接池？",
+      "expectedAnswer": "Druid",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["Druid"]
+      }
+    },
+    {
+      "id": "ARCH-011",
+      "category": "tech-stack",
+      "question": "定时任务使用什么方案？",
+      "expectedAnswer": "Quartz",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["Quartz"]
+      }
+    },
+    {
+      "id": "ARCH-012",
+      "category": "code-org",
+      "question": "工具类应该放在哪个包？",
+      "expectedAnswer": "util包",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["util"]
+      }
+    },
+    {
+      "id": "ARCH-013",
+      "category": "naming",
+      "question": "Mapper接口的命名规范是什么？",
+      "expectedAnswer": "XxxMapper",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "exact-match",
+        "pattern": "XxxMapper"
+      }
+    },
+    {
+      "id": "ARCH-014",
+      "category": "naming",
+      "question": "Entity实体的命名规范是什么？",
+      "expectedAnswer": "Xxx (无后缀)",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "pattern-match",
+        "pattern": "^Xxx$"
+      }
+    },
+    {
+      "id": "ARCH-015",
+      "category": "tech-stack",
+      "question": "后端和前端分别使用什么端口？",
+      "expectedAnswer": "后端8082，前端8083",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["8082", "8083"]
+      }
+    }
+  ]
+}

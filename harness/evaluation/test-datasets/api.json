@@ -1,0 +1,138 @@
+{
+  "dimension": "api",
+  "description": "接口信息测试集 - 接口路径、请求格式、数据结构",
+  "totalCount": 10,
+  "testCases": [
+    {
+      "id": "API-001",
+      "category": "endpoint",
+      "question": "FTP配置列表的接口路径是什么？",
+      "expectedAnswer": "GET /api/ftp-config/list",
+      "source": "API.md",
+      "difficulty": "medium",
+      "type": "integration",
+      "evaluation": {
+        "scoring": "path-match",
+        "required": ["ftp-config", "list"]
+      }
+    },
+    {
+      "id": "API-002",
+      "category": "format",
+      "question": "统一返回结果的结构是什么？",
+      "expectedAnswer": "Result类包含code, message, data字段",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["code", "message", "data"]
+      }
+    },
+    {
+      "id": "API-003",
+      "category": "format",
+      "question": "分页查询的参数有哪些？",
+      "expectedAnswer": "page, pageSize",
+      "source": "API.md",
+      "difficulty": "hard",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["page", "pageSize"]
+      }
+    },
+    {
+      "id": "API-004",
+      "category": "endpoint",
+      "question": "报表配置管理的接口有哪些？",
+      "expectedAnswer": "list, get, create, update, delete",
+      "source": "API.md",
+      "difficulty": "hard",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.6,
+        "keywords": ["list", "get", "create", "update", "delete"]
+      }
+    },
+    {
+      "id": "API-005",
+      "category": "format",
+      "question": "任务查询DTO包含哪些字段？",
+      "expectedAnswer": "TaskQueryDTO",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "hard",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["TaskQueryDTO"]
+      }
+    },
+    {
+      "id": "API-006",
+      "category": "endpoint",
+      "question": "手动触发任务的端点是什么？",
+      "expectedAnswer": "POST /api/task/trigger",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "medium",
+      "type": "integration",
+      "evaluation": {
+        "scoring": "path-match",
+        "required": ["task", "trigger"]
+      }
+    },
+    {
+      "id": "API-007",
+      "category": "format",
+      "question": "ColumnMapping的数据结构是什么？",
+      "expectedAnswer": "JSON格式的列映射配置",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "hard",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["ColumnMapping", "column"]
+      }
+    },
+    {
+      "id": "API-008",
+      "category": "endpoint",
+      "question": "日志查询接口的路径是什么？",
+      "expectedAnswer": "GET /api/log/list",
+      "source": "API.md",
+      "difficulty": "medium",
+      "type": "integration",
+      "evaluation": {
+        "scoring": "path-match",
+        "required": ["log", "list"]
+      }
+    },
+    {
+      "id": "API-009",
+      "category": "format",
+      "question": "ErrorCode枚举包含哪些错误码？",
+      "expectedAnswer": "ErrorCode枚举定义",
+      "source": "harness/docs/project-context.md",
+      "difficulty": "hard",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["ErrorCode"]
+      }
+    },
+    {
+      "id": "API-010",
+      "category": "endpoint",
+      "question": "数据查询接口的路径是什么？",
+      "expectedAnswer": "GET /api/data/query",
+      "source": "API.md",
+      "difficulty": "medium",
+      "type": "integration",
+      "evaluation": {
+        "scoring": "path-match",
+        "required": ["data", "query"]
+      }
+    }
+  ]
+}
