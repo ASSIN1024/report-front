@@ -3,6 +3,7 @@ package com.report.entity.dto;
 import lombok.Data;
 
 import java.io.Serializable;
+import java.util.List;
 
 @Data
 public class FieldMapping implements Serializable {
@@ -26,4 +27,8 @@ public class FieldMapping implements Serializable {
     private String transformType;
 
     private String transformRule;
+
+    private List<CleanRule> cleanRules;
+
+    private Validators validators;
 }
