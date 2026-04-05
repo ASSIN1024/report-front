@@ -6,6 +6,7 @@ import com.report.common.constant.FieldTypeEnum;
 import com.report.entity.ReportConfig;
 import com.report.entity.TaskExecution;
 import com.report.entity.dto.ColumnMapping;
+import com.report.entity.dto.CleanRule;
 import com.report.entity.dto.FieldMapping;
 import com.report.mapper.TaskExecutionMapper;
 import com.report.service.LogService;
@@ -141,7 +142,7 @@ public class DataProcessJob {
 
                 for (FieldMapping mapping : columnMappings) {
                     Object value = row.get(mapping.getFieldName());
-                    value = convertValue(value, mapping.getFieldType(), mapping.getDateFormat());
+                    value = convertValue(value, mapping.getFieldType(), mapping.getDateFormat(), mapping.getCleanRules());
                     values.add(value);
                 }
 
@@ -156,7 +157,7 @@ public class DataProcessJob {
         return successCount;
     }
 
-    private Object convertValue(Object value, String fieldType, String dateFormat) {
+    private Object convertValue(Object value, String fieldType, String dateFormat, List<CleanRule> cleanRules) {
         if (value == null) {
             return null;
         }
@@ -166,6 +167,19 @@ public class DataProcessJob {
         }
 
         String strValue = String.valueOf(value).trim();
+
+        if (cleanRules != null && !cleanRules.isEmpty()) {
+            for (CleanRule rule : cleanRules) {
+                if (rule.getPattern() != null && strValue.equals(rule.getPattern())) {
+                    strValue = rule.getReplace() != null ? rule.getReplace() : "";
+                    value = strValue;
+                }
+            }
+        }
+
+        if (StrUtil.isBlank(strValue)) {
+            return null;
+        }
 
         try {
             switch (fieldType) {
