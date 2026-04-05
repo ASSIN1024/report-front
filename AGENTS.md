@@ -110,9 +110,32 @@ report-front/
 3. 检查代码规范
 
 ### 6. Record（记录）
-1. 更新 progress-notes.md
-2. 更新任务状态为 `completed`
-3. 提交 Git
+
+**自动文档同步（每次变更必须执行）**:
+1. 更新 `harness/tasks.json` 任务状态
+2. 更新 `harness/progress-notes.md` 会话记录
+3. 更新 `API.md` 接口文档（如有新增或修改API）
+4. 更新 `docs/superpowers/specs/` 或 `docs/superpowers/plans/` 设计/计划文档
+5. 提交 Git
+
+**自动同步检查清单**:
+- [ ] tasks.json 任务状态已更新
+- [ ] progress-notes.md 会话记录已追加
+- [ ] API.md 接口文档已同步（如有变更）
+- [ ] 设计/计划文档已更新（如有新文档）
+- [ ] Git 已提交
+
+### 7. Sync（同步）
+
+**文档同步自动化要求**:
+每次代码变更后，必须通过 `scripts/sync-docs.sh` 脚本自动同步文档，或手动完成以下同步：
+
+1. **API接口变更** → 同步到 `API.md`
+2. **新增页面组件** → 记录到对应模块文档
+3. **数据库Schema变更** → 更新 `schema.sql`
+4. **新增任务** → 更新 `harness/tasks.json`
+
+**脚本位置**: `scripts/sync-docs.sh`（如存在）
 
 ---
 

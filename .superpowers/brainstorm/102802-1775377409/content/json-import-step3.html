@@ -1,0 +1,79 @@
+<h2>JSON导入向导 - 步骤3</h2>
+<p class="subtitle">导入确认与结果反馈</p>
+
+<div class="mockup">
+  <div class="mockup-header">步骤 3/3 - 确认导入</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="background: #e6f7ff; border: 1px solid #91d5ff; padding: 15px; border-radius: 4px; margin-bottom: 15px;">
+      <h4 style="margin: 0 0 10px 0;">导入确认</h4>
+      <p style="margin: 0; font-size: 13px;">即将导入以下配置到报表: <strong>销售报表 (RPT_001)</strong></p>
+      <ul style="margin: 10px 0 0 0; padding-left: 20px; font-size: 12px;">
+        <li>共 <strong>25</strong> 个列映射</li>
+        <li>其中 <strong>8</strong> 个配置了清洗规则</li>
+        <li>将覆盖现有的全部列映射配置</li>
+      </ul>
+    </div>
+
+    <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+      <div style="flex: 1; background: #fafafa; padding: 15px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 28px; color: #1890ff; font-weight: bold;">25</div>
+        <div style="font-size: 12px; color: #666;">列映射</div>
+      </div>
+      <div style="flex: 1; background: #fafafa; padding: 15px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 28px; color: #52c41a; font-weight: bold;">8</div>
+        <div style="font-size: 12px; color: #666;">清洗规则</div>
+      </div>
+      <div style="flex: 1; background: #fafafa; padding: 15px; border-radius: 4px; text-align: center;">
+        <div style="font-size: 28px; color: #722ed1; font-weight: bold;">2</div>
+        <div style="font-size: 12px; color: #666;">日期字段</div>
+      </div>
+    </div>
+
+    <div style="border: 1px solid #ffd591; background: #fffbe6; padding: 10px; border-radius: 4px; font-size: 12px; margin-bottom: 15px;">
+      ⚠️ <strong>注意:</strong> 此操作将替换现有的列映射配置，请确认后再继续
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+      <button class="mock-button">← 上一步</button>
+      <button class="mock-button" style="background: #52c41a; color: white;">确认导入</button>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 20px;">
+  <h3>导入结果反馈</h3>
+  <div class="split">
+    <div class="mockup">
+      <div class="mockup-header">✓ 导入成功</div>
+      <div class="mockup-body" style="padding: 15px;">
+        <div style="text-align: center;">
+          <div style="font-size: 48px; color: #52c41a;">✓</div>
+          <h3 style="margin: 10px 0;">导入成功</h3>
+          <p style="font-size: 12px; color: #666;">25 个列映射配置已成功保存</p>
+        </div>
+        <div style="margin-top: 15px; padding: 10px; background: #fafafa; border-radius: 4px; font-size: 12px;">
+          <div style="display: flex; justify-content: space-between;">
+            <span>清洗规则:</span><span style="color: #52c41a;">8 个已应用</span>
+          </div>
+          <div style="display: flex; justify-content: space-between;">
+            <span>预览验证:</span><span style="color: #52c41a;">通过</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockup">
+      <div class="mockup-header">✗ 导入失败</div>
+      <div class="mockup-body" style="padding: 15px;">
+        <div style="text-align: center;">
+          <div style="font-size: 48px; color: #ff4d4f;">✗</div>
+          <h3 style="margin: 10px 0;">导入失败</h3>
+          <p style="font-size: 12px; color: #666;">第18行数据类型不匹配</p>
+        </div>
+        <div style="margin-top: 15px; padding: 10px; background: #fff2f0; border-radius: 4px; font-size: 12px;">
+          <strong>错误详情:</strong><br>
+          字段 "invalid_date" 的类型 "DATETIME" 无法转换为数据库列类型
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

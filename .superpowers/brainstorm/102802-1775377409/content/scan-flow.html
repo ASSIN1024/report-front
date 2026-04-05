@@ -1,0 +1,147 @@
+<h2>立即扫描流程</h2>
+<p class="subtitle">手动触发FTP扫描，测试报表配置</p>
+
+<div class="mockup">
+  <div class="mockup-header">报表配置列表页</div>
+  <div class="mockup-body" style="padding: 15px;">
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+      <button class="mock-button" style="background: #1890ff; color: white;">+ 新增</button>
+      <button class="mock-button" style="background: #52c41a; color: white;">立即扫描</button>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+      <tr style="background: #f0f0f0;">
+        <th style="padding: 8px; border: 1px solid #ddd;"></th>
+        <th style="padding: 8px; border: 1px solid #ddd;">报表编码</th>
+        <th style="padding: 8px; border: 1px solid #ddd;">报表名称</th>
+        <th style="padding: 8px; border: 1px solid #ddd;">FTP配置</th>
+        <th style="padding: 8px; border: 1px solid #ddd;">状态</th>
+      </tr>
+      <tr>
+        <td style="padding: 6px; border: 1px solid #ddd;"><input type="radio" name="rpt" checked></td>
+        <td style="padding: 6px; border: 1px solid #ddd;">RPT_001</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">销售报表</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">测试FTP</td>
+        <td style="padding: 6px; border: 1px solid #ddd;"><span style="color: #52c41a;">● 启用</span></td>
+      </tr>
+      <tr style="background: #fafafa;">
+        <td style="padding: 6px; border: 1px solid #ddd;"><input type="radio" name="rpt"></td>
+        <td style="padding: 6px; border: 1px solid #ddd;">RPT_002</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">库存报表</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">测试FTP</td>
+        <td style="padding: 6px; border: 1px solid #ddd;"><span style="color: #52c41a;">● 启用</span></td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div style="text-align: center; margin: 15px 0; font-size: 20px;">↓</div>
+
+<div class="mockup">
+  <div class="mockup-header">确认弹窗</div>
+  <div class="mockup-body" style="padding: 20px; text-align: center;">
+    <div style="font-size: 48px; margin-bottom: 15px;">📡</div>
+    <h3 style="margin: 0 0 10px 0;">确认立即扫描</h3>
+    <p style="margin: 0; color: #666; font-size: 13px;">
+      确定要立即扫描 <strong>RPT_001 (销售报表)</strong> 的FTP目录吗？<br>
+      请确保测试文件已放置到FTP服务器的指定目录。
+    </p>
+    <div style="background: #fafafa; padding: 10px; border-radius: 4px; margin: 15px 0; font-size: 12px; text-align: left;">
+      <strong>扫描信息:</strong>
+      <ul style="margin: 5px 0 0 0; padding-left: 20px;">
+        <li>FTP服务器: localhost:21</li>
+        <li>扫描路径: /</li>
+        <li>文件匹配: *.xlsx</li>
+      </ul>
+    </div>
+    <div style="display: flex; gap: 10px; justify-content: center;">
+      <button class="mock-button">取消</button>
+      <button class="mock-button" style="background: #52c41a; color: white;">确认扫描</button>
+    </div>
+  </div>
+</div>
+
+<div style="text-align: center; margin: 15px 0; font-size: 20px;">↓</div>
+
+<div class="mockup">
+  <div class="mockup-header">任务监控 - 扫描结果</div>
+  <div class="mockup-body" style="padding: 15px;">
+    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+      <div style="width: 30px; height: 30px; background: #1890ff; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white;">i</div>
+      <div>
+        <h4 style="margin: 0;">扫描完成</h4>
+        <p style="margin: 0; font-size: 12px; color: #666;">2024-01-05 15:30:25</p>
+      </div>
+    </div>
+
+    <div style="background: #fff7e6; border: 1px solid #ffd591; padding: 12px; border-radius: 4px; margin-bottom: 15px;">
+      <strong style="color: #fa8c16;">⚠️ 未匹配到文件</strong>
+      <p style="margin: 5px 0 0 0; font-size: 12px;">
+        FTP目录中没有匹配 "*.xlsx" 的文件<br>
+        请确认测试文件已放置到FTP目录
+      </p>
+    </div>
+
+    <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+      <tr style="background: #f0f0f0;">
+        <th style="padding: 8px; border: 1px solid #ddd;">任务名称</th>
+        <th style="padding: 8px; border: 1px solid #ddd;">报表</th>
+        <th style="padding: 8px; border: 1px solid #ddd;">状态</th>
+        <th style="padding: 8px; border: 1px solid #ddd;">时间</th>
+      </tr>
+      <tr>
+        <td style="padding: 6px; border: 1px solid #ddd;">FTP扫描-销售报表</td>
+        <td style="padding: 6px; border: 1px solid #ddd;">RPT_001</td>
+        <td style="padding: 6px; border: 1px solid #ddd;"><span style="color: #fa8c16;">⚠️ 无文件</span></td>
+        <td style="padding: 6px; border: 1px solid #ddd;">15:30:25</td>
+      </tr>
+    </table>
+
+    <div style="margin-top: 15px; display: flex; gap: 10px;">
+      <button class="mock-button">查看详情</button>
+      <button class="mock-button" style="background: #52c41a; color: white;">再次扫描</button>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 20px;">
+  <h3>扫描结果状态</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-body">
+        <h3>✓ 成功</h3>
+        <p>找到并处理了 N 个文件，任务状态显示为成功</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h3>⚠️ 无文件</h3>
+        <p>FTP目录中没有匹配的文件，提示用户放置文件</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h3>✗ 失败</h3>
+        <p>FTP连接失败或处理出错，显示错误详情</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="label">设计确认</p>
+<div class="options">
+  <div class="option" data-choice="approve" onclick="toggleSelect(this)">
+    <div class="letter">✓</div>
+    <div class="content">
+      <h3>确认全部设计</h3>
+      <p>开始编写设计文档</p>
+    </div>
+  </div>
+  <div class="option" data-choice="revise" onclick="toggleSelect(this)">
+    <div class="letter">✗</div>
+    <div class="content">
+      <h3>需要修改</h3>
+      <p>请描述需要调整的内容</p>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,65 @@
+<h2>JSON导入向导</h2>
+<p class="subtitle">批量导入列映射配置，支持100+列批量导入</p>
+
+<div class="mockup">
+  <div class="mockup-header">步骤 1/3 - 输入JSON</div>
+  <div class="mockup-body" style="padding: 20px;">
+    <div style="margin-bottom: 15px;">
+      <h4 style="margin: 0 0 8px 0;">粘贴JSON配置</h4>
+      <p class="subtitle" style="margin: 0;">支持完整的列映射配置，包括清洗规则</p>
+    </div>
+
+    <textarea class="mock-input" style="width: 100%; height: 250px; font-family: monospace; font-size: 12px;" placeholder="[
+  {
+    &quot;excelColumn&quot;: &quot;A&quot;,
+    &quot;fieldName&quot;: &quot;amount&quot;,
+    &quot;fieldType&quot;: &quot;DECIMAL&quot;,
+    &quot;cleanRules&quot;: [{&quot;pattern&quot;: &quot;-&quot;, &quot;replace&quot;: &quot;0&quot;}]
+  },
+  ...
+]"></textarea>
+
+    <div style="background: #fff7e6; border: 1px solid #ffd591; padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 12px;">
+      <strong style="color: #fa8c16;">💡 提示</strong>
+      <ul style="margin: 5px 0 0 0; padding-left: 20px;">
+        <li>支持批量导入超过100列的配置</li>
+        <li>JSON格式需符合列映射数据结构</li>
+        <li>清洗规则为可选项，可省略</li>
+      </ul>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+      <button class="mock-button">取消</button>
+      <button class="mock-button" style="background: #1890ff; color: white;">下一步 → 预览</button>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 20px;">
+  <h3>JSON导入流程</h3>
+  <div style="display: flex; gap: 15px;">
+    <div class="card" style="flex: 1;">
+      <div class="card-body" style="text-align: center;">
+        <div style="background: #1890ff; color: white; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">1</div>
+        <h4>输入JSON</h4>
+        <p style="font-size: 12px; color: #666;">粘贴或输入JSON配置</p>
+      </div>
+    </div>
+    <div class="card" style="flex: 1;">
+      <div class="card-body" style="text-align: center;">
+        <div style="background: #d9d9d9; color: #666; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">2</div>
+        <h4>格式校验</h4>
+        <p style="font-size: 12px; color: #666;">自动验证JSON语法和结构</p>
+      </div>
+    </div>
+    <div class="card" style="flex: 1;">
+      <div class="card-body" style="text-align: center;">
+        <div style="background: #d9d9d9; color: #666; width: 30px; height: 30px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 10px;">3</div>
+        <h4>预览确认</h4>
+        <p style="font-size: 12px; color: #666;">查看解析后的配置预览</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="label">继续查看步骤2设计</p>

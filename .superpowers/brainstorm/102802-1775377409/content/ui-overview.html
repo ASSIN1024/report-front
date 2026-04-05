@@ -1,0 +1,94 @@
+<h2>报表配置页面 - 功能设计概览</h2>
+<p class="subtitle">三个新功能的界面集成设计</p>
+
+<div class="mockup">
+  <div class="mockup-header">报表配置页面 - 完整布局</div>
+  <div class="mockup-body">
+    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+      <button class="mock-button" style="background: #1890ff; color: white;">新增配置</button>
+      <button class="mock-button">导入JSON</button>
+      <button class="mock-button" style="background: #52c41a; color: white;">立即扫描</button>
+    </div>
+
+    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px; background: #fafafa;">
+      <h4 style="margin: 0 0 10px 0;">配置表单区域</h4>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <div class="mock-input" style="width: 100%;">报表编码: RPT_001</div>
+        <div class="mock-input" style="width: 100%;">报表名称: 销售报表</div>
+        <div class="mock-input" style="width: 100%;">FTP配置: 测试服务器 ▼</div>
+        <div class="mock-input" style="width: 100%;">文件模式: *.xlsx</div>
+        <div class="mock-input" style="width: 100%;">输出表: rpt_sales</div>
+        <div class="mock-input" style="width: 100%;">输出模式: APPEND ▼</div>
+      </div>
+    </div>
+
+    <div style="border: 1px solid #ddd; padding: 15px; margin-bottom: 15px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+        <h4 style="margin: 0;">列映射配置</h4>
+        <div style="display: flex; gap: 5px;">
+          <button class="mock-button" style="font-size: 11px; padding: 4px 8px;">+ 添加列</button>
+          <button class="mock-button" style="font-size: 11px; padding: 4px 8px;">JSON导入</button>
+          <button class="mock-button" style="font-size: 11px; padding: 4px 8px;">JSON导出</button>
+        </div>
+      </div>
+      <table style="width: 100%; border-collapse: collapse; font-size: 12px;">
+        <tr style="background: #f0f0f0;">
+          <th style="padding: 8px; border: 1px solid #ddd;">Excel列</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">字段名</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">字段类型</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">清洗规则</th>
+          <th style="padding: 8px; border: 1px solid #ddd;">操作</th>
+        </tr>
+        <tr>
+          <td style="padding: 6px; border: 1px solid #ddd;">A</td>
+          <td style="padding: 6px; border: 1px solid #ddd;">amount</td>
+          <td style="padding: 6px; border: 1px solid #ddd;">DECIMAL ▼</td>
+          <td style="padding: 6px; border: 1px solid #ddd; color: #1890ff; cursor: pointer;">配置规则 (2条)</td>
+          <td style="padding: 6px; border: 1px solid #ddd;"><span style="color: #ff4d4f;">删除</span></td>
+        </tr>
+        <tr style="background: #fafafa;">
+          <td style="padding: 6px; border: 1px solid #ddd;">B</td>
+          <td style="padding: 6px; border: 1px solid #ddd;">create_date</td>
+          <td style="padding: 6px; border: 1px solid #ddd;">DATE ▼</td>
+          <td style="padding: 6px; border: 1px solid #ddd; color: #52c41a;">无</td>
+          <td style="padding: 6px; border: 1px solid #ddd;"><span style="color: #ff4d4f;">删除</span></td>
+        </tr>
+        <tr>
+          <td style="padding: 6px; border: 1px solid #ddd;">+</td>
+          <td colspan="4" style="padding: 6px; border: 1px solid #ddd; color: #999;">添加新列映射...</td>
+        </tr>
+      </table>
+    </div>
+
+    <div style="display: flex; gap: 10px; justify-content: flex-end;">
+      <button class="mock-button">取消</button>
+      <button class="mock-button" style="background: #1890ff; color: white;">保存配置</button>
+    </div>
+  </div>
+</div>
+
+<div class="section" style="margin-top: 20px;">
+  <h3>功能区域说明</h3>
+  <div class="cards">
+    <div class="card">
+      <div class="card-body">
+        <h3>1. 立即扫描按钮</h3>
+        <p>在配置列表页顶部，点击后弹出确认框，提示"将扫描FTP目录处理匹配文件，是否继续？"</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h3>2. 清洗规则配置</h3>
+        <p>点击"配置规则"弹出清洗规则编辑弹窗，支持添加多条替换规则</p>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-body">
+        <h3>3. JSON导入功能</h3>
+        <p>点击"JSON导入"弹出导入向导，支持粘贴JSON、预览、确认导入</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<p class="label" style="margin-top: 20px;">点击选择查看详细设计</p>
