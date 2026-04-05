@@ -1,0 +1,206 @@
+{
+  "dimension": "conventions",
+  "description": "交互规范测试集 - Git规范、代码审查、文档同步、操作规则",
+  "totalCount": 15,
+  "testCases": [
+    {
+      "id": "CONF-001",
+      "category": "git",
+      "question": "Git提交信息的格式是什么？",
+      "expectedAnswer": "<type>(<scope>): <description>",
+      "source": "AGENTS.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "pattern-match",
+        "pattern": "<type>"
+      }
+    },
+    {
+      "id": "CONF-002",
+      "category": "git",
+      "question": "Type类型有哪些？",
+      "expectedAnswer": "feat, fix, docs, refactor, test, chore",
+      "source": "AGENTS.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["feat", "fix", "docs"]
+      }
+    },
+    {
+      "id": "CONF-003",
+      "category": "task",
+      "question": "任务状态转换的顺序是什么？",
+      "expectedAnswer": "pending → in_progress → completed",
+      "source": "harness/tasks.json",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "pattern-match",
+        "pattern": "pending.*in_progress.*completed"
+      }
+    },
+    {
+      "id": "CONF-004",
+      "category": "task",
+      "question": "任务ID的前缀是什么？",
+      "expectedAnswer": "H-",
+      "source": "harness/tasks.json",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "exact-match",
+        "pattern": "H-"
+      }
+    },
+    {
+      "id": "CONF-005",
+      "category": "task",
+      "question": "tasks.json的操作规则是什么？",
+      "expectedAnswer": "不可删除、不可重排序、只追加",
+      "source": "harness/tasks.json",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["不可删除", "不删除"]
+      }
+    },
+    {
+      "id": "CONF-006",
+      "category": "doc",
+      "question": "文档更新应在多少小时内完成？",
+      "expectedAnswer": "24小时内",
+      "source": "harness/guides/documentation-sync-guide.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["24"]
+      }
+    },
+    {
+      "id": "CONF-007",
+      "category": "doc",
+      "question": "变更记录需要包含哪些字段？",
+      "expectedAnswer": "日期、版本、变更内容、责任人、关联任务ID",
+      "source": "harness/guides/documentation-sync-guide.md",
+      "difficulty": "medium",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.8,
+        "keywords": ["日期", "版本", "变更内容", "责任人"]
+      }
+    },
+    {
+      "id": "CONF-008",
+      "category": "review",
+      "question": "代码审查清单包含哪些项目？",
+      "expectedAnswer": "命名约定、异常处理、日志记录、无硬编码、SQL注入防护、并发安全",
+      "source": "AGENTS.md",
+      "difficulty": "medium",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.7,
+        "keywords": ["命名", "异常", "日志", "硬编码"]
+      }
+    },
+    {
+      "id": "CONF-009",
+      "category": "test",
+      "question": "测试要求有哪些？",
+      "expectedAnswer": "新功能有测试、修改后回归测试、API接口测试通过",
+      "source": "AGENTS.md",
+      "difficulty": "medium",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.7,
+        "keywords": ["新功能", "回归测试", "API"]
+      }
+    },
+    {
+      "id": "CONF-010",
+      "category": "version",
+      "question": "版本号规则是什么？",
+      "expectedAnswer": "主版本号、次版本号、修订号",
+      "source": "harness/guides/documentation-sync-guide.md",
+      "difficulty": "hard",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["主版本", "次版本", "修订"]
+      }
+    },
+    {
+      "id": "CONF-011",
+      "category": "git",
+      "question": "关联任务应该怎么写？",
+      "expectedAnswer": "关联任务: H-XXX",
+      "source": "AGENTS.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "pattern-match",
+        "pattern": "H-"
+      }
+    },
+    {
+      "id": "CONF-012",
+      "category": "doc",
+      "question": "重大更新包括哪些类型？",
+      "expectedAnswer": "功能模块实现、系统架构调整、API接口变更、UI/UX优化、技术栈升级、性能改进、数据库变更",
+      "source": "harness/guides/documentation-sync-guide.md",
+      "difficulty": "hard",
+      "type": "list-retrieval",
+      "evaluation": {
+        "scoring": "coverage-match",
+        "minCoverage": 0.6,
+        "keywords": ["功能模块", "架构", "API", "技术栈"]
+      }
+    },
+    {
+      "id": "CONF-013",
+      "category": "operation",
+      "question": "会话协议的第一步是什么？",
+      "expectedAnswer": "Orient（定位）",
+      "source": "AGENTS.md",
+      "difficulty": "medium",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "keyword-match",
+        "keywords": ["Orient", "定位"]
+      }
+    },
+    {
+      "id": "CONF-014",
+      "category": "operation",
+      "question": "如何启动所有服务？",
+      "expectedAnswer": "./scripts/start.sh all",
+      "source": "harness/guides/startup-script-guide.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "exact-match",
+        "pattern": "./scripts/start.sh all"
+      }
+    },
+    {
+      "id": "CONF-015",
+      "category": "operation",
+      "question": "如何检查服务状态？",
+      "expectedAnswer": "./scripts/start.sh status",
+      "source": "harness/guides/startup-script-guide.md",
+      "difficulty": "easy",
+      "type": "fact-retrieval",
+      "evaluation": {
+        "scoring": "exact-match",
+        "pattern": "./scripts/start.sh status"
+      }
+    }
+  ]
+}

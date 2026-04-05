@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-04",
+  "lastUpdated": "2026-04-05",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -91,6 +91,28 @@
       "dependsOn": ["H-007"],
       "createdAt": "2026-04-04",
       "completedAt": "2026-04-04",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-009",
+      "title": "CLAUDE.md 迁移到 Harness 体系",
+      "description": "将 CLAUDE.md 内容迁移到 harness 文档体系，弃用 CLAUDE.md",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-05",
+      "completedAt": "2026-04-05",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-010",
+      "title": "实施 Harness 上下文工程验证系统",
+      "description": "创建测试数据集、自动化测试脚本、人工评估指南和报告模板",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-05",
+      "completedAt": "2026-04-05",
       "assignee": "AI Assistant"
     }
   ],
