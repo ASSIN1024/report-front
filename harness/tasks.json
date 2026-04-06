@@ -185,10 +185,11 @@
       "id": "H-PIPELINE-IMPL",
       "title": "数据处理流水线实现",
       "description": "实现Pipeline核心接口、TriggerJob、PipelineExecutor、示例Step",
-      "status": "pending",
+      "status": "completed",
       "priority": "high",
       "dependsOn": ["H-PIPELINE-DESIGN"],
       "createdAt": "2026-04-06",
+      "completedAt": "2026-04-06",
       "assignee": "AI Assistant"
     }
   ],
