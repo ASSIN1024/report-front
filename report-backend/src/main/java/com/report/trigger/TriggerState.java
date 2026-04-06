@@ -1,12 +1,12 @@
 package com.report.trigger;
 
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.util.Date;
 
 @Data
 public class TriggerState {
     private String triggerCode;
     private int retryCount;
-    private LocalDateTime lastCheckTime;
+    private Date lastCheckTime;
     private boolean triggered;
 }

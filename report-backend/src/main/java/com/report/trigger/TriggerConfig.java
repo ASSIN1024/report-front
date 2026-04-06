@@ -1,11 +1,16 @@
 package com.report.trigger;
 
+import com.baomidou.mybatisplus.annotation.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+
+import java.util.Date;
 
 @Data
+@TableName("trigger_config")
 public class TriggerConfig {
+    @TableId(type = IdType.AUTO)
     private Long id;
+
     private String triggerCode;
     private String triggerName;
     private String sourceTable;
@@ -15,7 +20,11 @@ public class TriggerConfig {
     private Integer maxRetries;
     private String pipelineCode;
     private String status;
-    private LocalDateTime lastTriggerTime;
-    private LocalDateTime createTime;
-    private LocalDateTime updateTime;
+    private Date lastTriggerTime;
+
+    @TableField(fill = FieldFill.INSERT)
+    private Date createTime;
+
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
 }

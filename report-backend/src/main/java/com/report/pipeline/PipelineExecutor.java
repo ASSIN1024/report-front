@@ -10,7 +10,9 @@ import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 @Slf4j
 @Component
@@ -23,13 +25,13 @@ public class PipelineExecutor {
     private LogService logService;
 
     @Autowired
-    private Map<String, Pipeline> pipelineMap;
+    private List<Pipeline> pipelineList;
 
     public Long execute(String pipelineCode, LocalDate partitionDate) {
-        Pipeline pipeline = pipelineMap.get(pipelineCode);
-        if (pipeline == null) {
-            throw new RuntimeException("Pipeline不存在: " + pipelineCode);
-        }
+        Pipeline pipeline = pipelineList.stream()
+            .filter(p -> p.getCode().equals(pipelineCode))
+            .findFirst()
+            .orElseThrow(() -> new RuntimeException("Pipeline不存在: " + pipelineCode));
 
         TaskExecution task = taskService.createTask(
             "PIPELINE",

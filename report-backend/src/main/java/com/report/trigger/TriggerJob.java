@@ -8,10 +8,10 @@ import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -19,7 +19,8 @@ import java.util.List;
 public class TriggerJob implements Job {
 
     @Autowired
-    private TriggerService triggerService;
+    @Qualifier("triggerServiceImpl")
+    private ITriggerService triggerService;
 
     @Autowired
     private TriggerStateManager stateManager;
@@ -47,7 +48,7 @@ public class TriggerJob implements Job {
 
     private void processTrigger(TriggerConfig trigger) {
         TriggerState state = stateManager.getOrCreate(trigger.getTriggerCode());
-        LocalDate partitionDate = resolvePartitionDate(trigger.getPartitionPattern());
+        Date partitionDate = new Date();
 
         int dataCount = triggerService.checkDataExists(trigger, partitionDate);
 
@@ -60,7 +61,7 @@ public class TriggerJob implements Job {
             }
         } else {
             state.setRetryCount(state.getRetryCount() + 1);
-            state.setLastCheckTime(LocalDateTime.now());
+            state.setLastCheckTime(new Date());
 
             if (state.getRetryCount() > trigger.getMaxRetries()) {
                 log.warn("[{}] 等待数据超时，分区: {}，重试次数: {}",
@@ -76,10 +77,11 @@ public class TriggerJob implements Job {
         }
     }
 
-    private void triggerPipeline(TriggerConfig trigger, LocalDate partitionDate) {
+    private void triggerPipeline(TriggerConfig trigger, Date partitionDate) {
         try {
             log.info("[{}] 触发Pipeline: {}", trigger.getTriggerName(), trigger.getPipelineCode());
-            pipelineExecutor.execute(trigger.getPipelineCode(), partitionDate);
+            java.time.LocalDate localDate = new java.sql.Date(partitionDate.getTime()).toLocalDate();
+            pipelineExecutor.execute(trigger.getPipelineCode(), localDate);
             triggerService.updateLastTriggerTime(trigger.getTriggerCode());
             stateManager.getOrCreate(trigger.getTriggerCode()).setTriggered(true);
         } catch (Exception e) {
@@ -87,7 +89,7 @@ public class TriggerJob implements Job {
         }
     }
 
-    private void markTaskSkipped(TriggerConfig trigger, LocalDate partitionDate, String reason) {
+    private void markTaskSkipped(TriggerConfig trigger, Date partitionDate, String reason) {
         taskService.createTask(
             "TRIGGER",
             trigger.getTriggerName() + " - " + partitionDate,
@@ -95,9 +97,5 @@ public class TriggerJob implements Job {
             trigger.getTriggerCode(),
             "SKIPPED: " + reason
         );
-    }
-
-    private LocalDate resolvePartitionDate(String pattern) {
-        return LocalDate.now();
     }
 }

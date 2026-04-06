@@ -1,18 +1,18 @@
 package com.report.trigger;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
-import com.report.service.TaskService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
-@Service
-public class TriggerServiceImpl implements TriggerService {
+@Service("triggerServiceImpl")
+public class TriggerServiceImpl implements ITriggerService {
 
     @Autowired
     private TriggerConfigMapper triggerConfigMapper;
@@ -37,13 +37,15 @@ public class TriggerServiceImpl implements TriggerService {
     }
 
     @Override
-    public int checkDataExists(TriggerConfig config, LocalDate partitionDate) {
+    public int checkDataExists(TriggerConfig config, Date partitionDate) {
+        java.sql.Date sqlDate = new java.sql.Date(partitionDate.getTime());
         String sql = String.format(
             "SELECT COUNT(*) FROM %s WHERE %s = '%s'",
             config.getSourceTable(),
             config.getPartitionColumn(),
-            partitionDate
+            new java.sql.Date(partitionDate.getTime())
         );
+        log.info("检查数据存在: {}", sql);
         Integer count = jdbcTemplate.queryForObject(sql, Integer.class);
         return count != null ? count : 0;
     }
@@ -52,7 +54,7 @@ public class TriggerServiceImpl implements TriggerService {
     public void updateLastTriggerTime(String triggerCode) {
         TriggerConfig config = getByCode(triggerCode);
         if (config != null) {
-            config.setLastTriggerTime(java.time.LocalDateTime.now());
+            config.setLastTriggerTime(new Date());
             triggerConfigMapper.updateById(config);
         }
     }
