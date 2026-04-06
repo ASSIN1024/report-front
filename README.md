@@ -2,11 +2,11 @@
 
 > 轻量化数据处理中间件 | RPA数据上传 → 本平台 → BI报表数据
 
-[![Spring Boot](https://img.shields.io/badge/Spring%20Boot-2.1.2-green.svg)](https://spring.io/projects/spring-boot)
-[![Vue.js](https://img.shields.io/badge/Vue.js-2.6-blue.svg)](https://vuejs.org/)
-[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[!\[Spring Boot\](https://img.shields.io/badge/Spring%20Boot-2.1.2-green.svg null)](https://spring.io/projects/spring-boot)
+[!\[Vue.js\](https://img.shields.io/badge/Vue.js-2.6-blue.svg null)](https://vuejs.org/)
+[!\[License\](https://img.shields.io/badge/License-MIT-yellow.svg null)](LICENSE)
 
----
+***
 
 ## 📋 目录
 
@@ -25,7 +25,7 @@
 - [贡献指南](#贡献指南)
 - [许可证](#许可证)
 
----
+***
 
 ## 项目简介
 
@@ -44,35 +44,37 @@
 ```
 
 **痛点场景**：
+
 - RPA机器人抓取数据后上传到FTP
 - BI系统需要标准化的数据库数据
 - FTP中的Excel文件无法直接被BI系统使用
 
 **本平台价值**：
+
 - ✅ 自动监听FTP指定文件夹
-- ✅ 读取并解析Excel文件
+  - ✅ 读取并解析Excel文件
 - ✅ 数据清洗和格式转换
 - ✅ 生成BI报表可用的数据表
 - ✅ 历史数据版本化管理
 
----
+***
 
 ## 核心功能
 
-| 功能 | 说明 |
-|------|------|
-| FTP配置管理 | 管理多个外部FTP服务器连接 |
-| 报表配置管理 | 配置报表模板、列映射、数据清洗规则 |
-| 任务调度 | Quartz定时扫描FTP目录 |
-| 手动触发 | 支持手动触发任务执行 |
-| 数据清洗 | 支持值替换、空值处理等清洗规则 |
-| 列映射JSON导入 | 批量导入列映射配置 |
-| 任务监控 | 实时查看任务执行状态和进度 |
-| 操作日志 | 记录所有操作便于追溯 |
+| 功能          | 说明                 |
+| ----------- | ------------------ |
+| FTP配置管理     | 管理多个外部FTP服务器连接     |
+| 报表配置管理      | 配置报表模板、列映射、数据清洗规则  |
+| 任务调度        | Quartz定时扫描FTP目录    |
+| 手动触发        | 支持手动触发任务执行         |
+| 数据清洗        | 支持值替换、空值处理等清洗规则    |
+| 列映射JSON导入   | 批量导入列映射配置          |
+| 任务监控        | 实时查看任务执行状态和进度      |
+| 操作日志        | 记录所有操作便于追溯         |
 | **内置FTP服务** | 内嵌FTP服务器，支持RPA直接上传 |
-| 去重机制 | 避免重复处理相同文件 |
+| 去重机制        | 避免重复处理相同文件         |
 
----
+***
 
 ## 系统架构
 
@@ -197,41 +199,41 @@
                                └────────────────┘
 ```
 
----
+***
 
 ## 技术栈
 
 ### 后端
 
-| 技术 | 版本 | 说明 |
-|------|------|------|
-| Spring Boot | 2.1.2 | 应用框架 |
-| MyBatis-Plus | 3.4.3 | ORM框架 |
-| Apache FtpServer | 1.2.0 | 内置FTP服务 |
-| Quartz | 内置 | 任务调度 |
-| Druid | 1.1.20 | 数据库连接池 |
-| Apache POI | 4.1.2 | Excel解析 |
-| Hutool | 5.8.25 | 工具库 |
-| commons-net | 3.9.0 | FTP客户端 |
-| JDK | 1.8 | Java运行时 |
+| 技术               | 版本     | 说明      |
+| ---------------- | ------ | ------- |
+| Spring Boot      | 2.1.2  | 应用框架    |
+| MyBatis-Plus     | 3.4.3  | ORM框架   |
+| Apache FtpServer | 1.2.0  | 内置FTP服务 |
+| Quartz           | 内置     | 任务调度    |
+| Druid            | 1.1.20 | 数据库连接池  |
+| Apache POI       | 4.1.2  | Excel解析 |
+| Hutool           | 5.8.25 | 工具库     |
+| commons-net      | 3.9.0  | FTP客户端  |
+| JDK              | 1.8    | Java运行时 |
 
 ### 前端
 
-| 技术 | 版本 | 说明 |
-|------|------|------|
-| Vue.js | 2.6 | 前端框架 |
-| Vue Router | 3.x | 路由管理 |
-| Vuex | 3.x | 状态管理 |
-| Element UI | 2.x | UI组件库 |
-| Axios | 0.21 | HTTP客户端 |
+| 技术         | 版本   | 说明      |
+| ---------- | ---- | ------- |
+| Vue.js     | 2.6  | 前端框架    |
+| Vue Router | 3.x  | 路由管理    |
+| Vuex       | 3.x  | 状态管理    |
+| Element UI | 2.x  | UI组件库   |
+| Axios      | 0.21 | HTTP客户端 |
 
 ### 数据库
 
-| 技术 | 版本 | 说明 |
-|------|------|------|
+| 技术    | 版本   | 说明    |
+| ----- | ---- | ----- |
 | MySQL | 5.7+ | 关系数据库 |
 
----
+***
 
 ## 快速开始
 
@@ -282,7 +284,7 @@ cd report-backend
 cd ../scripts && ./start.sh backend
 ```
 
-后端启动后运行在 http://localhost:8082
+后端启动后运行在 <http://localhost:8082>
 
 ### 5. 启动前端
 
@@ -292,13 +294,13 @@ npm install
 npm run serve
 ```
 
-前端启动后访问 http://localhost:8080
+前端启动后访问 <http://localhost:8080>
 
 ### 6. 验证安装
 
-访问 http://localhost:8080，使用默认账号登录，查看系统是否正常运行。
+访问 <http://localhost:8080，使用默认账号登录，查看系统是否正常运行。>
 
----
+***
 
 ## 安装部署
 
@@ -372,7 +374,7 @@ server {
 }
 ```
 
----
+***
 
 ## 使用指南
 
@@ -380,33 +382,33 @@ server {
 
 进入 **FTP配置** 页面，点击 **新增配置**：
 
-| 字段 | 说明 | 示例 |
-|------|------|------|
-| 配置名称 | 标识名称 | 测试FTP |
-| FTP地址 | 服务器IP | 192.168.1.100 |
-| 端口 | FTP端口 | 21 |
-| 用户名 | FTP用户名 | ftpuser |
-| 密码 | FTP密码 | ftppass |
-| 扫描路径 | 监控目录 | /data/reports |
-| 文件匹配 | 文件名模式 | *.xlsx |
-| 扫描间隔 | 扫描频率(秒) | 300 |
+| 字段    | 说明      | 示例            |
+| ----- | ------- | ------------- |
+| 配置名称  | 标识名称    | 测试FTP         |
+| FTP地址 | 服务器IP   | 192.168.1.100 |
+| 端口    | FTP端口   | 21            |
+| 用户名   | FTP用户名  | ftpuser       |
+| 密码    | FTP密码   | ftppass       |
+| 扫描路径  | 监控目录    | /data/reports |
+| 文件匹配  | 文件名模式   | \*.xlsx       |
+| 扫描间隔  | 扫描频率(秒) | 300           |
 
 ### 2. 添加报表配置
 
 进入 **报表配置** 页面，点击 **新增报表**：
 
-| 字段 | 说明 |
-|------|------|
-| 报表编码 | 唯一标识代码 |
-| 报表名称 | 显示名称 |
-| 关联FTP | 关联的FTP配置 |
-| 文件匹配 | 匹配模式 |
+| 字段      | 说明            |
+| ------- | ------------- |
+| 报表编码    | 唯一标识代码        |
+| 报表名称    | 显示名称          |
+| 关联FTP   | 关联的FTP配置      |
+| 文件匹配    | 匹配模式          |
 | Sheet索引 | Excel Sheet序号 |
-| 表头行 | 表头所在行 |
-| 数据起始行 | 数据开始行 |
-| 列映射 | 列与字段映射 |
-| 输出表名 | 目标数据库表 |
-| 输出模式 | 追加/覆盖 |
+| 表头行     | 表头所在行         |
+| 数据起始行   | 数据开始行         |
+| 列映射     | 列与字段映射        |
+| 输出表名    | 目标数据库表        |
+| 输出模式    | 追加/覆盖         |
 
 ### 3. 配置列映射
 
@@ -428,11 +430,11 @@ server {
 
 在列映射中可以配置清洗规则：
 
-| 规则类型 | 示例 | 说明 |
-|----------|------|------|
-| 值替换 | `-` → `0` | 将特定值替换 |
-| 空值处理 | NULL → `""` | 处理空值 |
-| 去空格 | trim | 去除首尾空格 |
+| 规则类型 | 示例          | 说明     |
+| ---- | ----------- | ------ |
+| 值替换  | `-` → `0`   | 将特定值替换 |
+| 空值处理 | NULL → `""` | 处理空值   |
+| 去空格  | trim        | 去除首尾空格 |
 
 ### 5. 手动触发任务
 
@@ -452,7 +454,7 @@ server {
 - 点击任务查看详细日志
 - 支持按状态、时间筛选
 
----
+***
 
 ## 配置说明
 
@@ -460,96 +462,96 @@ server {
 
 通过页面配置，存储在 `ftp_config` 表：
 
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| enabled | 是否启用 | true |
-| host | FTP服务器地址 | - |
-| port | 端口 | 21 |
-| username | 用户名 | - |
-| password | 密码（加密存储） | - |
-| scanPath | 扫描路径 | / |
-| filePattern | 文件匹配模式 | *.xlsx |
-| scanInterval | 扫描间隔(秒) | 300 |
+| 配置项          | 说明       | 默认值     |
+| ------------ | -------- | ------- |
+| enabled      | 是否启用     | true    |
+| host         | FTP服务器地址 | -       |
+| port         | 端口       | 21      |
+| username     | 用户名      | -       |
+| password     | 密码（加密存储） | -       |
+| scanPath     | 扫描路径     | /       |
+| filePattern  | 文件匹配模式   | \*.xlsx |
+| scanInterval | 扫描间隔(秒)  | 300     |
 
 ### 内置FTP配置
 
 通过页面配置或 `built_in_ftp_config` 表：
 
-| 配置项 | 说明 | 默认值 |
-|--------|------|--------|
-| enabled | 是否启用 | false |
-| port | 监听端口 | 2021 |
-| username | 用户名 | rpa_user |
-| password | 密码 | rpa_password |
-| rootDirectory | 根目录 | /data/ftp-root |
-| maxConnections | 最大连接数 | 10 |
-| idleTimeout | 空闲超时(秒) | 300 |
-| passiveMode | 被动模式 | true |
-| passivePortStart | 被动端口起始 | 50000 |
-| passivePortEnd | 被动端口结束 | 50100 |
+| 配置项              | 说明      | 默认值            |
+| ---------------- | ------- | -------------- |
+| enabled          | 是否启用    | false          |
+| port             | 监听端口    | 2021           |
+| username         | 用户名     | rpa\_user      |
+| password         | 密码      | rpa\_password  |
+| rootDirectory    | 根目录     | /data/ftp-root |
+| maxConnections   | 最大连接数   | 10             |
+| idleTimeout      | 空闲超时(秒) | 300            |
+| passiveMode      | 被动模式    | true           |
+| passivePortStart | 被动端口起始  | 50000          |
+| passivePortEnd   | 被动端口结束  | 50100          |
 
 ### 报表配置
 
 存储在 `report_config` 表：
 
-| 配置项 | 说明 |
-|--------|------|
-| reportCode | 报表唯一编码 |
-| reportName | 报表名称 |
-| ftpConfigId | 关联的FTP配置ID |
-| filePattern | 文件名匹配模式 |
-| sheetIndex | Excel Sheet索引 |
-| headerRow | 表头行号 |
-| dataStartRow | 数据起始行 |
-| columnMapping | 列映射JSON |
-| outputTable | 输出表名 |
-| outputMode | APPEND/OVERWRITE |
+| 配置项           | 说明               |
+| ------------- | ---------------- |
+| reportCode    | 报表唯一编码           |
+| reportName    | 报表名称             |
+| ftpConfigId   | 关联的FTP配置ID       |
+| filePattern   | 文件名匹配模式          |
+| sheetIndex    | Excel Sheet索引    |
+| headerRow     | 表头行号             |
+| dataStartRow  | 数据起始行            |
+| columnMapping | 列映射JSON          |
+| outputTable   | 输出表名             |
+| outputMode    | APPEND/OVERWRITE |
 
----
+***
 
 ## API接口
 
 ### FTP配置
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/ftp-config/page` | GET | 分页查询FTP配置 |
-| `/api/ftp-config/{id}` | GET | 获取配置详情 |
-| `/api/ftp-config` | POST | 新增FTP配置 |
-| `/api/ftp-config` | PUT | 更新FTP配置 |
-| `/api/ftp-config/{id}` | DELETE | 删除FTP配置 |
-| `/api/ftp-config/{id}/test` | POST | 测试连接 |
+| 接口                          | 方法     | 说明        |
+| --------------------------- | ------ | --------- |
+| `/api/ftp-config/page`      | GET    | 分页查询FTP配置 |
+| `/api/ftp-config/{id}`      | GET    | 获取配置详情    |
+| `/api/ftp-config`           | POST   | 新增FTP配置   |
+| `/api/ftp-config`           | PUT    | 更新FTP配置   |
+| `/api/ftp-config/{id}`      | DELETE | 删除FTP配置   |
+| `/api/ftp-config/{id}/test` | POST   | 测试连接      |
 
 ### 报表配置
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/report-config/page` | GET | 分页查询报表配置 |
-| `/api/report-config/{id}` | GET | 获取报表详情 |
-| `/api/report-config` | POST | 新增报表配置 |
-| `/api/report-config` | PUT | 更新报表配置 |
-| `/api/report-config/{id}` | DELETE | 删除报表配置 |
-| `/api/report-config/{id}/trigger` | POST | 手动触发任务 |
+| 接口                                | 方法     | 说明       |
+| --------------------------------- | ------ | -------- |
+| `/api/report-config/page`         | GET    | 分页查询报表配置 |
+| `/api/report-config/{id}`         | GET    | 获取报表详情   |
+| `/api/report-config`              | POST   | 新增报表配置   |
+| `/api/report-config`              | PUT    | 更新报表配置   |
+| `/api/report-config/{id}`         | DELETE | 删除报表配置   |
+| `/api/report-config/{id}/trigger` | POST   | 手动触发任务   |
 
 ### 任务管理
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/task/page` | GET | 分页查询任务 |
-| `/api/task/{id}` | GET | 获取任务详情 |
+| 接口                    | 方法  | 说明     |
+| --------------------- | --- | ------ |
+| `/api/task/page`      | GET | 分页查询任务 |
+| `/api/task/{id}`      | GET | 获取任务详情 |
 | `/api/task/{id}/logs` | GET | 获取任务日志 |
 
 ### 内置FTP
 
-| 接口 | 方法 | 说明 |
-|------|------|------|
-| `/api/built-in-ftp/config` | GET | 获取内置FTP配置 |
-| `/api/built-in-ftp/config` | PUT | 更新内置FTP配置 |
-| `/api/built-in-ftp/start` | POST | 启动内置FTP服务 |
-| `/api/built-in-ftp/stop` | POST | 停止内置FTP服务 |
-| `/api/built-in-ftp/status` | GET | 获取服务状态 |
+| 接口                         | 方法   | 说明        |
+| -------------------------- | ---- | --------- |
+| `/api/built-in-ftp/config` | GET  | 获取内置FTP配置 |
+| `/api/built-in-ftp/config` | PUT  | 更新内置FTP配置 |
+| `/api/built-in-ftp/start`  | POST | 启动内置FTP服务 |
+| `/api/built-in-ftp/stop`   | POST | 停止内置FTP服务 |
+| `/api/built-in-ftp/status` | GET  | 获取服务状态    |
 
----
+***
 
 ## 内置FTP服务
 
@@ -595,24 +597,24 @@ curl -X POST http://localhost:8082/api/built-in-ftp/start
 
 RPA端FTP连接配置：
 
-| 配置项 | 值 |
-|--------|-----|
-| 服务器地址 | 本系统地址 |
-| 端口 | 2021 |
-| 用户名 | rpa_user |
-| 密码 | rpa_password |
-| 上传目录 | /upload |
+| 配置项   | 值             |
+| ----- | ------------- |
+| 服务器地址 | 本系统地址         |
+| 端口    | 2021          |
+| 用户名   | rpa\_user     |
+| 密码    | rpa\_password |
+| 上传目录  | /upload       |
 
 ### 与外部FTP的区别
 
-| 特性 | 外部FTP | 内置FTP |
-|------|---------|---------|
-| 部署 | 需要单独FTP服务器 | 随系统启动 |
-| 管理 | 外部管理 | 平台统一管理 |
-| 适用 | 已有FTP基础设施 | 新建或备份方案 |
-| 端口 | 21 | 2021 |
+| 特性 | 外部FTP      | 内置FTP   |
+| -- | ---------- | ------- |
+| 部署 | 需要单独FTP服务器 | 随系统启动   |
+| 管理 | 外部管理       | 平台统一管理  |
+| 适用 | 已有FTP基础设施  | 新建或备份方案 |
+| 端口 | 21         | 2021    |
 
----
+***
 
 ## 常见问题
 
@@ -621,6 +623,7 @@ RPA端FTP连接配置：
 **原因**：FTP服务器不可达或配置错误
 
 **解决**：
+
 1. 检查FTP服务器IP和端口
 2. 确认FTP服务已启动
 3. 测试用户名密码是否正确
@@ -631,6 +634,7 @@ RPA端FTP连接配置：
 **原因**：文件名不匹配或扫描未执行
 
 **解决**：
+
 1. 确认文件名符合 filePattern（如 `*.xlsx`）
 2. 检查任务监控是否有扫描记录
 3. 确认FTP配置已启用
@@ -641,6 +645,7 @@ RPA端FTP连接配置：
 **原因**：表头行号配置错误
 
 **解决**：
+
 1. 检查报表配置的 `headerRow` 是否正确
 2. 确认Excel文件格式完整
 3. 检查是否有多余的空行
@@ -650,6 +655,7 @@ RPA端FTP连接配置：
 **原因**：规则配置格式错误
 
 **解决**：
+
 1. JSON格式必须正确
 2. 确认字段名匹配
 3. 查看任务日志中的清洗详情
@@ -659,6 +665,7 @@ RPA端FTP连接配置：
 **原因**：端口被占用或目录权限不足
 
 **解决**：
+
 1. 检查端口2021是否被占用：`netstat -an | grep 2021`
 2. 确认 `/data/ftp-root` 目录存在且有权限
 3. 查看后台日志具体错误信息
@@ -668,18 +675,16 @@ RPA端FTP连接配置：
 **方法**：
 
 1. **页面日志**：任务监控 → 点击任务 → 查看日志
-
 2. **文件日志**：
    ```bash
    tail -f logs/report-backend.log
    ```
-
 3. **数据库日志**：
    ```sql
    SELECT * FROM task_execution_log WHERE task_execution_id = #{taskId};
    ```
 
----
+***
 
 ## 开发指南
 
@@ -720,14 +725,12 @@ report-front/
        // 实现
    }
    ```
-
 2. **新增Service**
    ```java
    public interface YourService {}
    @Service
    public class YourServiceImpl implements YourService {}
    ```
-
 3. **前端新增页面**
    ```vue
    <template>
@@ -749,7 +752,7 @@ mvn test
 - 数据库操作在Mapper层
 - 工具类放在util包
 
----
+***
 
 ## 贡献指南
 
@@ -767,6 +770,7 @@ mvn test
 ```
 
 示例：
+
 ```
 feat(ftp): 添加内置FTP服务
 
@@ -788,24 +792,26 @@ feat(ftp): 添加内置FTP服务
 - 修改后需运行回归测试
 - API接口需测试验证
 
----
+***
 
 ## 许可证
 
 本项目基于 [MIT 许可证](LICENSE) 开源。
 
----
+***
 
 ## 联系方式
 
-- 项目主页：https://github.com/ASSIN1024/report-front
-- 问题反馈：https://github.com/ASSIN1024/report-front/issues
+- 项目主页：<https://github.com/ASSIN1024/report-front>
+- 问题反馈：<https://github.com/ASSIN1024/report-front/issues>
 
----
+***
 
 ## 变更记录
 
-| 日期 | 版本 | 变更内容 |
-|------|------|----------|
-| 2026-04-05 | V1.0 | 初始版本发布 |
+| 日期         | 版本   | 变更内容        |
+| ---------- | ---- | ----------- |
+| 2026-04-05 | V1.0 | 初始版本发布      |
 | 2026-04-05 | V1.1 | 新增内置FTP服务模块 |
+| 2026-04-06 | V1.2 | 修复内置FTP MyBatis映射问题，新增配置驱动自动启动 |
+

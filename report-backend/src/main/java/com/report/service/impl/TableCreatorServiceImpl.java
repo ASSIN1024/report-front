@@ -33,21 +33,34 @@ public class TableCreatorServiceImpl implements TableCreatorService {
         sql.append("CREATE TABLE IF NOT EXISTS ").append(tableName).append(" (\n");
         sql.append("    id BIGINT PRIMARY KEY AUTO_INCREMENT COMMENT '主键ID',\n");
         sql.append("    pt_dt DATE NOT NULL COMMENT '分区日期',\n");
-        
+
         for (FieldMapping mapping : columnMappings) {
+            String fieldName = mapping.getFieldName();
+            if (isReservedColumn(fieldName)) {
+                log.warn("跳过保留字段: {}", fieldName);
+                continue;
+            }
             String columnDef = buildColumnDefinition(mapping);
-            sql.append("    ").append(mapping.getFieldName()).append(" ").append(columnDef).append(",\n");
+            sql.append("    ").append(fieldName).append(" ").append(columnDef).append(",\n");
         }
-        
+
         sql.append("    create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',\n");
         sql.append("    INDEX idx_pt_dt (pt_dt)\n");
         sql.append(") ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='自动创建的数据表'");
-        
+
         log.info("创建数据表: {}", tableName);
         log.debug("建表SQL: {}", sql.toString());
-        
+
         jdbcTemplate.execute(sql.toString());
         log.info("数据表创建成功: {}", tableName);
+    }
+
+    private boolean isReservedColumn(String fieldName) {
+        if (fieldName == null) {
+            return false;
+        }
+        String lower = fieldName.toLowerCase();
+        return "id".equals(lower) || "pt_dt".equals(lower) || "create_time".equals(lower);
     }
 
     @Override
@@ -64,12 +77,16 @@ public class TableCreatorServiceImpl implements TableCreatorService {
     @Override
     public void addMissingColumns(String tableName, List<FieldMapping> columnMappings) {
         Set<String> existingColumns = getExistingColumns(tableName);
-        
+
         for (FieldMapping mapping : columnMappings) {
             String fieldName = mapping.getFieldName();
+            if (isReservedColumn(fieldName)) {
+                log.warn("跳过保留字段: {}", fieldName);
+                continue;
+            }
             if (!existingColumns.contains(fieldName.toLowerCase())) {
                 String columnDef = buildColumnDefinition(mapping);
-                String sql = String.format("ALTER TABLE %s ADD COLUMN %s %s", 
+                String sql = String.format("ALTER TABLE %s ADD COLUMN %s %s",
                         tableName, fieldName, columnDef);
                 log.info("添加缺失字段: {} -> {}", tableName, fieldName);
                 jdbcTemplate.execute(sql);

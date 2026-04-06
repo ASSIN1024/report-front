@@ -3,7 +3,7 @@ package com.report.ftp.controller;
 import com.report.annotation.OperationLogAnnotation;
 import com.report.common.result.Result;
 import com.report.ftp.BuiltInFtpConfig;
-import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.EmbeddedFtpServer;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,14 +18,14 @@ import java.util.Map;
 public class BuiltInFtpConfigController {
 
     @Autowired
-    private BuiltInFtpConfigService builtInFtpConfigService;
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
 
     @Autowired
     private EmbeddedFtpServer embeddedFtpServer;
 
     @GetMapping("/config")
     public Result<BuiltInFtpConfig> getConfig() {
-        return Result.success(builtInFtpConfigService.getConfig());
+        return Result.success(builtInFtpConfigMapper.getConfig());
     }
 
     @PutMapping("/config")
@@ -34,7 +34,7 @@ public class BuiltInFtpConfigController {
         if (embeddedFtpServer.isRunning()) {
             return Result.fail("FTP服务正在运行，请先停止服务");
         }
-        builtInFtpConfigService.updateConfig(config);
+        config.setId(1L);
         return Result.success();
     }
 
@@ -45,7 +45,7 @@ public class BuiltInFtpConfigController {
         boolean success = embeddedFtpServer.start();
         result.put("running", success);
         if (success) {
-            BuiltInFtpConfig config = builtInFtpConfigService.getConfig();
+            BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
             result.put("port", config.getPort());
             result.put("connectedClients", embeddedFtpServer.getConnectedClients());
             return Result.success(result);
@@ -66,7 +66,7 @@ public class BuiltInFtpConfigController {
         Map<String, Object> result = new HashMap<>();
         result.put("running", embeddedFtpServer.isRunning());
         if (embeddedFtpServer.isRunning()) {
-            BuiltInFtpConfig config = builtInFtpConfigService.getConfig();
+            BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
             result.put("port", config.getPort());
             result.put("connectedClients", embeddedFtpServer.getConnectedClients());
         }

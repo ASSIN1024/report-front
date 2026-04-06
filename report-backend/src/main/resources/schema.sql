@@ -39,6 +39,8 @@ CREATE TABLE report_config (
     sheet_index INT NOT NULL DEFAULT 0 COMMENT 'Sheet索引',
     header_row INT NOT NULL DEFAULT 0 COMMENT '表头行号',
     data_start_row INT NOT NULL DEFAULT 1 COMMENT '数据起始行',
+    skip_columns INT NOT NULL DEFAULT 0 COMMENT '跳过前N列',
+    date_extract_pattern VARCHAR(50) NULL COMMENT '日期提取规则: AUTO/yyyyMMdd/yyyy-MM-dd等',
     column_mapping TEXT NOT NULL COMMENT '列映射配置(JSON)',
     output_table VARCHAR(50) NOT NULL COMMENT '输出表名',
     output_mode VARCHAR(20) NOT NULL DEFAULT 'APPEND' COMMENT '输出模式: APPEND-追加, OVERWRITE-覆盖',
@@ -159,5 +161,47 @@ INSERT INTO ftp_config (id, config_name, host, port, username, password, scan_pa
 INSERT INTO built_in_ftp_config (id, enabled, port, username, password, root_directory, max_connections, idle_timeout, passive_mode, passive_port_start, passive_port_end) VALUES
 (1, 0, 2021, 'rpa_user', 'rpa_password', '/data/ftp-root', 10, 300, 1, 50000, 50100);
 
-INSERT INTO report_config (id, report_code, report_name, ftp_config_id, file_pattern, sheet_index, header_row, data_start_row, column_mapping, output_table, output_mode, status, remark) VALUES
-(1, 'SALES_REPORT', '销售报表', 1, 'sales_*.xlsx', 0, 0, 1, '[{"excelColumn":"A","fieldName":"order_id","fieldType":"STRING"},{"excelColumn":"B","fieldName":"product_name","fieldType":"STRING"},{"excelColumn":"C","fieldName":"quantity","fieldType":"INTEGER"},{"excelColumn":"D","fieldName":"amount","fieldType":"DECIMAL"},{"excelColumn":"E","fieldName":"order_date","fieldType":"DATE"}]', 't_sales_data', 'APPEND', 1, '销售数据报表配置');
+INSERT INTO report_config (id, report_code, report_name, ftp_config_id, file_pattern, sheet_index, header_row, data_start_row, skip_columns, date_extract_pattern, column_mapping, output_table, output_mode, status, remark) VALUES
+(1, 'SALES_REPORT', '销售报表', 1, 'sales_*.xlsx', 0, 0, 1, 0, NULL, '[{"excelColumn":"A","fieldName":"order_id","fieldType":"STRING"},{"excelColumn":"B","fieldName":"product_name","fieldType":"STRING"},{"excelColumn":"C","fieldName":"quantity","fieldType":"INTEGER"},{"excelColumn":"D","fieldName":"amount","fieldType":"DECIMAL"},{"excelColumn":"E","fieldName":"order_date","fieldType":"DATE"}]', 't_sales_data', 'APPEND', 1, '销售数据报表配置');
+
+-- 触发器配置表
+DROP TABLE IF EXISTS trigger_config;
+CREATE TABLE trigger_config (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    trigger_code VARCHAR(100) NOT NULL COMMENT '触发器编码',
+    trigger_name VARCHAR(200) NOT NULL COMMENT '触发器名称',
+    source_table VARCHAR(100) NOT NULL COMMENT '监听目标表',
+    partition_column VARCHAR(50) NOT NULL DEFAULT 'pt_dt' COMMENT '分区字段',
+    partition_pattern VARCHAR(50) COMMENT '分区值模式，支持日期格式如 yyyy-MM-dd',
+    poll_interval_seconds INT NOT NULL DEFAULT 60 COMMENT '轮询间隔(秒)',
+    max_retries INT NOT NULL DEFAULT 60 COMMENT '最大重试次数',
+    pipeline_code VARCHAR(100) NOT NULL COMMENT '触发执行的Pipeline编码',
+    status VARCHAR(20) NOT NULL DEFAULT 'ENABLED' COMMENT '状态: ENABLED/DISABLED',
+    last_trigger_time DATETIME COMMENT '最后触发时间',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_trigger_code (trigger_code),
+    KEY idx_status (status)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='触发器配置表';
+
+-- 流水线配置表
+DROP TABLE IF EXISTS pipeline_config;
+CREATE TABLE pipeline_config (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    pipeline_code VARCHAR(100) NOT NULL COMMENT '流水线编码',
+    pipeline_name VARCHAR(200) NOT NULL COMMENT '流水线名称',
+    description VARCHAR(500) COMMENT '流水线描述',
+    idempotent_mode VARCHAR(20) NOT NULL DEFAULT 'OVERWRITE' COMMENT '幂等模式: OVERWRITE/APPEND',
+    status VARCHAR(20) NOT NULL DEFAULT 'ENABLED' COMMENT '状态: ENABLED/DISABLED',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_pipeline_code (pipeline_code)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='流水线配置表';
+
+-- 任务执行记录表新增字段（Pipeline支持）
+ALTER TABLE task_execution
+ADD COLUMN pipeline_code VARCHAR(100) COMMENT '流水线编码' AFTER file_path,
+ADD COLUMN partition_value VARCHAR(50) COMMENT '分区值' AFTER pipeline_code,
+ADD COLUMN step_name VARCHAR(100) COMMENT '当前步骤名称' AFTER partition_value;

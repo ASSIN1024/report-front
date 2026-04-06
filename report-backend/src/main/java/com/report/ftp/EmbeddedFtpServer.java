@@ -4,12 +4,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.ftpserver.FtpServer;
 import org.apache.ftpserver.FtpServerFactory;
 import org.apache.ftpserver.ftplet.Authority;
-import org.apache.ftpserver.ftplet.Ftplet;
-import org.apache.ftpserver.ftplet.FtpletContext;
-import org.apache.ftpserver.ftplet.FtpletResult;
-import org.apache.ftpserver.ftplet.FtpRequest;
-import org.apache.ftpserver.ftplet.FtpSession;
-import org.apache.ftpserver.ftplet.FtpReply;
 import org.apache.ftpserver.ftplet.UserManager;
 import org.apache.ftpserver.listener.ListenerFactory;
 import org.apache.ftpserver.usermanager.PropertiesUserManagerFactory;
@@ -20,9 +14,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 @Slf4j
@@ -32,9 +24,16 @@ public class EmbeddedFtpServer {
     private final AtomicBoolean running = new AtomicBoolean(false);
 
     @Autowired
-    private BuiltInFtpConfigService builtInFtpConfigService;
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+
+    private FtpBuiltInProperties properties;
 
     private FtpServer ftpServer;
+
+    @Autowired
+    public void setProperties(FtpBuiltInProperties properties) {
+        this.properties = properties;
+    }
 
     public boolean start() {
         if (running.get()) {
@@ -42,30 +41,54 @@ public class EmbeddedFtpServer {
             return true;
         }
 
-        BuiltInFtpConfig config = builtInFtpConfigService.getConfig();
+        BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
+        if (config == null) {
+            log.warn("内置FTP配置不存在");
+            return false;
+        }
         if (!config.getEnabled()) {
             log.warn("内置FTP未启用");
             return false;
         }
 
+        return startWithProperties();
+    }
+
+    public boolean startWithProperties() {
+        if (running.get()) {
+            log.warn("FTP服务已在运行");
+            return true;
+        }
+
+        if (properties == null) {
+            log.error("FTP配置未加载");
+            return false;
+        }
+
         try {
+            File rootDir = new File(properties.getRootDirectory());
+            if (!rootDir.exists()) {
+                rootDir.mkdirs();
+            }
+
+            File userFile = new File(rootDir, "ftp-users.properties");
+            userFile.createNewFile();
+
             FtpServerFactory serverFactory = new FtpServerFactory();
             ListenerFactory listenerFactory = new ListenerFactory();
 
-            listenerFactory.setPort(config.getPort());
-            listenerFactory.setIdleTimeout(config.getIdleTimeout());
+            listenerFactory.setPort(properties.getPort());
+            listenerFactory.setIdleTimeout(properties.getIdleTimeout() * 1000);
 
             PropertiesUserManagerFactory userManagerFactory = new PropertiesUserManagerFactory();
-            File userFile = File.createTempFile("ftp-users", ".properties");
-            userFile.deleteOnExit();
             userManagerFactory.setFile(userFile);
 
             UserManager userManager = userManagerFactory.createUserManager();
 
             BaseUser user = new BaseUser();
-            user.setName(config.getUsername());
-            user.setPassword(config.getPassword());
-            user.setHomeDirectory(config.getRootDirectory());
+            user.setName(properties.getUsername());
+            user.setPassword(properties.getPassword());
+            user.setHomeDirectory(rootDir.getAbsolutePath());
 
             List<Authority> authorities = new ArrayList<>();
             authorities.add(new WritePermission());
@@ -73,53 +96,15 @@ public class EmbeddedFtpServer {
 
             userManager.save(user);
 
-            Map<String, Ftplet> ftplets = new HashMap<>();
-            ftplets.put("ftpLogging", new Ftplet() {
-                @Override
-                public void init(FtpletContext ftpletContext) {
-                }
-
-                @Override
-                public void destroy() {
-                }
-
-                @Override
-                public FtpletResult beforeCommand(FtpSession session, FtpRequest request) {
-                    log.info("[FTP-ACCESS] {} - {} - {} - {}",
-                        session.getClientAddress(),
-                        session.getUser().getName(),
-                        request.getCommand(),
-                        request.getArgument());
-                    return FtpletResult.DEFAULT;
-                }
-
-                @Override
-                public FtpletResult afterCommand(FtpSession session, FtpRequest request, FtpReply reply) {
-                    return FtpletResult.DEFAULT;
-                }
-
-                @Override
-                public FtpletResult onConnect(FtpSession session) {
-                    log.info("[FTP-CONNECT] {}", session.getClientAddress());
-                    return FtpletResult.DEFAULT;
-                }
-
-                @Override
-                public FtpletResult onDisconnect(FtpSession session) {
-                    log.info("[FTP-DISCONNECT] {}", session.getClientAddress());
-                    return FtpletResult.DEFAULT;
-                }
-            });
-
             serverFactory.setUserManager(userManager);
-            serverFactory.setFtplets(ftplets);
             serverFactory.addListener("default", listenerFactory.createListener());
 
             ftpServer = serverFactory.createServer();
             ftpServer.start();
 
             running.set(true);
-            log.info("内置FTP服务已启动，端口: {}", config.getPort());
+            log.info("内置FTP服务已启动，端口: {}, 用户: {}, 目录: {}",
+                    properties.getPort(), properties.getUsername(), rootDir.getAbsolutePath());
             return true;
 
         } catch (Exception e) {
