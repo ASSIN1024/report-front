@@ -376,6 +376,6 @@ RPA上传 → FTP扫描 → OSD表 → TriggerJob轮询 → PipelineExecutor →
 - 部分代码变更尚未提交（见git status）
 
 **下一步计划**:
-- [ ] 提交所有未提交的代码变更
-- [ ] 更新 progress-notes.md 本次会话记录
+- [x] 提交所有未提交的代码变更
+- [x] 更新 progress-notes.md 本次会话记录
 
