@@ -741,3 +741,135 @@ handlePagination({ page, rows }) {
 | 2026-03-30 | V1.0 | [新增] 初始版本创建 | - | - |
 | 2026-03-30 | V1.1 | [修改] 更新基础路径端口(8080→8082) | - | TASK-007 |
 | 2026-04-01 | V1.2 | [新增] 分页功能实现说明 | AI Assistant | PAGE-001 |
+| 2026-04-07 | V1.3 | [新增] Pipeline/Trigger API 文档 | AI Assistant | H-PIPELINE-IMPL |
+
+---
+
+## 9. Pipeline 接口
+
+### 9.1 获取所有 Pipeline
+
+**请求**
+```
+GET /api/pipeline
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "pipelines": ["sales_data_pipeline"]
+    }
+}
+```
+
+### 9.2 执行 Pipeline
+
+手动触发 Pipeline 执行。
+
+**请求**
+```
+POST /api/pipeline/{code}/execute
+```
+
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| code | String | 是 | Pipeline 编码 |
+| partitionDate | String | 否 | 分区日期 (格式: yyyy-MM-dd，默认当天) |
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "taskId": 123456,
+        "pipelineCode": "sales_data_pipeline",
+        "partitionDate": "2026-04-07",
+        "status": "EXECUTED"
+    }
+}
+```
+
+---
+
+## 10. Trigger 接口
+
+### 10.1 获取所有触发器
+
+**请求**
+```
+GET /api/trigger
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": [
+        {
+            "id": 1,
+            "triggerCode": "osd_sales_trigger",
+            "triggerName": "OSD销售表触发器",
+            "sourceTable": "osd_sales",
+            "partitionColumn": "pt_dt",
+            "pollIntervalSeconds": 60,
+            "maxRetries": 60,
+            "pipelineCode": "sales_data_pipeline",
+            "status": "ENABLED"
+        }
+    ]
+}
+```
+
+### 10.2 获取触发器详情
+
+**请求**
+```
+GET /api/trigger/{code}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "triggerCode": "osd_sales_trigger",
+        "triggerName": "OSD销售表触发器",
+        "sourceTable": "osd_sales",
+        "partitionColumn": "pt_dt",
+        "pollIntervalSeconds": 60,
+        "maxRetries": 60,
+        "pipelineCode": "sales_data_pipeline",
+        "status": "ENABLED"
+    }
+}
+```
+
+### 10.3 测试触发器
+
+测试触发器是否能检测到数据。
+
+**请求**
+```
+POST /api/trigger/{code}/test
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "triggerCode": "osd_sales_trigger",
+        "partitionDate": "2026-04-07",
+        "dataCount": 5,
+        "hasData": true
+    }
+}
+```
