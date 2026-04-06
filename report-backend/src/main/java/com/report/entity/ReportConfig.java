@@ -29,6 +29,10 @@ public class ReportConfig implements Serializable {
 
     private Integer dataStartRow;
 
+    private Integer skipColumns;
+
+    private String dateExtractPattern;
+
     private String columnMapping;
 
     private String outputTable;

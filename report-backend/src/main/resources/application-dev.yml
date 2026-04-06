@@ -38,3 +38,13 @@ mybatis-plus:
       logic-not-delete-value: 0
   configuration:
     map-underscore-to-camel-case: true
+
+ftp:
+  built-in:
+    enabled: true
+    port: 2121
+    username: rpa_user
+    password: rpa_password
+    root-directory: /home/nova/projects/report-front/data/ftp-root
+    idle-timeout: 300
+    max-connections: 10

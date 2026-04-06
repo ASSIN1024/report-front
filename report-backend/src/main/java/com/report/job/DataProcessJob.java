@@ -14,6 +14,7 @@ import com.report.service.ReportConfigService;
 import com.report.service.TableCreatorService;
 import com.report.service.TaskService;
 import com.report.util.ExcelUtil;
+import com.report.util.FileNameDateExtractor;
 import com.report.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,13 +79,22 @@ public class DataProcessJob {
             totalRows = dataList.size();
             logService.saveLog(taskId, "INFO", "解析Excel完成，共 " + totalRows + " 行数据");
 
+            String fileName = file.getName();
+            java.time.LocalDate partitionDate = FileNameDateExtractor.extractDate(fileName);
+            if (partitionDate == null) {
+                partitionDate = java.time.LocalDate.now();
+                logService.saveLog(taskId, "INFO", "文件名未包含可识别日期，使用当前日期: " + fileName);
+            } else {
+                logService.saveLog(taskId, "INFO", "从文件名提取分区日期: " + fileName + " -> " + partitionDate);
+            }
+
             if ("APPEND".equals(reportConfig.getOutputMode())) {
-                successRows = insertData(taskId, reportConfig, dataList, columnMappings);
+                successRows = insertData(taskId, reportConfig, dataList, columnMappings, partitionDate);
                 failedRows = totalRows - successRows;
             } else if ("OVERWRITE".equals(reportConfig.getOutputMode())) {
                 logService.saveLog(taskId, "INFO", "清空目标表: " + reportConfig.getOutputTable());
                 jdbcTemplate.execute("DELETE FROM " + reportConfig.getOutputTable());
-                successRows = insertData(taskId, reportConfig, dataList, columnMappings);
+                successRows = insertData(taskId, reportConfig, dataList, columnMappings, partitionDate);
                 failedRows = totalRows - successRows;
             }
 
@@ -112,7 +122,7 @@ public class DataProcessJob {
     }
 
     private int insertData(Long taskId, ReportConfig reportConfig, List<Map<String, Object>> dataList,
-                           List<FieldMapping> columnMappings) {
+                           List<FieldMapping> columnMappings, java.time.LocalDate partitionDate) {
         String tableName = reportConfig.getOutputTable();
         int successCount = 0;
 
@@ -133,12 +143,10 @@ public class DataProcessJob {
         String sql = String.format("INSERT INTO %s (%s) VALUES (%s)",
                 tableName, String.join(", ", columns), String.join(", ", placeholders));
 
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-
         for (Map<String, Object> row : dataList) {
             try {
                 List<Object> values = new ArrayList<>();
-                values.add(sdf.format(new Date()));
+                values.add(java.sql.Date.valueOf(partitionDate));
 
                 for (FieldMapping mapping : columnMappings) {
                     Object value = row.get(mapping.getFieldName());

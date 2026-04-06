@@ -210,13 +210,14 @@ public class ExcelUtil {
         List<Map<String, Object>> result = new ArrayList<>();
         try (FileInputStream fis = new FileInputStream(file);
              Workbook workbook = WorkbookFactory.create(fis)) {
-            
+
             int sheetIndex = reportConfig.getSheetIndex() != null ? reportConfig.getSheetIndex() : 0;
             int headerRow = reportConfig.getHeaderRow() != null ? reportConfig.getHeaderRow() : 0;
             int dataStartRow = reportConfig.getDataStartRow() != null ? reportConfig.getDataStartRow() : 1;
-            
+            int skipColumns = reportConfig.getSkipColumns() != null ? reportConfig.getSkipColumns() : 0;
+
             Sheet sheet = workbook.getSheetAt(sheetIndex);
-            Map<Integer, FieldMapping> columnIndexMap = buildColumnIndexMap(sheet, headerRow, columnMappings);
+            Map<Integer, FieldMapping> columnIndexMap = buildColumnIndexMap(sheet, headerRow, columnMappings, skipColumns);
             
             for (int i = dataStartRow; i <= sheet.getLastRowNum(); i++) {
                 Row row = sheet.getRow(i);
@@ -232,44 +233,38 @@ public class ExcelUtil {
         return result;
     }
 
-    private static Map<Integer, FieldMapping> buildColumnIndexMap(Sheet sheet, int headerRow, List<FieldMapping> columnMappings) {
+    private static Map<Integer, FieldMapping> buildColumnIndexMap(Sheet sheet, int headerRow, List<FieldMapping> columnMappings, int skipColumns) {
         Map<Integer, FieldMapping> map = new HashMap<>();
         Row row = sheet.getRow(headerRow);
-        if (row == null) {
-            for (int i = 0; i < columnMappings.size(); i++) {
-                FieldMapping mapping = columnMappings.get(i);
-                String col = mapping.getExcelColumn();
-                if (StrUtil.isNotBlank(col)) {
-                    int index = col.toUpperCase().charAt(0) - 'A';
-                    map.put(index, mapping);
+        if (row != null) {
+            for (Cell cell : row) {
+                if (cell.getColumnIndex() < skipColumns) {
+                    continue;
                 }
-            }
-            return map;
-        }
-        
-        for (Cell cell : row) {
-            String columnName = getCellValueAsString(cell);
-            if (StrUtil.isNotBlank(columnName)) {
-                for (FieldMapping mapping : columnMappings) {
-                    if (columnName.trim().equalsIgnoreCase(mapping.getExcelColumn() != null ? mapping.getExcelColumn().trim() : "")) {
-                        map.put(cell.getColumnIndex(), mapping);
-                        break;
+                String columnName = getCellValueAsString(cell);
+                if (StrUtil.isNotBlank(columnName)) {
+                    for (FieldMapping mapping : columnMappings) {
+                        if (columnName.trim().equalsIgnoreCase(mapping.getExcelColumn() != null ? mapping.getExcelColumn().trim() : "")) {
+                            map.put(cell.getColumnIndex(), mapping);
+                            break;
+                        }
                     }
                 }
             }
         }
-        
+
         if (map.isEmpty()) {
             for (int i = 0; i < columnMappings.size(); i++) {
                 FieldMapping mapping = columnMappings.get(i);
                 String col = mapping.getExcelColumn();
                 if (StrUtil.isNotBlank(col)) {
                     int index = col.toUpperCase().charAt(0) - 'A';
+                    index += skipColumns;
                     map.put(index, mapping);
                 }
             }
         }
-        
+
         return map;
     }
 

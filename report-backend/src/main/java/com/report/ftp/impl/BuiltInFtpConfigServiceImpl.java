@@ -12,7 +12,7 @@ public class BuiltInFtpConfigServiceImpl extends ServiceImpl<BuiltInFtpConfigMap
 
     @Override
     public BuiltInFtpConfig getConfig() {
-        BuiltInFtpConfig config = this.getById(1L);
+        BuiltInFtpConfig config = this.baseMapper.getConfig();
         if (config == null) {
             config = new BuiltInFtpConfig();
             config.setId(1L);
@@ -27,6 +27,7 @@ public class BuiltInFtpConfigServiceImpl extends ServiceImpl<BuiltInFtpConfigMap
             config.setPassivePortStart(50000);
             config.setPassivePortEnd(50100);
             this.save(config);
+            config = this.baseMapper.getConfig();
         }
         return config;
     }

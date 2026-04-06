@@ -45,6 +45,29 @@
         <el-form-item label="数据起始行" prop="dataStartRow">
           <el-input-number v-model="form.dataStartRow" :min="1" :disabled="readonly" />
         </el-form-item>
+        <el-form-item label="跳过前N列" prop="skipColumns">
+          <el-input-number v-model="form.skipColumns" :min="0" :max="10" :disabled="readonly" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            如需跳过Excel的前几列（如序号列、ID列），请设置此值
+          </span>
+        </el-form-item>
+        <el-form-item label="日期提取规则" prop="dateExtractPattern">
+          <el-select
+            v-model="form.dateExtractPattern"
+            :disabled="readonly"
+            clearable
+            placeholder="自动识别（推荐）"
+            style="width: 300px;"
+          >
+            <el-option label="自动识别（推荐）" value="" />
+            <el-option label="yyyyMMdd 格式" value="yyyyMMdd" />
+            <el-option label="yyyy-MM-dd 格式" value="yyyy-MM-dd" />
+            <el-option label="yyyyMMdd_HHmm 格式" value="yyyyMMdd_HHmm" />
+          </el-select>
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            从文件名自动提取分区日期的格式规则
+          </span>
+        </el-form-item>
       </el-card>
 
       <el-card class="box-card" style="margin-top: 20px;">
@@ -164,6 +187,8 @@ export default {
         sheetIndex: 0,
         headerRow: 0,
         dataStartRow: 1,
+        skipColumns: 0,
+        dateExtractPattern: '',
         columnMappings: [],
         outputTable: '',
         outputMode: 'APPEND',
