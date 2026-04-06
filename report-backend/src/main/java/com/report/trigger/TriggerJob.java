@@ -11,6 +11,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.Date;
 import java.util.List;
 
@@ -50,13 +52,19 @@ public class TriggerJob implements Job {
         TriggerState state = stateManager.getOrCreate(trigger.getTriggerCode());
         Date partitionDate = new Date();
 
+        log.debug("[{}] 开始检查数据，轮询间隔: {}秒，重试: {}/{}",
+            trigger.getTriggerName(),
+            trigger.getPollIntervalSeconds(),
+            state.getRetryCount(),
+            trigger.getMaxRetries());
+
         int dataCount = triggerService.checkDataExists(trigger, partitionDate);
 
         if (dataCount > 0) {
             log.info("[{}] 检测到数据: {} 行，分区: {}", trigger.getTriggerName(), dataCount, partitionDate);
 
             if (!state.isTriggered()) {
-                triggerPipeline(trigger, partitionDate);
+                triggerPipeline(trigger, partitionDate, dataCount, state.getRetryCount());
                 stateManager.reset(trigger.getTriggerCode());
             }
         } else {
@@ -67,25 +75,54 @@ public class TriggerJob implements Job {
                 log.warn("[{}] 等待数据超时，分区: {}，重试次数: {}",
                     trigger.getTriggerName(), partitionDate, state.getRetryCount());
 
+                logTriggerExecution(trigger, partitionDate, 0, "SKIPPED", null, state.getRetryCount());
                 markTaskSkipped(trigger, partitionDate, "数据就绪超时");
                 stateManager.reset(trigger.getTriggerCode());
             } else {
                 log.debug("[{}] 等待数据中，分区: {}，重试: {}/{}",
                     trigger.getTriggerName(), partitionDate,
                     state.getRetryCount(), trigger.getMaxRetries());
+
+                logTriggerExecution(trigger, partitionDate, 0, "WAITING", null, state.getRetryCount());
             }
         }
     }
 
-    private void triggerPipeline(TriggerConfig trigger, Date partitionDate) {
+    private void triggerPipeline(TriggerConfig trigger, Date partitionDate, int dataCount, int retryCount) {
+        Long pipelineTaskId = null;
+        String status = "FAILED";
+        String errorMessage = null;
+
         try {
             log.info("[{}] 触发Pipeline: {}", trigger.getTriggerName(), trigger.getPipelineCode());
             java.time.LocalDate localDate = new java.sql.Date(partitionDate.getTime()).toLocalDate();
-            pipelineExecutor.execute(trigger.getPipelineCode(), localDate);
+            pipelineTaskId = pipelineExecutor.execute(trigger.getPipelineCode(), localDate);
             triggerService.updateLastTriggerTime(trigger.getTriggerCode());
             stateManager.getOrCreate(trigger.getTriggerCode()).setTriggered(true);
+            status = "TRIGGERED";
         } catch (Exception e) {
             log.error("[{}] Pipeline触发失败: {}", trigger.getTriggerName(), e.getMessage());
+            errorMessage = e.getMessage();
+        }
+
+        logTriggerExecution(trigger, partitionDate, dataCount, status, pipelineTaskId, retryCount);
+    }
+
+    private void logTriggerExecution(TriggerConfig trigger, Date partitionDate, int dataCount, String status, Long pipelineTaskId, int retryCount) {
+        try {
+            TriggerExecutionLog executionLog = new TriggerExecutionLog();
+            executionLog.setTriggerCode(trigger.getTriggerCode());
+            executionLog.setTriggerName(trigger.getTriggerName());
+            executionLog.setPartitionDate(partitionDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            executionLog.setDataCount(dataCount);
+            executionLog.setTriggerStatus(status);
+            executionLog.setPipelineTaskId(pipelineTaskId);
+            executionLog.setRetryCount(retryCount);
+            executionLog.setExecutionTime(partitionDate);
+
+            triggerService.logTriggerExecution(executionLog);
+        } catch (Exception e) {
+            log.error("[{}] 记录执行日志失败: {}", trigger.getTriggerName(), e.getMessage());
         }
     }
 

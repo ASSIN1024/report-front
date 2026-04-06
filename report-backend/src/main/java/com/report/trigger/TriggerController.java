@@ -4,8 +4,10 @@ import com.report.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -32,6 +34,27 @@ public class TriggerController {
             return Result.fail("触发器不存在");
         }
         return Result.success(config);
+    }
+
+    @GetMapping("/state")
+    public Result<List<TriggerRealtimeState>> getAllTriggerStates() {
+        return Result.success(triggerService.getRealtimeStates());
+    }
+
+    @GetMapping("/state/{code}")
+    public Result<TriggerRealtimeState> getTriggerState(@PathVariable String code) {
+        TriggerRealtimeState state = triggerService.getRealtimeState(code);
+        if (state == null) {
+            return Result.fail("触发器不存在");
+        }
+        return Result.success(state);
+    }
+
+    @GetMapping("/history/{code}")
+    public Result<List<TriggerExecutionLog>> getTriggerHistory(
+            @PathVariable String code,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate partitionDate) {
+        return Result.success(triggerService.getExecutionHistory(code, partitionDate));
     }
 
     @PostMapping
