@@ -52,6 +52,11 @@ report-front/
 │       ├── controller/        # REST API 控制器
 │       ├── service/           # 业务服务层
 │       ├── job/               # Quartz 定时任务
+│       ├── pipeline/          # 数据处理流水线
+│       │   ├── step/         # Step 实现
+│       │   ├── example/       # Pipeline 示例
+│       │   └── util/          # 工具类
+│       ├── trigger/           # 触发器
 │       ├── entity/            # 数据实体
 │       └── util/              # 工具类
 ├── src/                       # 前端代码 (Vue 2)
