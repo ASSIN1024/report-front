@@ -21,6 +21,10 @@
             <i class="el-icon-monitor"></i>
             <span>任务监控</span>
           </el-menu-item>
+          <el-menu-item index="/trigger-monitor">
+            <i class="el-icon-video-play"></i>
+            <span>Trigger监控</span>
+          </el-menu-item>
           <el-menu-item index="/log">
             <i class="el-icon-tickets"></i>
             <span>执行日志</span>
