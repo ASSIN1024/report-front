@@ -3,9 +3,10 @@ package com.report.trigger;
 import com.report.common.result.Result;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +17,8 @@ import java.util.Map;
 public class TriggerController {
 
     @Autowired
-    private TriggerService triggerService;
+    @Qualifier("triggerServiceImpl")
+    private ITriggerService triggerService;
 
     @GetMapping
     public Result<List<TriggerConfig>> getAllTriggers() {
@@ -54,7 +56,7 @@ public class TriggerController {
             return Result.fail("触发器不存在");
         }
 
-        LocalDate partitionDate = LocalDate.now();
+        Date partitionDate = new Date();
         int dataCount = triggerService.checkDataExists(config, partitionDate);
 
         Map<String, Object> result = new HashMap<>();

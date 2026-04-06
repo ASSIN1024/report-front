@@ -1,8 +1,8 @@
 # Harness Engineering 进度记录
 
-> **文档版本**: V1.1
+> **文档版本**: V1.2
 > **创建日期**: 2026-04-04
-> **最后更新**: 2026-04-05T21:45
+> **最后更新**: 2026-04-06T11:00
 
 ---
 
@@ -285,4 +285,97 @@ ftp:
 - ✅ progress-notes.md 会话记录已追加
 - ✅ 代码修改已完成
 - ✅ Git 已提交
+
+---
+
+### 2026-04-07 - 数据处理流水线架构设计与实现
+
+**会话目标**: 设计并实现多步Pipeline、监听器触发、分层输出的数据处理架构
+
+**需求背景**:
+- RPA上传报表到OSD表后，需要支持复杂数据处理逻辑
+- 多步处理流水线（清洗→聚合→报表）
+- 分层输出到多张表（OSD、layer_1、layer_2...）
+- 基于分区数据可用性的流程控制（等待重试机制）
+- 流水线间的监听触发机制
+- 保证幂等性，防止重跑导致的数据重复
+
+**设计决策**:
+1. **方案选择**: 代码驱动（Pipeline和Step通过Java代码定义）
+2. **触发方式**: 监听器轮询检查目标表分区
+3. **等待重试**: 分区无数据时等待后重试
+4. **跨Pipeline触发**: Pipeline之间通过监听器解耦
+5. **幂等策略**: 每个Step执行前DELETE+INSERT覆盖写入
+
+**执行任务**:
+| 任务ID | 任务名称 | 状态 | 备注 |
+|--------|----------|------|------|
+| H-PIPELINE-DESIGN | 数据处理流水线架构设计 | ✅ 完成 | 设计文档已创建 |
+| H-PIPELINE-IMPL | 数据处理流水线实现 | ✅ 完成 | 核心代码已实现 |
+
+**实现内容**:
+
+**核心组件**:
+- `Pipeline.java` - Pipeline接口
+- `PipelineStep.java` - Step接口
+- `AbstractStep.java` - Step抽象基类（幂等保证）
+- `PipelineExecutor.java` - Pipeline执行器
+- `PipelineController.java` - REST API
+- `DataCleanseStep.java` - 数据清洗Step
+- `DataAggregateStep.java` - 数据聚合Step
+- `SalesDataPipeline.java` - 销售数据流水线示例
+
+**触发器组件**:
+- `TriggerConfig.java` - 触发器配置实体
+- `ITriggerService.java` - 触发器服务接口
+- `TriggerServiceImpl.java` - 触发器服务实现
+- `TriggerState.java` - 触发状态
+- `TriggerStateManager.java` - 状态管理器
+- `TriggerJob.java` - Quartz轮询任务
+- `TriggerController.java` - REST API
+
+**数据库变更**:
+- `trigger_config` 表 - 触发器配置表
+- `pipeline_config` 表 - 流水线配置表
+- `osd_sales`, `layer_1_sales`, `layer_2_summary` 示例表
+
+**API接口**:
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/api/trigger` | GET | 获取所有触发器 |
+| `/api/trigger/{code}/test` | POST | 测试触发器检测数据 |
+| `/api/pipeline` | GET | 获取所有Pipeline |
+| `/api/pipeline/{code}/execute` | POST | 手动执行Pipeline |
+
+**完整数据流**:
+```
+RPA上传 → FTP扫描 → OSD表 → TriggerJob轮询 → PipelineExecutor → Pipeline → Steps
+                                                              ↓
+                                               Step1: DataCleanseStep → layer_1
+                                               Step2: DataAggregateStep → layer_2
+```
+
+**幂等性验证**:
+- 多次执行Pipeline，数据行数不变（覆盖而非追加）
+- layer_1_sales: 始终5行
+- layer_2_summary: 按产品汇总，数量不变
+
+**关键代码文件**:
+| 文件 | 说明 |
+|------|------|
+| `pipeline/Pipeline.java` | Pipeline接口 |
+| `pipeline/PipelineStep.java` | Step接口 |
+| `pipeline/AbstractStep.java` | 幂等保证：DELETE+INSERT |
+| `pipeline/PipelineExecutor.java` | 执行器 |
+| `pipeline/step/DataCleanseStep.java` | 清洗Step |
+| `pipeline/step/DataAggregateStep.java` | 聚合Step |
+| `trigger/TriggerJob.java` | 轮询任务 |
+| `trigger/TriggerConfig.java` | 配置实体 |
+
+**待同步到Git**:
+- 部分代码变更尚未提交（见git status）
+
+**下一步计划**:
+- [ ] 提交所有未提交的代码变更
+- [ ] 更新 progress-notes.md 本次会话记录
 
