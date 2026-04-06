@@ -20,7 +20,7 @@ public class DataCleanseStep extends AbstractStep {
     }
 
     @Override
-    protected String getTargetTable() {
+    protected String getTableName() {
         return "layer_1_sales";
     }
 
