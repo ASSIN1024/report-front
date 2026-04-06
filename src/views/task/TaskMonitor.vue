@@ -10,6 +10,8 @@
           <el-option label="FTP扫描" value="FTP_SCAN" />
           <el-option label="文件处理" value="FILE_PROCESS" />
           <el-option label="数据导入" value="DATA_IMPORT" />
+          <el-option label="流水线" value="PIPELINE" />
+          <el-option label="触发器" value="TRIGGER" />
         </el-select>
       </el-form-item>
       <el-form-item label="任务名称">
@@ -36,6 +38,8 @@
           <span v-if="row.taskType === 'FTP_SCAN'">FTP扫描</span>
           <span v-else-if="row.taskType === 'FILE_PROCESS'">文件处理</span>
           <span v-else-if="row.taskType === 'DATA_IMPORT'">数据导入</span>
+          <span v-else-if="row.taskType === 'PIPELINE'">流水线</span>
+          <span v-else-if="row.taskType === 'TRIGGER'">触发器</span>
           <span v-else>{{ row.taskType }}</span>
         </template>
       </el-table-column>

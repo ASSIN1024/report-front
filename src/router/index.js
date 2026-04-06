@@ -30,6 +30,11 @@ const routes = [
     component: () => import('@/views/task/TaskMonitor.vue')
   },
   {
+    path: '/trigger-monitor',
+    name: 'TriggerMonitor',
+    component: () => import('@/views/trigger/TriggerMonitor.vue')
+  },
+  {
     path: '/log',
     name: 'LogList',
     component: () => import('@/views/log/LogList.vue')

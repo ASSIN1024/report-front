@@ -7,8 +7,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("triggerServiceImpl")
@@ -16,6 +18,12 @@ public class TriggerServiceImpl implements ITriggerService {
 
     @Autowired
     private TriggerConfigMapper triggerConfigMapper;
+
+    @Autowired
+    private TriggerExecutionLogMapper triggerExecutionLogMapper;
+
+    @Autowired
+    private TriggerStateManager stateManager;
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
@@ -57,5 +65,58 @@ public class TriggerServiceImpl implements ITriggerService {
             config.setLastTriggerTime(new Date());
             triggerConfigMapper.updateById(config);
         }
+    }
+
+    @Override
+    public TriggerRealtimeState getRealtimeState(String triggerCode) {
+        TriggerConfig config = getByCode(triggerCode);
+        if (config == null) {
+            return null;
+        }
+
+        TriggerState state = stateManager.getOrCreate(triggerCode);
+        TriggerRealtimeState realtimeState = new TriggerRealtimeState();
+        realtimeState.setTriggerCode(config.getTriggerCode());
+        realtimeState.setTriggerName(config.getTriggerName());
+        realtimeState.setPipelineCode(config.getPipelineCode());
+        realtimeState.setPollIntervalSeconds(config.getPollIntervalSeconds());
+        realtimeState.setMaxRetries(config.getMaxRetries());
+        realtimeState.setRetryCount(state.getRetryCount());
+        realtimeState.setLastCheckTime(state.getLastCheckTime());
+        realtimeState.setLastTriggerTime(config.getLastTriggerTime());
+
+        if (state.isTriggered()) {
+            realtimeState.setStatus("TRIGGERED");
+        } else if (state.getRetryCount() >= config.getMaxRetries()) {
+            realtimeState.setStatus("SKIPPED");
+        } else {
+            realtimeState.setStatus("WAITING");
+        }
+
+        return realtimeState;
+    }
+
+    @Override
+    public List<TriggerRealtimeState> getRealtimeStates() {
+        List<TriggerConfig> configs = getAllEnabled();
+        return configs.stream()
+            .map(config -> getRealtimeState(config.getTriggerCode()))
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public void logTriggerExecution(TriggerExecutionLog log) {
+        triggerExecutionLogMapper.insert(log);
+    }
+
+    @Override
+    public List<TriggerExecutionLog> getExecutionHistory(String triggerCode, LocalDate partitionDate) {
+        LambdaQueryWrapper<TriggerExecutionLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(TriggerExecutionLog::getTriggerCode, triggerCode);
+        if (partitionDate != null) {
+            wrapper.eq(TriggerExecutionLog::getPartitionDate, partitionDate);
+        }
+        wrapper.orderByDesc(TriggerExecutionLog::getExecutionTime);
+        return triggerExecutionLogMapper.selectList(wrapper);
     }
 }
