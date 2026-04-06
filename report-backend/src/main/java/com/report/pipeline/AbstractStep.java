@@ -35,9 +35,14 @@ public abstract class AbstractStep implements PipelineStep {
         DataInsertHelper.insertData(jdbcTemplate, tableName, dataList, partitionDate);
     }
 
-    protected abstract void doExecute(StepContext context) throws StepExecutionException;
+    @Override
+    public String getTargetTable() {
+        return getTableName();
+    }
 
-    protected abstract String getTargetTable();
+    protected abstract String getTableName();
+
+    protected abstract void doExecute(StepContext context) throws StepExecutionException;
 
     @Override
     public boolean isOverwrite() {

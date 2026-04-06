@@ -20,7 +20,7 @@ public class DataAggregateStep extends AbstractStep {
     }
 
     @Override
-    protected String getTargetTable() {
+    protected String getTableName() {
         return "layer_2_summary";
     }
 
