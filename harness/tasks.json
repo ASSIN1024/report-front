@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-05T21:45",
+  "lastUpdated": "2026-04-06T11:00",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -14,6 +14,17 @@
       "dependsOn": [],
       "createdAt": "2026-04-04",
       "completedAt": "2026-04-04",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-FTP-FIX",
+      "title": "内置FTP服务修复 - MyBatis映射与自动启动",
+      "description": "修复内置FTP无法启动问题：1) BuiltInFtpConfigMapper添加getConfig方法 2) 实现配置文件驱动的自动启动 3) FtpBuiltInProperties配置属性类",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-FTP-INTEGRATION"],
+      "createdAt": "2026-04-06",
+      "completedAt": "2026-04-06",
       "assignee": "AI Assistant"
     },
     {
@@ -157,6 +168,27 @@
       "dependsOn": [],
       "createdAt": "2026-04-05",
       "completedAt": "2026-04-05",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-DESIGN",
+      "title": "数据处理流水线架构设计",
+      "description": "设计多步Pipeline、监听器触发、分区覆盖幂等的流水线架构",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-06",
+      "completedAt": "2026-04-06",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-IMPL",
+      "title": "数据处理流水线实现",
+      "description": "实现Pipeline核心接口、TriggerJob、PipelineExecutor、示例Step",
+      "status": "pending",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-DESIGN"],
+      "createdAt": "2026-04-06",
       "assignee": "AI Assistant"
     }
   ],
