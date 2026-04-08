@@ -223,3 +223,24 @@ CREATE TABLE IF NOT EXISTS table_layer_mapping (
     PRIMARY KEY (id),
     UNIQUE KEY uk_table_name (table_name)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='表分层映射表';
+
+-- 触发器状态持久化表（支持集群模式）
+CREATE TABLE IF NOT EXISTS trigger_state_record (
+    id BIGINT NOT NULL AUTO_INCREMENT COMMENT '主键ID',
+    trigger_code VARCHAR(100) NOT NULL COMMENT '触发器编码',
+    retry_count INT NOT NULL DEFAULT 0 COMMENT '重试次数',
+    last_check_time DATETIME COMMENT '最后检查时间',
+    triggered TINYINT(1) NOT NULL DEFAULT 0 COMMENT '是否已触发: 0-未触发, 1-已触发',
+    instance_id VARCHAR(200) COMMENT '实例标识',
+    version INT NOT NULL DEFAULT 0 COMMENT '乐观锁版本号',
+    create_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+    update_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+    PRIMARY KEY (id),
+    UNIQUE KEY uk_trigger_code (trigger_code),
+    KEY idx_triggered (triggered),
+    KEY idx_instance_id (instance_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='触发器状态持久化表';
+
+-- 为 processed_file 表添加唯一索引（防止重复处理）
+ALTER TABLE processed_file
+ADD UNIQUE INDEX uk_report_file (report_config_id, file_name);

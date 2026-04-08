@@ -4,6 +4,7 @@ import com.report.pipeline.PipelineExecutor;
 import com.report.service.LogService;
 import com.report.service.TaskService;
 import lombok.extern.slf4j.Slf4j;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -18,6 +19,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+@DisallowConcurrentExecution
 public class TriggerJob implements Job {
 
     @Autowired
@@ -68,7 +70,7 @@ public class TriggerJob implements Job {
                 stateManager.reset(trigger.getTriggerCode());
             }
         } else {
-            state.setRetryCount(state.getRetryCount() + 1);
+            stateManager.incrementRetryCount(trigger.getTriggerCode());
             state.setLastCheckTime(new Date());
 
             if (state.getRetryCount() > trigger.getMaxRetries()) {
@@ -98,7 +100,7 @@ public class TriggerJob implements Job {
             java.time.LocalDate localDate = new java.sql.Date(partitionDate.getTime()).toLocalDate();
             pipelineTaskId = pipelineExecutor.execute(trigger.getPipelineCode(), localDate);
             triggerService.updateLastTriggerTime(trigger.getTriggerCode());
-            stateManager.getOrCreate(trigger.getTriggerCode()).setTriggered(true);
+            stateManager.setTriggered(trigger.getTriggerCode(), true);
             status = "TRIGGERED";
         } catch (Exception e) {
             log.error("[{}] Pipeline触发失败: {}", trigger.getTriggerName(), e.getMessage());

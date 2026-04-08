@@ -23,6 +23,10 @@
 - 技术规范: [docs/superpowers/specs/](file:///home/nova/projects/report-front/docs/superpowers/specs/)
 - 实施计划: [docs/superpowers/plans/](file:///home/nova/projects/report-front/docs/superpowers/plans/)
 
+**环境配置**:
+- 开发环境: application-dev.yml (MySQL)
+- 生产环境: application-prod.yml (GaussDB)
+
 ---
 
 ## 目录结构
@@ -75,6 +79,12 @@ report-front/
 - **连接池**: Druid
 - **定时任务**: Quartz
 - **JDK版本**: 1.8
+
+### 任务调度
+- **框架**: Quartz Scheduler
+- **模式**: JDBC 集群模式（支持多实例）
+- **集群心跳**: 20秒
+- **Misfire阈值**: 60秒
 
 ### 前端
 - **框架**: Vue 2.6
