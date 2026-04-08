@@ -41,3 +41,9 @@ ftp:
     passive-port-start: 50000
     passive-port-end: 50100
     max-threads: 5
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/**/*.xml
+  type-aliases-package: com.report.entity
+  configuration:
+    map-underscore-to-camel-case: true
