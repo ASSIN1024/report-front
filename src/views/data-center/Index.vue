@@ -62,7 +62,7 @@
               </div>
             </div>
             <div class="table-tags">
-              <span class="tag" :class="item.tableLayer?.toLowerCase()">{{ item.tableLayer || '未分层' }}</span>
+              <span class="tag" :class="getLayerClass(item.tableLayer)">{{ item.tableLayer || '未分层' }}</span>
               <span class="tag" v-if="item.businessDomain">{{ item.businessDomain }}</span>
             </div>
           </div>
@@ -295,6 +295,9 @@ export default {
     },
     getLayerAbbr(layer) {
       return layer || '??'
+    },
+    getLayerClass(layer) {
+      return layer ? layer.toLowerCase() : ''
     }
   }
 }
