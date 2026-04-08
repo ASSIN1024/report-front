@@ -191,6 +191,28 @@
       "createdAt": "2026-04-06",
       "completedAt": "2026-04-06",
       "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-DATA-CENTER",
+      "title": "数据中心 - 表管理功能",
+      "description": "前端数据中心模块：对数据库表进行分层标记和管理，支持查看表结构和数据预览",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-08",
+      "completedAt": "2026-04-08",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-TABLE-NAMING",
+      "title": "数据表命名规范制定",
+      "description": "制定数据仓库表命名规范：ods/dwd/dws/ads/dim/mid/tmp 分层前缀，sys_系统表前缀",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-DATA-CENTER"],
+      "createdAt": "2026-04-08",
+      "completedAt": "2026-04-08",
+      "assignee": "AI Assistant"
     }
   ],
   "conventions": {

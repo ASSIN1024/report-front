@@ -379,3 +379,120 @@ RPA上传 → FTP扫描 → OSD表 → TriggerJob轮询 → PipelineExecutor →
 - [x] 提交所有未提交的代码变更
 - [x] 更新 progress-notes.md 本次会话记录
 
+---
+
+### 2026-04-08 - 数据中心与表命名规范
+
+**会话目标**: 实现数据中心模块，制定数据仓库表命名规范
+
+**需求背景**:
+- 当前项目通过报表配置、Pipeline、Trigger产出大量数据表
+- 每次产生的表都需要使用数据库管理软件查看
+- 希望在前端页面对数据库进行分层标记和管理
+- 需要统一的表命名规范
+
+**需求确认过程**:
+1. 分层方式：混合（流向分层 + 来源分类）
+2. 查看功能：只读浏览（分页 + 条件筛选）
+3. 权限控制：无限制，所有登录用户可查看
+4. 管理能力：只读管理 + 标记管理
+5. 界面布局：左侧筛选面板 + 右侧表列表和详情
+6. 自动发现：半自动（扫描发现 + 手动标记）
+7. 业务域：模糊匹配输入（业务划分混乱，无法归类）
+
+**表命名规范制定**:
+
+| 分层 | 前缀 | 说明 |
+|------|------|------|
+| 原始数据层 | `ods_` | 来自源系统的原始数据 |
+| 明细数据层 | `dwd_` | 标准化的明细数据 |
+| 汇总数据层 | `dws_` | 轻度汇总数据 |
+| 应用数据层 | `ads_` | 最终应用数据 |
+| 维度表层 | `dim_` | 维度表 |
+| 中间数据层 | `mid_` | 各层级之间的过渡/中间表 |
+| 临时数据层 | `tmp_` | 临时计算，用完即删 |
+
+系统表前缀：`sys_`
+
+**关键决策**:
+1. 扫描逻辑改为**白名单模式**：只扫描 ods/dwd/dws/ads/dim/mid/tmp 前缀的表
+2. 业务域采用模糊匹配而非下拉选择（业务划分混乱）
+3. 中间表统一使用 `mid_` 前缀（stg 和 mid 合并）
+4. 时间戳显示格式化（自动转为 YYYY-MM-DD HH:mm:ss）
+
+**执行任务**:
+| 任务ID | 任务名称 | 状态 | 备注 |
+|--------|----------|------|------|
+| H-DATA-CENTER | 数据中心 - 表管理功能 | ✅ 完成 | 全部功能已实现 |
+| H-TABLE-NAMING | 数据表命名规范制定 | ✅ 完成 | 规范已写入 README.md |
+
+**实现内容**:
+
+**数据库变更**:
+- `table_layer_mapping` 表 - 表分层映射表
+
+**后端实现**:
+- `TableLayerMapping.java` - 实体类
+- `TableLayerMappingMapper.java` - Mapper接口
+- `DataCenterService.java` - Service接口
+- `DataCenterServiceImpl.java` - Service实现（含SQL注入防护）
+- `DataCenterController.java` - REST API控制器
+
+**前端实现**:
+- `src/api/dataCenter.js` - API请求封装
+- `src/views/data-center/Index.vue` - 数据中心页面组件
+- `src/router/index.js` - 添加 /data-center 路由
+- `src/App.vue` - 添加数据中心菜单
+
+**API接口**:
+| 接口 | 方法 | 说明 |
+|------|------|------|
+| `/api/data-center/tables` | GET | 获取表列表（支持多维度筛选） |
+| `/api/data-center/tables/{tableName}` | GET | 获取表详情 |
+| `/api/data-center/tables/{tableName}/columns` | GET | 获取表字段信息 |
+| `/api/data-center/tables/{tableName}/data` | GET | 获取表数据（分页+筛选） |
+| `/api/data-center/tables` | PUT | 更新表标记信息 |
+| `/api/data-center/untagged` | GET | 获取未标记表 |
+| `/api/data-center/scan` | POST | 扫描新表 |
+
+**TDD测试**:
+- `DataCenterServiceTest.java` - 5个测试用例全部通过
+  - testScanNewTables
+  - testGetTableData_invalidTableName
+  - testGetTableData_invalidCondition
+  - testListUntaggedTables
+  - testGetTableColumns_invalidTableName
+
+**文档输出**:
+- `docs/superpowers/specs/2026-04-08-data-center-design.md` - 设计文档
+- `docs/superpowers/plans/2026-04-08-data-center-plan.md` - 实施计划
+- `docs/superpowers/specs/data-center-prototype.html` - 原型页面
+- `docs/superpowers/specs/table-naming-convention.md` - 表命名规范文档
+- `README.md` - 添加 7.数据中心与表命名规范 章节
+
+**Git提交** (9个commits):
+| Commit | 描述 |
+|--------|------|
+| `39dc1b5` | 添加 table_layer_mapping 表 |
+| `de9a4bc` | 添加 TableLayerMapping 实体和 Mapper |
+| `aa6df5f` | 添加 DataCenterService 服务层 |
+| `909a660` | 添加 DataCenterController 接口层 |
+| `4f18b32` | 添加数据中心 API 接口 |
+| `324fdd5` | 添加数据中心路由配置 |
+| `ee5cd1b` | 添加数据中心前端页面 |
+| `0f14590` | 修复可选链语法兼容性问题 |
+| `d16c88a` | 添加 DataCenterService TDD 测试 |
+
+**Harness上下文同步检查**:
+- ✅ tasks.json 任务状态已更新 (H-DATA-CENTER, H-TABLE-NAMING)
+- ✅ progress-notes.md 会话记录已追加
+- ✅ 设计/计划文档已更新
+- ✅ Git 已提交
+- ✅ README.md 已更新
+
+**下一步计划**:
+- ✅ 功能开发完成
+- ✅ TDD测试验证 - 5个测试全部通过
+- ✅ 服务启动测试 - 前后端运行正常
+- [ ] 代码推送 - 待用户确认
+
