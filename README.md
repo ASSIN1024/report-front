@@ -210,7 +210,7 @@
 | Spring Boot      | 2.1.2  | 应用框架    |
 | MyBatis-Plus     | 3.4.3  | ORM框架   |
 | Apache FtpServer | 1.2.0  | 内置FTP服务 |
-| Quartz           | 内置     | 任务调度    |
+| Quartz           | JDBC集群模式 | 任务调度    |
 | Druid            | 1.1.20 | 数据库连接池  |
 | Apache POI       | 4.1.2  | Excel解析 |
 | Hutool           | 5.8.25 | 工具库     |
@@ -549,6 +549,69 @@ AND (
 ---
 
 ## 配置说明
+
+### Quartz 集群配置
+
+本系统采用 **Quartz JDBC 集群模式**，支持多实例部署且任务不会重复执行。
+
+#### 集群特性
+
+| 特性 | 说明 |
+|------|------|
+| **集群模式** | `isClustered: true` |
+| **集群心跳** | 20秒 |
+| **Misfire阈值** | 60秒 |
+| **实例ID** | 自动生成 (hostname-pid) |
+| **并发控制** | `@DisallowConcurrentExecution` |
+
+#### 环境配置
+
+| 环境 | 配置文件 | 数据库 | 说明 |
+|------|----------|--------|------|
+| 开发 | `application-dev.yml` | MySQL | 本地开发环境 |
+| 生产 | `application-prod.yml` | GaussDB | 内网生产环境 |
+
+#### 生产环境部署
+
+1. **添加 GaussDB 驱动依赖**：
+
+```xml
+<dependency>
+    <groupId>org.opengauss</groupId>
+    <artifactId>opengauss-jdbc</artifactId>
+    <version>5.0.0</version>
+</dependency>
+```
+
+2. **配置环境变量**：
+
+```bash
+export GAUSSDB_HOST=your-gaussdb-host
+export GAUSSDB_PORT=5432
+export GAUSSDB_DB=report_db
+export GAUSSDB_USER=report_user
+export GAUSSDB_PASSWORD=your-password
+```
+
+3. **启动生产环境**：
+
+```bash
+java -jar report-backend-1.0.0.jar --spring.profiles.active=prod
+```
+
+#### 数据库表
+
+首次启动时会自动创建以下 Quartz 集群表：
+
+| 表名 | 说明 |
+|------|------|
+| `QRTZ_JOB_DETAILS` | 任务详情 |
+| `QRTZ_TRIGGERS` | 触发器 |
+| `QRTZ_SIMPLE_TRIGGERS` | 简单触发器 |
+| `QRTZ_FIRED_TRIGGERS` | 正在执行的触发器 |
+| `QRTZ_SCHEDULER_STATE` | 调度器状态 |
+| `QRTZ_LOCKS` | 分布式锁 |
+| ... | (共11张表) |
 
 ### 外部FTP配置
 
@@ -906,4 +969,6 @@ feat(ftp): 添加内置FTP服务
 | 2026-04-05 | V1.0 | 初始版本发布      |
 | 2026-04-05 | V1.1 | 新增内置FTP服务模块 |
 | 2026-04-06 | V1.2 | 修复内置FTP MyBatis映射问题，新增配置驱动自动启动 |
+| 2026-04-08 | V1.3 | 新增数据中心模块、表管理功能、表命名规范 |
+| 2026-04-09 | V1.4 | Quartz JDBC集群模式迁移，支持多实例部署和MySQL/GaussDB环境隔离 |
 
