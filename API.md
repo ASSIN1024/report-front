@@ -742,6 +742,7 @@ handlePagination({ page, rows }) {
 | 2026-03-30 | V1.1 | [修改] 更新基础路径端口(8080→8082) | - | TASK-007 |
 | 2026-04-01 | V1.2 | [新增] 分页功能实现说明 | AI Assistant | PAGE-001 |
 | 2026-04-07 | V1.3 | [新增] Pipeline/Trigger API 文档 | AI Assistant | H-PIPELINE-IMPL |
+| 2026-04-08 | V1.4 | [新增] 数据中心 API 文档 | AI Assistant | H-DATA-CENTER |
 
 ---
 
@@ -870,6 +871,310 @@ POST /api/trigger/{code}/test
         "partitionDate": "2026-04-07",
         "dataCount": 5,
         "hasData": true
+    }
+}
+```
+
+---
+
+## 11. 数据中心接口
+
+### 11.1 获取表列表
+
+获取已标记的数据表列表，支持多维度筛选。
+
+**请求**
+```
+GET /api/data-center/tables
+```
+
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| tableLayer | String | 否 | 流向分层 (ODS/DWD/DWS/ADS) |
+| sourceType | String | 否 | 来源类型 (FTP来源/TRIGGER/PIPELINE/MANUAL) |
+| businessDomain | String | 否 | 业务域 (模糊匹配) |
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": [
+        {
+            "id": 1,
+            "tableName": "ods_sales",
+            "tableLayer": "ODS",
+            "sourceType": "FTP来源",
+            "sourceId": 1,
+            "sourceName": "测试FTP",
+            "businessDomain": "销售",
+            "description": "销售原始数据",
+            "tags": "[\"月度\",\"贷前\"]",
+            "marked": 1,
+            "createTime": "2026-04-08 10:00:00",
+            "updateTime": "2026-04-08 10:00:00"
+        }
+    ]
+}
+```
+
+### 11.2 获取表详情
+
+**请求**
+```
+GET /api/data-center/tables/{tableName}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "id": 1,
+        "tableName": "ods_sales",
+        "tableLayer": "ODS",
+        "sourceType": "FTP来源",
+        "sourceId": 1,
+        "sourceName": "测试FTP",
+        "businessDomain": "销售",
+        "description": "销售原始数据",
+        "tags": "[\"月度\",\"贷前\"]",
+        "marked": 1
+    }
+}
+```
+
+### 11.3 获取表字段信息
+
+**请求**
+```
+GET /api/data-center/tables/{tableName}/columns
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": [
+        {
+            "columnName": "id",
+            "dataType": "bigint",
+            "columnComment": "主键ID"
+        },
+        {
+            "columnName": "order_no",
+            "dataType": "varchar",
+            "columnComment": "订单编号"
+        },
+        {
+            "columnName": "amount",
+            "dataType": "decimal",
+            "columnComment": "金额"
+        }
+    ]
+}
+```
+
+### 11.4 获取表数据（分页预览）
+
+**请求**
+```
+GET /api/data-center/tables/{tableName}/data
+```
+
+**参数**
+| 参数 | 类型 | 必填 | 说明 |
+|------|------|------|------|
+| pageNum | Integer | 否 | 页码 (默认1) |
+| pageSize | Integer | 否 | 每页条数 (默认20) |
+| condition | String | 否 | 筛选条件 (如: name LIKE '%张三%') |
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "records": [
+            {
+                "id": 1,
+                "order_no": "LN202401001",
+                "customer_name": "张三",
+                "amount": 100000.00,
+                "pt_dt": "2024-01-15"
+            }
+        ],
+        "total": 100,
+        "size": 20,
+        "current": 1,
+        "pages": 5
+    }
+}
+```
+
+### 11.5 更新表标记信息
+
+**请求**
+```
+PUT /api/data-center/tables
+Content-Type: application/json
+```
+
+**请求体**
+```json
+{
+    "id": 1,
+    "tableName": "ods_sales",
+    "tableLayer": "ODS",
+    "sourceType": "FTP来源",
+    "businessDomain": "销售",
+    "description": "销售原始数据",
+    "tags": "[\"月度\",\"贷前\"]"
+}
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": null
+}
+```
+
+### 11.6 获取未标记表
+
+**请求**
+```
+GET /api/data-center/untagged
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": [
+        {
+            "id": 2,
+            "tableName": "ods_customer",
+            "marked": 0,
+            "createTime": "2026-04-08 12:00:00"
+        }
+    ]
+}
+```
+
+### 11.7 扫描新表
+
+扫描数据库中发现的新表（符合命名规范的 ods/dwd/dws/ads/dim/mid/tmp 前缀）。
+
+**请求**
+```
+POST /api/data-center/scan
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": ["ods_new_table", "dwd_summary"]
+}
+```
+
+---
+
+## 12. 内置FTP接口
+
+### 12.1 获取配置
+
+**请求**
+```
+GET /api/built-in-ftp/config
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "enabled": true,
+        "port": 2021,
+        "username": "rpa_user",
+        "rootDirectory": "/data/ftp-root",
+        "maxConnections": 10,
+        "idleTimeout": 300,
+        "passiveMode": true
+    }
+}
+```
+
+### 12.2 更新配置
+
+**请求**
+```
+PUT /api/built-in-ftp/config
+Content-Type: application/json
+```
+
+**请求体**
+```json
+{
+    "enabled": true,
+    "port": 2021,
+    "username": "rpa_user",
+    "password": "new_password",
+    "rootDirectory": "/data/ftp-root",
+    "maxConnections": 10,
+    "idleTimeout": 300,
+    "passiveMode": true
+}
+```
+
+### 12.3 启动FTP服务
+
+**请求**
+```
+POST /api/built-in-ftp/start
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": null
+}
+```
+
+### 12.4 停止FTP服务
+
+**请求**
+```
+POST /api/built-in-ftp/stop
+```
+
+### 12.5 获取服务状态
+
+**请求**
+```
+GET /api/built-in-ftp/status
+```
+
+**响应**
+```json
+{
+    "code": 200,
+    "message": "操作成功",
+    "data": {
+        "running": true,
+        "port": 2021,
+        "startTime": "2026-04-08 10:00:00"
     }
 }
 ```
