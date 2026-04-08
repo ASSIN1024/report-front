@@ -9,6 +9,11 @@ const routes = [
     redirect: '/ftp'
   },
   {
+    path: '/data-center',
+    name: 'DataCenter',
+    component: () => import('@/views/data-center/Index.vue')
+  },
+  {
     path: '/ftp',
     name: 'FtpConfig',
     component: () => import('@/views/ftp/FtpConfig.vue')
