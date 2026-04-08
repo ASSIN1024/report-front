@@ -72,8 +72,17 @@ public class DataCenterServiceImpl implements DataCenterService {
     public List<String> scanNewTables() {
         String sql = "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES " +
                      "WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE' " +
-                     "AND TABLE_NAME NOT LIKE '\\_%' AND TABLE_NAME NOT IN (" +
-                     "SELECT table_name FROM table_layer_mapping" +
+                     "AND TABLE_NAME NOT IN (" +
+                     "  SELECT table_name FROM table_layer_mapping" +
+                     ") " +
+                     "AND (" +
+                     "  TABLE_NAME LIKE 'ods\\_%' OR " +
+                     "  TABLE_NAME LIKE 'dwd\\_%' OR " +
+                     "  TABLE_NAME LIKE 'dws\\_%' OR " +
+                     "  TABLE_NAME LIKE 'ads\\_%' OR " +
+                     "  TABLE_NAME LIKE 'dim\\_%' OR " +
+                     "  TABLE_NAME LIKE 'mid\\_%' OR " +
+                     "  TABLE_NAME LIKE 'tmp\\_%'" +
                      ")";
         List<String> newTables = jdbcTemplate.queryForList(sql, String.class);
 

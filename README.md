@@ -454,7 +454,99 @@ server {
 - 点击任务查看详细日志
 - 支持按状态、时间筛选
 
-***
+---
+
+### 7. 数据中心与表命名规范
+
+进入 **数据中心** 页面，可以查看和管理所有业务数据表。
+
+#### 7.1 表分层规范
+
+系统采用分层架构管理数据表：
+
+| 分层 | 前缀 | 说明 |
+|------|------|------|
+| 原始数据层 | `ods_` | 来自源系统的原始数据 |
+| 明细数据层 | `dwd_` | 标准化的明细数据 |
+| 汇总数据层 | `dws_` | 轻度汇总数据 |
+| 应用数据层 | `ads_` | 最终应用数据 |
+| 维度表层 | `dim_` | 维度表 |
+| 中间数据层 | `mid_` | 各层级之间的过渡/中间表 |
+| 临时数据层 | `tmp_` | 临时计算，用完即删 |
+
+#### 7.2 系统表命名
+
+系统表统一使用 `sys_` 前缀：
+
+```
+sys_ftp_config
+sys_trigger_config
+sys_task_execution
+sys_operation_log
+```
+
+**注意**：系统表不纳入数据资产管理范围。
+
+#### 7.3 命名格式
+
+```
+{分层前缀}_{业务域}_{主题}_{版本?}
+
+示例：
+ods_sales_202401          # 销售原始数据 2024年1月
+dwd_customer_base         # 客户明细基础表
+dws_sales_daily           # 销售每日汇总
+ads_finance_monthly       # 财务月度报表
+dim_product               # 产品维度表
+mid_sales_clean           # 销售数据清洗中间表
+tmp_monthly_calc          # 月度计算临时表
+```
+
+#### 7.4 命名规则
+
+1. **全小写**，单词间用下划线分隔
+2. **不超过 50 字符**
+3. **避免缩写**
+   - ✅ `amount`, `count`, `customer`
+   - ❌ `amt`, `cnt`, `cust`
+4. **版本号用 `_v1`, `_v2` 后缀**
+5. **日期分区用 `_YYYYMMDD` 后缀**
+
+#### 7.5 中间表说明
+
+| 前缀 | 用途 |
+|------|------|
+| `mid_` | 各层级之间的过渡/中间表，保留周期中等 |
+| `tmp_` | 临时计算，用完即删 |
+
+#### 7.6 不规范表命名示例
+
+| 原表名 | 建议新名称 | 问题 |
+|--------|-----------|------|
+| `osd_sales` | `ods_sales` | 拼写错误 |
+| `osd_nanping` | `ods_nanping` | 拼写错误 |
+| `layer_1_sales` | `dws_sales_summary_v1` | 不规范前缀 |
+| `layer_2_summary` | `dws_summary_layer2` | 不规范前缀 |
+| `t_sales_data` | `ods_sales_data` | 缺少分层前缀 |
+| `t_customer_info` | `dim_customer_info` | 缺少分层前缀 |
+
+#### 7.7 扫描规则
+
+数据中心模块扫描业务表时，只扫描以下前缀的表：
+
+```sql
+AND (
+    TABLE_NAME LIKE 'ods_%' OR
+    TABLE_NAME LIKE 'dwd_%' OR
+    TABLE_NAME LIKE 'dws_%' OR
+    TABLE_NAME LIKE 'ads_%' OR
+    TABLE_NAME LIKE 'dim_%' OR
+    TABLE_NAME LIKE 'mid_%' OR
+    TABLE_NAME LIKE 'tmp_%'
+)
+```
+
+---
 
 ## 配置说明
 

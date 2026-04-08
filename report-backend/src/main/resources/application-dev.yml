@@ -42,7 +42,7 @@ mybatis-plus:
 ftp:
   built-in:
     enabled: true
-    port: 2121
+    port: 9021
     username: rpa_user
     password: rpa_password
     root-directory: /home/nova/projects/report-front/data/ftp-root
