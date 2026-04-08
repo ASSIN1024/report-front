@@ -9,6 +9,10 @@
           text-color="#bfcbd9"
           active-text-color="#409EFF"
         >
+          <el-menu-item index="/data-center">
+            <i class="el-icon-collection"></i>
+            <span>数据中心</span>
+          </el-menu-item>
           <el-menu-item index="/ftp">
             <i class="el-icon-connection"></i>
             <span>FTP配置</span>
