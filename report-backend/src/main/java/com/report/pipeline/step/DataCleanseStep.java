@@ -1,18 +1,31 @@
 package com.report.pipeline.step;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.report.entity.dwd.Layer1Sales;
+import com.report.entity.ods.OsdSales;
 import com.report.entity.dto.StepContext;
-import com.report.pipeline.AbstractStep;
+import com.report.mapper.Layer1SalesMapper;
+import com.report.mapper.OsdSalesMapper;
+import com.report.pipeline.MyBatisPlusAbstractStep;
 import com.report.pipeline.StepExecutionException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Component
-public class DataCleanseStep extends AbstractStep {
+public class DataCleanseStep extends MyBatisPlusAbstractStep {
+
+    @Autowired
+    private OsdSalesMapper osdSalesMapper;
+
+    @Autowired
+    private Layer1SalesMapper layer1SalesMapper;
 
     @Override
     public String getStepName() {
@@ -26,27 +39,36 @@ public class DataCleanseStep extends AbstractStep {
 
     @Override
     protected void doExecute(StepContext context) throws StepExecutionException {
-        log.info("[数据清洗] 从 OSD 表读取数据，分区: {}", context.getPartitionDate());
+        LocalDate partitionDate = context.getPartitionDate();
 
-        List<Map<String, Object>> rawData = jdbcTemplate.queryForList(
-            "SELECT * FROM osd_sales WHERE pt_dt = ?",
-            java.sql.Date.valueOf(context.getPartitionDate())
+        log.info("[数据清洗] 从 OSD 表读取数据，分区: {}", partitionDate);
+
+        List<OsdSales> rawData = osdSalesMapper.selectList(
+            new LambdaQueryWrapper<OsdSales>()
+                .eq(OsdSales::getPtDt, partitionDate)
         );
 
         log.info("[数据清洗] 读取到 {} 行数据", rawData.size());
 
-        for (Map<String, Object> row : rawData) {
-            cleanseRow(row);
-            row.put("pt_dt", context.getPartitionDate());
-        }
+        List<Layer1Sales> cleansedData = rawData.stream()
+            .map(this::cleanseRow)
+            .collect(Collectors.toList());
 
-        insertData(getTargetTable(), rawData, context.getPartitionDate());
-        log.info("[数据清洗] 完成，写入 {} 行到 {}", rawData.size(), getTargetTable());
+        insertBatch(layer1SalesMapper, cleansedData);
+        log.info("[数据清洗] 完成，写入 {} 行到 {}", cleansedData.size(), getTargetTable());
     }
 
-    private void cleanseRow(Map<String, Object> row) {
-        if (row.get("amount") == null || "".equals(row.get("amount"))) {
-            row.put("amount", BigDecimal.ZERO);
+    private Layer1Sales cleanseRow(OsdSales rawRow) {
+        Layer1Sales cleansed = new Layer1Sales();
+        cleansed.setProductName(rawRow.getProductName());
+
+        if (rawRow.getAmount() == null || rawRow.getAmount().compareTo(BigDecimal.ZERO) < 0) {
+            cleansed.setAmount(BigDecimal.ZERO);
+        } else {
+            cleansed.setAmount(rawRow.getAmount());
         }
+
+        cleansed.setPtDt(rawRow.getPtDt());
+        return cleansed;
     }
 }
