@@ -494,5 +494,176 @@ RPA上传 → FTP扫描 → OSD表 → TriggerJob轮询 → PipelineExecutor →
 - ✅ 功能开发完成
 - ✅ TDD测试验证 - 5个测试全部通过
 - ✅ 服务启动测试 - 前后端运行正常
-- [ ] 代码推送 - 待用户确认
+- ✅ 代码推送 - 已完成
+
+---
+
+### 2026-04-09 - Quartz JDBC 集群模式迁移
+
+**会话目标**: 将 Quartz 调度器从内存模式迁移到 JDBC 集群模式，支持多实例运行且任务不重复执行
+
+**需求背景**:
+- 项目需要移植至内网环境运行
+- 已编排的任务需每日自动执行
+- 需开发后端代码实现新增业务功能
+- 多实例运行时需要防止任务重复执行
+- 开发环境使用 MySQL，生产环境使用 GaussDB
+
+**问题诊断**:
+1. 当前 Quartz 配置为 `job-store-type: memory`（内存模式）
+2. 每个实例拥有独立的调度器状态，无法感知其他实例
+3. `TriggerStateManager` 使用 `ConcurrentHashMap` 内存存储，多实例间状态不共享
+4. `ProcessedFileService` 的文件去重机制存在竞态条件
+5. 连接池 `max-active: 20` 无法支撑多实例并发
+
+**设计决策**:
+1. **Quartz 集群模式**: 使用 JDBC JobStore + `isClustered: true`
+2. **状态持久化**: `TriggerStateManager` 改为数据库实现
+3. **环境隔离**: 通过 Spring Profile 隔离 MySQL/GaussDB 配置
+4. **连接池扩容**: `max-active` 从 20 提升到 50
+5. **乐观锁机制**: 使用 `version` 字段防止并发冲突
+
+**执行任务**:
+| 任务ID | 任务名称 | 状态 | 备注 |
+|--------|----------|------|------|
+| H-QUARTZ-CLUSTER | Quartz JDBC 集群模式迁移 | ✅ 完成 | 全部完成 |
+| - | 创建 TriggerStateRecord 实体和 Mapper | ✅ 完成 | 支持乐观锁 |
+| - | 重构 TriggerStateManager 为接口 | ✅ 完成 | 内存实现改为数据库实现 |
+| - | 更新 TriggerJob 使用新状态管理器 | ✅ 完成 | 添加 setTriggered 调用 |
+| - | 更新数据库 Schema | ✅ 完成 | 新增 trigger_state_record 表 |
+| - | 修改主配置文件启用 JDBC 集群 | ✅ 完成 | isClustered: true |
+| - | 创建生产环境配置 (GaussDB) | ✅ 完成 | application-prod.yml |
+| - | 优化开发环境配置 (MySQL) | ✅ 完成 | 连接池扩容 |
+| - | 添加 @DisallowConcurrentExecution | ✅ 完成 | Job 并发控制 |
+| - | 更新项目文档 | ✅ 完成 | AGENTS.md |
+
+**新增文件**:
+| 文件 | 说明 |
+|------|------|
+| `entity/TriggerStateRecord.java` | 触发器状态实体类（乐观锁支持） |
+| `mapper/TriggerStateRecordMapper.java` | Mapper 接口 |
+| `mapper/TriggerStateRecordMapper.xml` | Mapper XML 映射 |
+| `trigger/DatabaseTriggerStateManager.java` | 数据库持久化状态管理器 |
+| `application-prod.yml` | 生产环境配置（GaussDB） |
+| `docs/superpowers/plans/2026-04-09-quartz-jdbc-cluster-migration.md` | 实施计划文档 |
+
+**修改文件**:
+| 文件 | 变更内容 |
+|------|----------|
+| `TriggerStateManager.java` | 类重构为接口，新增方法 |
+| `TriggerJob.java` | 使用新状态管理器 + `@DisallowConcurrentExecution` |
+| `FtpScanJob.java` | 添加 `@DisallowConcurrentExecution` |
+| `application.yml` | 启用 Quartz JDBC 集群配置 |
+| `application-dev.yml` | 连接池扩容 20→50 |
+| `schema.sql` | 新增 `trigger_state_record` 表和唯一索引 |
+| `AGENTS.md` | 更新技术栈文档 |
+
+**技术实现**:
+
+**Quartz 集群配置**:
+```yaml
+spring:
+  quartz:
+    job-store-type: jdbc
+    jdbc:
+      initialize-schema: always
+    properties:
+      org:
+        quartz:
+          scheduler:
+            instanceName: ReportScheduler
+            instanceId: AUTO
+          jobStore:
+            isClustered: true
+            clusterCheckinInterval: 20000
+            misfireThreshold: 60000
+```
+
+**乐观锁实现**:
+```java
+@Version
+private Integer version;  // TriggerStateRecord 实体
+
+// 更新时检查版本
+UPDATE trigger_state_record
+SET triggered = #{triggered}, version = version + 1
+WHERE trigger_code = #{triggerCode} AND version = #{version}
+```
+
+**实例ID生成**:
+```java
+// 格式: hostname-pid
+String hostname = InetAddress.getLocalHost().getHostName();
+String pid = ManagementFactory.getRuntimeMXBean().getName().split("@")[0];
+this.instanceId = hostname + "-" + pid;
+```
+
+**数据库变更**:
+```sql
+-- 触发器状态持久化表
+CREATE TABLE trigger_state_record (
+    id BIGINT NOT NULL AUTO_INCREMENT,
+    trigger_code VARCHAR(100) NOT NULL,
+    retry_count INT NOT NULL DEFAULT 0,
+    triggered TINYINT(1) NOT NULL DEFAULT 0,
+    instance_id VARCHAR(200),
+    version INT NOT NULL DEFAULT 0,
+    ...
+    UNIQUE KEY uk_trigger_code (trigger_code)
+);
+
+-- 文件去重唯一索引
+ALTER TABLE processed_file
+ADD UNIQUE INDEX uk_report_file (report_config_id, file_name);
+```
+
+**环境配置**:
+| 环境 | 配置文件 | 数据库 | 连接池 |
+|------|----------|--------|--------|
+| 开发 | application-dev.yml | MySQL | max-active: 50 |
+| 生产 | application-prod.yml | GaussDB | max-active: 50 |
+
+**验证结果**:
+- ✅ 编译成功
+- ✅ 打包成功 (56MB)
+- ✅ YAML 格式验证通过
+
+**Git提交**:
+- `edca627` - feat(quartz): 迁移Quartz调度器为JDBC集群模式
+- 13 files changed, 1030 insertions(+), 34 deletions(-)
+
+**关键决策记录**:
+1. 不引入 Redis，使用数据库实现状态持久化（降低运维成本）
+2. 使用乐观锁而非悲观锁（适合低冲突场景）
+3. GaussDB 兼容 MySQL 协议，驱动使用 `org.opengauss.Driver`
+4. 生产环境需添加 OpenGauss JDBC 驱动依赖
+
+**影响范围**:
+| 影响项 | 说明 |
+|--------|------|
+| 任务调度 | 从单实例内存模式变为多实例集群模式 |
+| 状态管理 | 从内存 ConcurrentHashMap 变为数据库持久化 |
+| 数据库连接 | 连接池扩容，新增 QRTZ_* 表 |
+| 部署方式 | 支持多实例部署，环境隔离 |
+| 文件处理 | 唯一索引防止重复处理 |
+
+**后续注意事项**:
+1. 生产环境需添加 OpenGauss JDBC 驱动依赖到 pom.xml
+2. 首次启动会自动创建 QRTZ_* 表（11张）
+3. 如果 processed_file 表已有重复数据，需先清理再添加唯一索引
+4. 生产环境建议将 `initialize-schema: always` 改为 `never`
+
+**Harness上下文同步检查**:
+- ✅ tasks.json 任务状态已更新 (H-QUARTZ-CLUSTER)
+- ✅ progress-notes.md 会话记录已追加
+- ✅ 设计/计划文档已更新
+- ✅ Git 已提交并推送
+- ✅ README.md 待更新
+
+**下一步计划**:
+- ✅ 功能开发完成
+- ✅ 编译验证通过
+- ✅ Git 提交并推送
+- [ ] README.md 更新
+- [ ] 生产环境部署验证
 

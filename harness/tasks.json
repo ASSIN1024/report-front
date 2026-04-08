@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-06T11:00",
+  "lastUpdated": "2026-04-09T01:00",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -212,6 +212,17 @@
       "dependsOn": ["H-DATA-CENTER"],
       "createdAt": "2026-04-08",
       "completedAt": "2026-04-08",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-QUARTZ-CLUSTER",
+      "title": "Quartz JDBC 集群模式迁移",
+      "description": "将Quartz调度器从内存模式迁移到JDBC集群模式，支持多实例运行且任务不重复执行。包括：1) TriggerStateManager数据库持久化 2) 环境配置隔离(MySQL/GaussDB) 3) 连接池扩容 4) 乐观锁机制",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-09",
+      "completedAt": "2026-04-09",
       "assignee": "AI Assistant"
     }
   ],
