@@ -15,6 +15,7 @@ import com.report.service.TaskService;
 import com.report.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPClient;
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
 import org.quartz.JobExecutionException;
@@ -28,6 +29,7 @@ import java.util.List;
 
 @Slf4j
 @Component
+@DisallowConcurrentExecution
 public class FtpScanJob implements Job {
 
     @Autowired

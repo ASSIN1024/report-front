@@ -1,10 +1,10 @@
 spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
-    driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:3306/report_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
-    password: root123
+    driver-class-name: org.opengauss.Driver
+    url: jdbc:opengauss://${GAUSSDB_HOST:localhost}:${GAUSSDB_PORT:5432}/${GAUSSDB_DB:report_db}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${GAUSSDB_USER:report_user}
+    password: ${GAUSSDB_PASSWORD:password}
     druid:
       initial-size: 10
       min-idle: 10
@@ -24,8 +24,8 @@ spring:
       stat-view-servlet:
         enabled: true
         url-pattern: /druid/*
-        login-username: admin
-        login-password: admin
+        login-username: ${DRUID_USER:admin}
+        login-password: ${DRUID_PASSWORD:admin}
 
 mybatis-plus:
   mapper-locations: classpath:mapper/*.xml
@@ -39,17 +39,11 @@ mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
 
-ftp:
-  built-in:
-    enabled: true
-    port: 9021
-    username: rpa_user
-    password: rpa_password
-    root-directory: /home/nova/projects/report-front/data/ftp-root
-    idle-timeout: 300
-    max-connections: 10
-
 logging:
   level:
-    com.report: debug
-    org.quartz: debug
+    com.report: info
+    org.quartz: info
+
+ftp:
+  built-in:
+    enabled: false

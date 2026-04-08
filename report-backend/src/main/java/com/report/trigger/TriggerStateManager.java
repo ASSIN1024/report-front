@@ -1,28 +1,12 @@
 package com.report.trigger;
 
-import org.springframework.stereotype.Component;
+public interface TriggerStateManager {
 
-import java.util.concurrent.ConcurrentHashMap;
+    TriggerState getOrCreate(String triggerCode);
 
-@Component
-public class TriggerStateManager {
-    private final ConcurrentHashMap<String, TriggerState> states = new ConcurrentHashMap<>();
+    void reset(String triggerCode);
 
-    public TriggerState getOrCreate(String triggerCode) {
-        return states.computeIfAbsent(triggerCode, code -> {
-            TriggerState state = new TriggerState();
-            state.setTriggerCode(code);
-            state.setRetryCount(0);
-            state.setTriggered(false);
-            return state;
-        });
-    }
+    void incrementRetryCount(String triggerCode);
 
-    public void reset(String triggerCode) {
-        TriggerState state = states.get(triggerCode);
-        if (state != null) {
-            state.setRetryCount(0);
-            state.setTriggered(false);
-        }
-    }
+    void setTriggered(String triggerCode, boolean triggered);
 }
