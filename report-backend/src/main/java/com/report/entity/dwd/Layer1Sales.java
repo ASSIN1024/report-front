@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @TableName("layer_1_sales")
@@ -15,9 +15,15 @@ public class Layer1Sales {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    private String orderId;
+
     private String productName;
+
+    private Integer quantity;
 
     private BigDecimal amount;
 
-    private LocalDate ptDt;
+    private Date ptDt;
+
+    private Date createTime;
 }

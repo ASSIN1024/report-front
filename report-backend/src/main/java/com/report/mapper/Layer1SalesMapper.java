@@ -6,11 +6,11 @@ import com.report.entity.dws.Layer2Summary;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
-import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Mapper
 public interface Layer1SalesMapper extends BaseMapper<Layer1Sales> {
 
-    List<Layer2Summary> aggregateByProduct(@Param("partitionDate") LocalDate partitionDate);
+    List<Layer2Summary> aggregateByProduct(@Param("partitionDate") Date partitionDate);
 }

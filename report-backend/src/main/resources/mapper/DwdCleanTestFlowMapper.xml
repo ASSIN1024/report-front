@@ -4,7 +4,7 @@
 
 <mapper namespace="com.report.mapper.DwdCleanTestFlowMapper">
 
-    <select id="aggregateByName" resultType="com.report.entity.dws.DwdTestFlowAgg">
+<select id="aggregateByName" resultType="com.report.entity.dws.DwdTestFlowAgg">
         SELECT
             name,
             SUM(amount) AS totalAmount,

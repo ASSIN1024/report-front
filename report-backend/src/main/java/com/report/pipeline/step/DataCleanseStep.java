@@ -14,6 +14,8 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -40,12 +42,13 @@ public class DataCleanseStep extends MyBatisPlusAbstractStep {
     @Override
     protected void doExecute(StepContext context) throws StepExecutionException {
         LocalDate partitionDate = context.getPartitionDate();
+        Date partitionDateAsDate = Date.from(partitionDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         log.info("[数据清洗] 从 OSD 表读取数据，分区: {}", partitionDate);
 
         List<OsdSales> rawData = osdSalesMapper.selectList(
             new LambdaQueryWrapper<OsdSales>()
-                .eq(OsdSales::getPtDt, partitionDate)
+                .eq(OsdSales::getPtDt, partitionDateAsDate)
         );
 
         log.info("[数据清洗] 读取到 {} 行数据", rawData.size());
@@ -60,7 +63,9 @@ public class DataCleanseStep extends MyBatisPlusAbstractStep {
 
     private Layer1Sales cleanseRow(OsdSales rawRow) {
         Layer1Sales cleansed = new Layer1Sales();
+        cleansed.setOrderId(rawRow.getOrderId());
         cleansed.setProductName(rawRow.getProductName());
+        cleansed.setQuantity(rawRow.getQuantity() != null ? rawRow.getQuantity() : 0);
 
         if (rawRow.getAmount() == null || rawRow.getAmount().compareTo(BigDecimal.ZERO) < 0) {
             cleansed.setAmount(BigDecimal.ZERO);

@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @TableName("test_flow")
@@ -15,9 +15,11 @@ public class TestFlow {
     @TableId(type = IdType.AUTO)
     private Long id;
 
+    private Date ptDt;
+
     private String name;
 
     private BigDecimal amount;
 
-    private LocalDate ptDt;
+    private Date createTime;
 }
