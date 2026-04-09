@@ -12,29 +12,10 @@ spring:
       max-file-size: 100MB
       max-request-size: 100MB
   quartz:
-    job-store-type: jdbc
-    jdbc:
-      initialize-schema: always
+    job-store-type: memory
     wait-for-jobs-to-complete-on-shutdown: true
     overwrite-existing-jobs: true
     startup-delay: 10s
-    properties:
-      org:
-        quartz:
-          scheduler:
-            instanceName: ReportScheduler
-            instanceId: AUTO
-          jobStore:
-            class: org.quartz.impl.jdbcjobstore.JobStoreTX
-            driverDelegateClass: org.quartz.impl.jdbcjobstore.StdJDBCDelegate
-            tablePrefix: QRTZ_
-            isClustered: true
-            clusterCheckinInterval: 20000
-            misfireThreshold: 60000
-          threadPool:
-            class: org.quartz.simpl.SimpleThreadPool
-            threadCount: 5
-            threadPriority: 5
   task:
     execution:
       pool:

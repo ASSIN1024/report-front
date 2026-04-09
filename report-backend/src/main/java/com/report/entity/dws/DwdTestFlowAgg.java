@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @TableName("dwd_tets_flow_agg")
@@ -19,5 +19,7 @@ public class DwdTestFlowAgg {
 
     private BigDecimal totalAmount;
 
-    private LocalDate ptDt;
+    private Date ptDt;
+
+    private Date createTime;
 }

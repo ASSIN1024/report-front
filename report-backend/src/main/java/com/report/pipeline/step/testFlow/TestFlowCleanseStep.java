@@ -13,6 +13,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -39,12 +41,13 @@ public class TestFlowCleanseStep extends MyBatisPlusAbstractStep {
     @Override
     protected void doExecute(StepContext context) throws StepExecutionException {
         LocalDate partitionDate = context.getPartitionDate();
+        Date partitionDateAsDate = Date.from(partitionDate.atStartOfDay(ZoneId.systemDefault()).toInstant());
 
         log.info("[TestFlow清洗] 从 test_flow 读取数据，分区: {}", partitionDate);
 
         List<TestFlow> rawData = testFlowMapper.selectList(
             new LambdaQueryWrapper<TestFlow>()
-                .eq(TestFlow::getPtDt, partitionDate)
+                .eq(TestFlow::getPtDt, partitionDateAsDate)
         );
 
         log.info("[TestFlow清洗] 读取到 {} 行数据", rawData.size());

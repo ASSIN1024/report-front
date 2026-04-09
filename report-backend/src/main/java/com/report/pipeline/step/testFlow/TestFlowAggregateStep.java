@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -37,10 +38,11 @@ public class TestFlowAggregateStep extends MyBatisPlusAbstractStep {
     @Override
     protected void doExecute(StepContext context) throws StepExecutionException {
         LocalDate partitionDate = context.getPartitionDate();
+        Date partitionDateAsDate = Date.from(partitionDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
 
         log.info("[TestFlow聚合] 从 dwd_clean_tets_flow 读取并聚合数据，分区: {}", partitionDate);
 
-        List<DwdTestFlowAgg> aggregatedData = dwdCleanTestFlowMapper.aggregateByName(partitionDate);
+        List<DwdTestFlowAgg> aggregatedData = dwdCleanTestFlowMapper.aggregateByName(partitionDateAsDate);
 
         aggregatedData.forEach(row -> {
             if (row.getTotalAmount() == null) {

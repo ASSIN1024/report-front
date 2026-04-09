@@ -12,6 +12,7 @@ import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 
 @Slf4j
@@ -37,10 +38,11 @@ public class DataAggregateStep extends MyBatisPlusAbstractStep {
     @Override
     protected void doExecute(StepContext context) throws StepExecutionException {
         LocalDate partitionDate = context.getPartitionDate();
+        Date partitionDateAsDate = Date.from(partitionDate.atStartOfDay(java.time.ZoneId.systemDefault()).toInstant());
 
         log.info("[数据聚合] 从 DWD 表读取并聚合数据，分区: {}", partitionDate);
 
-        List<Layer2Summary> aggregatedData = layer1SalesMapper.aggregateByProduct(partitionDate);
+        List<Layer2Summary> aggregatedData = layer1SalesMapper.aggregateByProduct(partitionDateAsDate);
 
         aggregatedData.forEach(row -> {
             if (row.getTotalAmount() == null) {

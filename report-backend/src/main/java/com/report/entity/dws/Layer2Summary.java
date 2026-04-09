@@ -6,7 +6,7 @@ import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
+import java.util.Date;
 
 @Data
 @TableName("layer_2_summary")
@@ -21,5 +21,7 @@ public class Layer2Summary {
 
     private Integer orderCount;
 
-    private LocalDate ptDt;
+    private Date ptDt;
+
+    private Date createTime;
 }
