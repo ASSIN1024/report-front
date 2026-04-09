@@ -1,9 +1,16 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
+import { getToken } from '@/utils/auth'
 
 Vue.use(VueRouter)
 
 const routes = [
+  {
+    path: '/login',
+    name: 'Login',
+    component: () => import('@/views/login/Login.vue'),
+    meta: { requiresAuth: false }
+  },
   {
     path: '/',
     redirect: '/ftp'
@@ -59,6 +66,22 @@ const routes = [
 const router = new VueRouter({
   mode: 'hash',
   routes
+})
+
+// 路由守卫
+router.beforeEach((to, from, next) => {
+  const token = getToken()
+
+  // 如果路由需要认证
+  if (to.meta.requiresAuth !== false && !token) {
+    // 未登录，重定向到登录页
+    next('/login')
+  } else if (to.path === '/login' && token) {
+    // 已登录，访问登录页时重定向到首页
+    next('/')
+  } else {
+    next()
+  }
 })
 
 export default router
