@@ -1,5 +1,7 @@
 import axios from 'axios'
 import { Message } from 'element-ui'
+import { getToken, removeToken } from '@/utils/auth'
+import router from '@/router'
 
 const request = axios.create({
   baseURL: '/api',
@@ -8,6 +10,11 @@ const request = axios.create({
 
 request.interceptors.request.use(
   config => {
+    // 添加CSRF Token到请求头
+    const token = getToken()
+    if (token) {
+      config.headers['X-CSRF-Token'] = token
+    }
     return config
   },
   error => {
@@ -25,7 +32,15 @@ request.interceptors.response.use(
     return res
   },
   error => {
-    Message.error(error.message || '网络错误')
+    // 处理401未授权错误
+    if (error.response && error.response.status === 401) {
+      removeToken()
+      localStorage.removeItem('user')
+      router.push('/login')
+      Message.error('登录已过期，请重新登录')
+    } else {
+      Message.error(error.message || '网络错误')
+    }
     return Promise.reject(error)
   }
 )
