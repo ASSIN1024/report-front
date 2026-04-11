@@ -8,8 +8,8 @@
 # 检查后端服务 (应在 8082 端口运行)
 curl -s http://localhost:8082/api/health
 
-# 检查前端服务 (应在 8080 端口运行)
-curl -s http://localhost:8080 | head -5
+# 检查前端服务 (应在 8083 端口运行)
+curl -s http://localhost:8083 | head -5
 
 # 检查FTP目录
 ls -la /home/nova/projects/report-front/data/ftp-root/upload/
@@ -20,6 +20,8 @@ ls -la /home/nova/projects/report-front/data/ftp-root/upload/
 ```bash
 cd /home/nova/projects/report-front
 ./scripts/start.sh all
+# 或只启动前端
+./scripts/start.sh frontend
 ```
 
 ---
@@ -30,11 +32,11 @@ cd /home/nova/projects/report-front
 
 ```
 操作:
-1. playwright_navigate("http://localhost:8080/#/login")
-2. 等待页面加载完成
-3. playwright_fill(username输入框, "admin")
-4. playwright_fill(password输入框, "xxx")  # 请使用实际密码
-5. playwright_click(登录按钮)
+1. playwright_navigate("http://localhost:8083/#/login")
+2. 等待页面加载完成 (networkidle)
+3. playwright_fill('input[placeholder="请输入用户名"]', "admin")
+4. playwright_fill('input[placeholder="请输入密码"]', "admin123")
+5. playwright_click('button:has-text("登 录")')
 6. playwright_expect_response("**/api/auth/login**")
 
 验证: URL 跳转到 /ftp
@@ -42,21 +44,29 @@ cd /home/nova/projects/report-front
 
 ### 阶段2: FTP配置管理
 
+**重要**: Element UI 对话框需要使用 `locator()` 精确操作
+
 ```
 操作:
 1. 点击"新增配置"按钮
-2. 填写表单:
-   - 配置名称: "E2E测试FTP"
-   - 主机地址: "localhost"
-   - 端口: "2121"
-   - 用户名: "test"
-   - 密码: "test123"
-   - 扫描路径: "/upload"
-   - 文件匹配: "test_flow_e2e*.xlsx"
-3. playwright_click(保存按钮)
-4. playwright_expect_response("**/api/ftp/config**")
+2. 等待对话框出现: .el-dialog__body
+3. 在对话框内填写表单:
+   dialog.locator('input[placeholder="请输入配置名称"]').click()
+   dialog.locator('input[placeholder="请输入配置名称"]').fill("E2E测试FTP")
+   dialog.locator('input[placeholder="请输入FTP服务器地址"]').click()
+   dialog.locator('input[placeholder="请输入FTP服务器地址"]').fill("localhost")
+   dialog.locator('input[placeholder="请输入用户名"]').click()
+   dialog.locator('input[placeholder="请输入用户名"]').fill("test")
+   dialog.locator('input[placeholder="请输入密码"]').click()
+   dialog.locator('input[placeholder="请输入密码"]').fill("test123")
+   dialog.locator('input[placeholder="请输入扫描路径"]').click()
+   dialog.locator('input[placeholder="请输入扫描路径"]').fill("/upload")
+   dialog.locator('input[placeholder="如: *.xlsx"]').click()
+   dialog.locator('input[placeholder="如: *.xlsx"]').fill("test_flow_e2e*.xlsx")
+4. 点击确定: dialog.locator('button:has-text("确定")').click()
+5. 等待对话框关闭
 
-验证: 配置出现在FTP配置列表中
+验证: 配置出现在FTP配置列表中，表格包含" E2E测试FTP"
 ```
 
 ### 阶段3: 报表配置管理
