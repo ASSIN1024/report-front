@@ -116,7 +116,7 @@ public class TriggerJob implements Job {
             TriggerExecutionLog executionLog = new TriggerExecutionLog();
             executionLog.setTriggerCode(trigger.getTriggerCode());
             executionLog.setTriggerName(trigger.getTriggerName());
-            executionLog.setPartitionDate(partitionDate.toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+            executionLog.setPartitionDate(partitionDate);
             executionLog.setDataCount(dataCount);
             executionLog.setTriggerStatus(status);
             executionLog.setPipelineTaskId(pipelineTaskId);
