@@ -27,6 +27,7 @@ public class TriggerJob implements Job {
     private ITriggerService triggerService;
 
     @Autowired
+    @Qualifier("databaseTriggerStateManager")
     private TriggerStateManager stateManager;
 
     @Autowired

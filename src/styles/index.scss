@@ -1,3 +1,5 @@
+@import './variables.scss';
+
 * {
   margin: 0;
   padding: 0;
@@ -10,35 +12,44 @@ body {
 
 .page-container {
   background: #fff;
-  padding: 20px;
-  border-radius: 4px;
+  padding: $spacing-lg;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-light;
 }
 
 .page-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  
+  margin-bottom: $spacing-lg;
+  padding-bottom: $spacing-md;
+  border-bottom: 1px solid #e8e8e8;
+
   .page-title {
     font-size: 18px;
-    font-weight: 500;
+    font-weight: 600;
+    color: #303133;
   }
 }
 
 .search-form {
   display: flex;
   flex-wrap: wrap;
-  gap: 15px;
-  margin-bottom: 20px;
-  
+  gap: $spacing-sm;
+  margin-bottom: $spacing-lg;
+  padding: $spacing-lg;
+  background: #fff;
+  border-radius: $border-radius-lg;
+  box-shadow: $box-shadow-light;
+
   .form-item {
     display: flex;
     align-items: center;
-    
+
     .label {
       margin-right: 10px;
       white-space: nowrap;
+      color: #606266;
     }
   }
 }
@@ -46,5 +57,212 @@ body {
 .pagination-container {
   display: flex;
   justify-content: flex-end;
-  margin-top: 20px;
+  margin-top: $spacing-lg;
+}
+
+.el-table {
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+  border: 1px solid #ebeef5;
+
+  &::before {
+    display: none;
+  }
+
+  &__header th {
+    background-color: #fafafa !important;
+    color: #606266;
+    font-weight: 600;
+    border-bottom: 1px solid #ebeef5;
+    padding: 12px 0;
+  }
+
+  &__body td {
+    padding: 12px 0;
+    border-bottom: 1px solid #ebeef5;
+  }
+
+  &__row {
+    transition: all 0.2s ease;
+
+    &:hover > td {
+      background-color: #ecf5ff !important;
+    }
+
+    &:last-child > td {
+      border-bottom: none;
+    }
+  }
+
+  &--striped &__body > tr:hover > td {
+    background-color: #ecf5ff !important;
+  }
+}
+
+.el-button {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  font-weight: 500;
+
+  &--text {
+    padding: 4px 8px;
+  }
+
+  &:hover:not(.is-disabled):not(.is-text):not(.is-link) {
+    transform: translateY(-1px);
+  }
+
+  &.btn-danger {
+    color: $danger-color;
+
+    &:hover {
+      background-color: $danger-color;
+      color: #fff;
+      border-color: $danger-color;
+    }
+  }
+
+  &.btn-success {
+    color: $success-color;
+
+    &:hover {
+      background-color: $success-color;
+      color: #fff;
+      border-color: $success-color;
+    }
+  }
+
+  &.btn-warning {
+    color: $warning-color;
+
+    &:hover {
+      background-color: $warning-color;
+      color: #fff;
+      border-color: $warning-color;
+    }
+  }
+}
+
+.el-card {
+  border-radius: $border-radius-lg;
+  border: none;
+  box-shadow: $box-shadow-light;
+
+  &__body {
+    padding: $spacing-lg;
+  }
+}
+
+.el-dialog {
+  border-radius: $border-radius-lg;
+  overflow: hidden;
+
+  &__header {
+    padding: $spacing-lg;
+    border-bottom: 1px solid #e8e8e8;
+    margin: 0;
+  }
+
+  &__title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #303133;
+  }
+
+  &__body {
+    padding: $spacing-lg;
+  }
+
+  &__footer {
+    padding: $spacing-md $spacing-lg;
+    border-top: 1px solid #e8e8e8;
+    text-align: right;
+  }
+}
+
+.el-form-item {
+  margin-bottom: $spacing-lg;
+
+  &__label {
+    color: #606266;
+    font-weight: 500;
+  }
+}
+
+.el-input {
+  &__inner {
+    border-radius: $border-radius-base;
+    transition: all 0.3s ease;
+
+    &:focus {
+      border-color: $primary-color;
+      box-shadow: 0 0 0 2px rgba($primary-color, 0.1);
+    }
+  }
+}
+
+.el-select {
+  width: 100%;
+}
+
+.el-pagination {
+  font-weight: normal;
+
+  &__total {
+    color: #606266;
+  }
+
+  &__jump {
+    color: #606266;
+  }
+}
+
+.el-empty {
+  padding: 40px 0;
+
+  &__description {
+    color: #909399;
+    font-size: 14px;
+  }
+}
+
+.el-popconfirm {
+  &__action {
+    margin-top: 12px;
+  }
+}
+
+.clearfix::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+
+@media (max-width: 1024px) {
+  .el-aside {
+    width: $sidebar-collapsed-width !important;
+    overflow: hidden;
+
+    .el-menu-item span {
+      display: none;
+    }
+  }
+}
+
+@media (max-width: 768px) {
+  .el-aside {
+    width: 0 !important;
+    overflow: hidden;
+  }
+
+  .el-main {
+    padding: $spacing-sm;
+  }
+
+  .page-container {
+    padding: $spacing-sm;
+  }
+
+  .search-form {
+    padding: $spacing-md;
+  }
 }
