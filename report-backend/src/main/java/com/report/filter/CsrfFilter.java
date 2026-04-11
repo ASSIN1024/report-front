@@ -39,6 +39,11 @@ public class CsrfFilter implements Filter {
             "GET", "HEAD", "OPTIONS"
     ));
 
+    private static final Set<String> CSRF_EXEMPT_PATHS = new HashSet<>(Arrays.asList(
+            "/api/auth/login",
+            "/api/auth/register"
+    ));
+
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Override
@@ -60,6 +65,13 @@ public class CsrfFilter implements Filter {
         // 检查是否是安全的HTTP方法
         if (SAFE_METHODS.contains(method.toUpperCase())) {
             logger.debug("Safe method {}, allowing: {}", method, requestURI);
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 检查是否是CSRF豁免路径（登录、注册等）
+        if (CSRF_EXEMPT_PATHS.stream().anyMatch(requestURI::startsWith)) {
+            logger.debug("CSRF exempt path, allowing: {}", requestURI);
             chain.doFilter(request, response);
             return;
         }
