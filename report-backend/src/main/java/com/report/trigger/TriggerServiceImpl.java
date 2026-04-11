@@ -23,6 +23,7 @@ public class TriggerServiceImpl implements ITriggerService {
     private TriggerExecutionLogMapper triggerExecutionLogMapper;
 
     @Autowired
+    @Qualifier("databaseTriggerStateManager")
     private TriggerStateManager stateManager;
 
     @Autowired
