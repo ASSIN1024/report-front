@@ -16,7 +16,7 @@ public class TriggerExecutionLog {
 
     private String triggerName;
 
-    private LocalDate partitionDate;
+    private Date partitionDate;
 
     private Integer dataCount;
 
