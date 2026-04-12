@@ -26,8 +26,10 @@ public class TableLayerMapping {
 
     private String tags;
 
-    @TableLogic
     private Integer marked;
+
+    @TableLogic
+    private Integer deleted;
 
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;

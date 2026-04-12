@@ -102,12 +102,16 @@
           </el-table-column>
           <el-table-column label="日期格式" prop="dateFormat" width="150">
             <template slot-scope="{ row, $index }">
-              <el-input v-model="row.dateFormat" :disabled="readonly" placeholder="如: yyyy-MM-dd" />
+              <el-input v-model="row.dateFormat" :disabled="readonly" placeholder="如: yyyy-MM-dd"
+                v-if="row.fieldType === 'DATE' || row.fieldType === 'DATETIME'" />
+              <span v-else class="field-hint">-</span>
             </template>
           </el-table-column>
           <el-table-column label="小数精度" prop="scale" width="120">
             <template slot-scope="{ row, $index }">
-              <el-input-number v-model="row.scale" :min="0" :max="10" :disabled="readonly" />
+              <el-input-number v-model="row.scale" :min="0" :max="10" :disabled="readonly"
+                v-if="row.fieldType === 'DECIMAL' || row.fieldType === 'INTEGER'" />
+              <span v-else class="field-hint">-</span>
             </template>
           </el-table-column>
           <el-table-column label="清洗规则" width="120" v-if="!readonly">
@@ -287,5 +291,9 @@ export default {
 <style scoped>
 .box-card {
   margin-bottom: 0;
+}
+.field-hint {
+  color: #c0c4cc;
+  font-size: 12px;
 }
 </style>

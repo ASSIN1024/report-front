@@ -9,7 +9,7 @@
         <div class="filter-item">
           <label class="filter-label">按流向分层</label>
           <el-select v-model="filters.tableLayer" placeholder="请选择" clearable @change="handleFilterChange">
-            <el-option label="ODS - 原始数据层" value="ODS" />
+            <el-option label="OSD - 原始数据层" value="OSD" />
             <el-option label="DWD - 明细数据层" value="DWD" />
             <el-option label="DWS - 汇总数据层" value="DWS" />
             <el-option label="ADS - 应用数据层" value="ADS" />
@@ -20,9 +20,7 @@
           <label class="filter-label">按来源类型</label>
           <el-select v-model="filters.sourceType" placeholder="请选择" clearable @change="handleFilterChange">
             <el-option label="FTP来源" value="FTP来源" />
-            <el-option label="Trigger触发" value="TRIGGER" />
             <el-option label="Pipeline生成" value="PIPELINE" />
-            <el-option label="手动创建" value="MANUAL" />
           </el-select>
         </div>
 
@@ -33,9 +31,10 @@
       </div>
 
       <div class="table-tree">
-        <div class="tree-node" :class="{ active: activeTab === 'untagged' }" @click="switchToUntagged">
-          <span>📋 待标记表</span>
-          <span class="count" v-if="untaggedCount > 0">{{ untaggedCount }}</span>
+        <div class="tree-node untagged-node" :class="{ active: activeTab === 'untagged' }" @click="switchToUntagged">
+          <span class="node-icon">🔖</span>
+          <span class="node-text">待标记表</span>
+          <span class="count-badge" v-if="untaggedCount > 0">{{ untaggedCount }}</span>
         </div>
         <div class="tree-node" :class="{ active: activeTable === item.tableName }"
              v-for="item in tableList" :key="item.id" @click="selectTable(item)">
@@ -106,6 +105,7 @@
             </div>
             <div class="info-item full-width">
               <el-button type="primary" size="small" @click="handleEdit">编辑标记信息</el-button>
+              <el-button type="danger" size="small" @click="handleUnmark" v-if="currentTable.marked === 1">取消标记</el-button>
             </div>
           </div>
 
@@ -150,7 +150,7 @@
       <el-form :model="editForm" label-width="100px">
         <el-form-item label="流向分层">
           <el-select v-model="editForm.tableLayer" placeholder="请选择">
-            <el-option label="ODS - 原始数据层" value="ODS" />
+            <el-option label="OSD - 原始数据层" value="OSD" />
             <el-option label="DWD - 明细数据层" value="DWD" />
             <el-option label="DWS - 汇总数据层" value="DWS" />
             <el-option label="ADS - 应用数据层" value="ADS" />
@@ -162,9 +162,7 @@
         <el-form-item label="来源类型">
           <el-select v-model="editForm.sourceType" placeholder="请选择">
             <el-option label="FTP来源" value="FTP来源" />
-            <el-option label="Trigger触发" value="TRIGGER" />
             <el-option label="Pipeline生成" value="PIPELINE" />
-            <el-option label="手动创建" value="MANUAL" />
           </el-select>
         </el-form-item>
         <el-form-item label="表描述">
@@ -283,6 +281,22 @@ export default {
         this.loadUntaggedCount()
       })
     },
+    handleUnmark() {
+      this.$confirm('确定要取消标记该表吗？取消后将移动到待标记列表。', '提示', {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'warning'
+      }).then(() => {
+        const form = { ...this.currentTable, marked: 1 }
+        updateTable(form).then(() => {
+          this.$message.success('已取消标记')
+          this.activeTable = ''
+          this.currentTable = {}
+          this.loadTables()
+          this.loadUntaggedCount()
+        })
+      })
+    },
     handleScan() {
       this.$confirm('是否扫描新表？', '提示', {
         confirmButtonText: '确定',
@@ -389,6 +403,33 @@ export default {
   border-radius: 10px;
   font-size: 12px;
   color: #666;
+}
+.untagged-node {
+  background: linear-gradient(135deg, #fff7e6 0%, #ffe7ba 100%);
+  border: 1px dashed #faad14;
+}
+.untagged-node .node-icon {
+  font-size: 16px;
+}
+.untagged-node .node-text {
+  color: #d48806;
+  font-weight: 500;
+}
+.untagged-node .count-badge {
+  margin-left: auto;
+  background: #ff4d4f;
+  color: #fff;
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.untagged-node.active {
+  background: linear-gradient(135deg, #ffd591 0%, #ff9a3c 100%);
+  border-color: #fa8c16;
+}
+.untagged-node.active .node-text {
+  color: #fff;
 }
 .main-panel {
   flex: 1;

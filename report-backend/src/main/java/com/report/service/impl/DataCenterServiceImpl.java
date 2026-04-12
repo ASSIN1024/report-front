@@ -63,7 +63,7 @@ public class DataCenterServiceImpl implements DataCenterService {
     @Override
     public List<TableLayerMapping> listUntaggedTables() {
         return tableLayerMappingMapper.selectList(
-            new LambdaQueryWrapper<TableLayerMapping>().eq(TableLayerMapping::getMarked, 0)
+            new LambdaQueryWrapper<TableLayerMapping>().eq(TableLayerMapping::getMarked, 1)
         );
     }
 
