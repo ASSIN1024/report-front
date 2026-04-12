@@ -224,6 +224,17 @@
       "createdAt": "2026-04-09",
       "completedAt": "2026-04-09",
       "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PROJECT-CLEANUP",
+      "title": "项目文件与目录清理",
+      "description": "清理项目冗余文件：删除e2e-tests目录、test-files/test_files目录、test-results目录、chrome-win64.zip、data/ftp-root/upload测试文件，为内网生产环境迁移做准备",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-12",
+      "completedAt": "2026-04-12",
+      "assignee": "AI Assistant"
     }
   ],
   "conventions": {
