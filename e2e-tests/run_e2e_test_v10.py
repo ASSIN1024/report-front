@@ -60,29 +60,37 @@ class E2ETestRunner:
         """发送 POST 请求到 API"""
         url = f"{API_BASE}{path}"
         try:
+            # 获取并设置CSRF token
             csrf_token = self.get_csrf_token()
             if csrf_token:
                 self.session.headers.update({'X-CSRF-Token': csrf_token})
             response = self.session.post(url, json=data, timeout=10)
             return response.status_code, response.json() if response.text else {}
         except Exception as e:
-            self.log(f"API 请求失败: {str(e)}", "ERROR")
+            self.log(f"API POST 请求失败: {str(e)}", "ERROR")
             return 500, {"message": str(e)}
 
     def api_get(self, path):
         """发送 GET 请求到 API"""
         url = f"{API_BASE}{path}"
         try:
+            # 获取并设置CSRF token
+            csrf_token = self.get_csrf_token()
+            if csrf_token:
+                self.session.headers.update({'X-CSRF-Token': csrf_token})
             response = self.session.get(url, timeout=10)
             return response.status_code, response.json() if response.text else {}
         except Exception as e:
-            self.log(f"API 请求失败: {str(e)}", "ERROR")
+            self.log(f"API GET 请求失败: {str(e)}", "ERROR")
             return 500, {"message": str(e)}
 
     def get_csrf_token(self):
-        """通过API获取CSRF token"""
+        """通过API获取CSRF token (使用直接请求避免递归)"""
         try:
-            code, data = self.api_get("/auth/csrf-token")
+            url = f"{API_BASE}/auth/csrf-token"
+            response = self.session.get(url, timeout=10)
+            code = response.status_code
+            data = response.json() if response.text else {}
             if code == 200 and data.get("code") in [0, 200]:
                 return data.get("data")
             self.log(f"获取CSRF Token失败: code={code}, data={data}", "ERROR")
@@ -267,15 +275,22 @@ class E2ETestRunner:
                 self.record_result("报表配置", "PASS", f"报表配置 '{self.report_code}' 通过API创建成功")
                 self.log(f"✅ 报表配置 '{self.report_code}' 通过API创建成功")
 
+                self.log(f"尝试获取报表配置ID...")
                 code, data = self.api_get("/report/config/page?pageNum=1&pageSize=100")
-                self.log(f"报表配置列表API响应: code={code}, data={data}")
+                self.log(f"报表配置列表API响应: code={code}, data类型={type(data)}")
                 if code == 200 and data.get("code") in [0, 200]:
                     configs = data.get("data", {}).get("records", [])
+                    self.log(f"找到 {len(configs)} 个报表配置")
                     for cfg in configs:
+                        self.log(f"检查配置: {cfg.get('reportCode')} vs {self.report_code}")
                         if cfg.get("reportCode") == self.report_code:
                             self.report_config_id = cfg.get("id")
                             self.log(f"✅ 获取报表配置ID: {self.report_config_id}")
                             break
+                    if not self.report_config_id:
+                        self.log(f"⚠️ 未找到匹配的报表配置")
+                else:
+                    self.log(f"⚠️ 获取报表配置列表失败: code={code}, data={data}")
             else:
                 self.record_result("报表配置", "FAIL", f"API返回错误: {response.get('message', 'Unknown error')}")
                 self.log(f"❌ 报表配置API失败: {response.get('message', 'Unknown error')}", "ERROR")
@@ -309,9 +324,12 @@ class E2ETestRunner:
             if not self.report_config_id:
                 self.log(f"⚠️ report_config_id未设置，尝试从API获取")
                 code, data = self.api_get("/report/config/page?pageNum=1&pageSize=100")
+                self.log(f"报表配置列表响应: code={code}, data={data}")
                 if code == 200 and data.get("code") in [0, 200]:
                     configs = data.get("data", {}).get("records", [])
+                    self.log(f"找到 {len(configs)} 个报表配置")
                     for cfg in configs:
+                        self.log(f"检查配置: {cfg.get('reportCode')} vs {self.report_code}")
                         if cfg.get("reportCode") == self.report_code:
                             self.report_config_id = cfg.get("id")
                             self.log(f"✅ 获取报表配置ID: {self.report_config_id}")
@@ -322,6 +340,7 @@ class E2ETestRunner:
                 code, response = self.api_post(f"/report/config/{self.report_config_id}/scan", {})
                 self.log(f"API扫描响应: code={code}, response={response}")
                 result = (code == 200 and response.get("code") == 200)
+                self.log(f"扫描结果判断: code={code}, response_code={response.get('code')}, result={result}")
             else:
                 self.log(f"❌ 无法获取report_config_id")
                 result = False
