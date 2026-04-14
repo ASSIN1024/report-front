@@ -1,0 +1,5 @@
+{"type":"click","text":"1\n    \n      启动两个实例\n      实例A(8082) + 实例B(8083) 同时注册到 Quartz 集群","choice":"1","id":null,"timestamp":1776098095439}
+{"type":"click","text":"2\n    \n      验证集群注册\n      查询 QRTZ_SCHEDULER_STATE，确认两个实例都注册成功","choice":"2","id":null,"timestamp":1776098116735}
+{"type":"click","text":"3\n    \n      检查分布式锁\n      查询 QRTZ_LOCKS，确认 TRIGGER_ACCESS 锁正常工作","choice":"3","id":null,"timestamp":1776098117274}
+{"type":"click","text":"4\n    \n      验证分区记录\n      查询 trigger_partition_record，确认状态为 TRIGGERED 且只有一条","choice":"4","id":null,"timestamp":1776098118335}
+{"type":"click","text":"5\n    \n      验证执行日志\n      查询 trigger_execution_log，确认同一分区只有一条 TRIGGERED 记录","choice":"5","id":null,"timestamp":1776098119405}
