@@ -1,0 +1,92 @@
+<h2>Trigger 分区防重复验证流程</h2>
+<p class="subtitle">多实例场景下的防重复机制验证</p>
+
+<div class="section">
+<h3>验证架构</h3>
+<div style="display:flex;gap:20px;align-items:flex-start;">
+  <div style="flex:1;padding:15px;border:1px solid #ddd;border-radius:8px;background:#f9f9f9;">
+    <h4 style="margin-top:0">实例 A (端口 8082)</h4>
+    <ul style="font-size:13px;">
+      <li>TriggerJob 执行者</li>
+      <li>处理 osd_sales_trigger</li>
+      <li>标记 TRIGGERING → 执行 → TRIGGERED</li>
+    </ul>
+  </div>
+  <div style="flex:1;padding:15px;border:1px solid #ddd;border-radius:8px;background:#f9f9f9;">
+    <h4 style="margin-top:0">实例 B (端口 8083)</h4>
+    <ul style="font-size:13px;">
+      <li>TriggerJob 等待者</li>
+      <li>检测到 TRIGGERING 状态</li>
+      <li>跳过执行</li>
+    </ul>
+  </div>
+  <div style="flex:1.5;padding:15px;border:2px solid #4CAF50;border-radius:8px;background:#e8f5e9;">
+    <h4 style="margin-top:0;color:#2e7d32">MySQL 数据库</h4>
+    <ul style="font-size:13px;">
+      <li>QRTZ_SCHEDULER_STATE - 实例心跳</li>
+      <li>QRTZ_LOCKS - 分布式锁</li>
+      <li>trigger_partition_record - 分区状态</li>
+      <li>trigger_execution_log - 执行日志</li>
+    </ul>
+  </div>
+</div>
+</div>
+
+<div class="section">
+<h3>验证步骤</h3>
+<div class="options">
+  <div class="option" data-choice="1" onclick="toggleSelect(this)">
+    <div class="letter">1</div>
+    <div class="content">
+      <h3>启动两个实例</h3>
+      <p>实例A(8082) + 实例B(8083) 同时注册到 Quartz 集群</p>
+    </div>
+  </div>
+  <div class="option" data-choice="2" onclick="toggleSelect(this)">
+    <div class="letter">2</div>
+    <div class="content">
+      <h3>验证集群注册</h3>
+      <p>查询 QRTZ_SCHEDULER_STATE，确认两个实例都注册成功</p>
+    </div>
+  </div>
+  <div class="option" data-choice="3" onclick="toggleSelect(this)">
+    <div class="letter">3</div>
+    <div class="content">
+      <h3>检查分布式锁</h3>
+      <p>查询 QRTZ_LOCKS，确认 TRIGGER_ACCESS 锁正常工作</p>
+    </div>
+  </div>
+  <div class="option" data-choice="4" onclick="toggleSelect(this)">
+    <div class="letter">4</div>
+    <div class="content">
+      <h3>验证分区记录</h3>
+      <p>查询 trigger_partition_record，确认状态为 TRIGGERED 且只有一条</p>
+    </div>
+  </div>
+  <div class="option" data-choice="5" onclick="toggleSelect(this)">
+    <div class="letter">5</div>
+    <div class="content">
+      <h3>验证执行日志</h3>
+      <p>查询 trigger_execution_log，确认同一分区只有一条 TRIGGERED 记录</p>
+    </div>
+  </div>
+</div>
+</div>
+
+<div class="section">
+<h3>关键验证命令</h3>
+<pre style="background:#1e1e1e;color:#d4d4d4;padding:15px;border-radius:8px;font-size:12px;overflow-x:auto;">
+-- 1. 查看集群实例
+SELECT * FROM QRTZ_SCHEDULER_STATE;
+
+-- 2. 查看触发器执行
+SELECT * FROM QRTZ_FIRED_TRIGGERS;
+
+-- 3. 查看分区状态
+SELECT * FROM trigger_partition_record;
+
+-- 4. 查看执行日志
+SELECT * FROM trigger_execution_log 
+ORDER BY id DESC LIMIT 10;
+</pre>
+</div>

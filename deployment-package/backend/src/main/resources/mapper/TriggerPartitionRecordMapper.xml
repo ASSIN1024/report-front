@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.report.mapper.TriggerPartitionRecordMapper">
+
+    <update id="markTriggering">
+        INSERT INTO trigger_partition_record
+            (trigger_code, partition_date, status, triggered, instance_id, create_time, update_time, version)
+        VALUES
+            (#{triggerCode}, #{partitionDate}, 'TRIGGERING', 0, #{instanceId}, NOW(), NOW(), 0)
+        ON DUPLICATE KEY UPDATE
+            status = CASE
+                WHEN status = 'TRIGGERING' AND instance_id = #{instanceId} THEN 'TRIGGERING'
+                WHEN status = 'TRIGGERED' THEN 'TRIGGERED'
+                ELSE 'TRIGGERING'
+            END,
+            instance_id = #{instanceId},
+            update_time = NOW()
+    </update>
+
+    <update id="markTriggered">
+        UPDATE trigger_partition_record
+        SET status = 'TRIGGERED',
+            triggered = 1,
+            pipeline_task_id = #{pipelineTaskId},
+            trigger_time = NOW(),
+            instance_id = #{instanceId},
+            update_time = NOW()
+        WHERE trigger_code = #{triggerCode}
+          AND partition_date = #{partitionDate}
+    </update>
+
+    <select id="selectByTriggerAndDate" resultType="com.report.entity.TriggerPartitionRecord">
+        SELECT *
+        FROM trigger_partition_record
+        WHERE trigger_code = #{triggerCode}
+          AND partition_date = #{partitionDate}
+    </select>
+
+</mapper>

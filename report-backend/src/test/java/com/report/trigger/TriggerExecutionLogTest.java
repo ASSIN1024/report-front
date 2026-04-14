@@ -1,7 +1,6 @@
 package com.report.trigger;
 
 import org.junit.Test;
-import java.time.LocalDate;
 import java.util.Date;
 
 import static org.junit.Assert.*;
@@ -14,7 +13,8 @@ public class TriggerExecutionLogTest {
         log.setId(1L);
         log.setTriggerCode("sales_trigger");
         log.setTriggerName("销售数据触发器");
-        log.setPartitionDate(LocalDate.of(2026, 4, 7));
+        Date partitionDate = new Date();
+        log.setPartitionDate(partitionDate);
         log.setDataCount(100);
         log.setTriggerStatus("TRIGGERED");
         log.setPipelineTaskId(123L);
@@ -24,7 +24,7 @@ public class TriggerExecutionLogTest {
         assertEquals(Long.valueOf(1L), log.getId());
         assertEquals("sales_trigger", log.getTriggerCode());
         assertEquals("销售数据触发器", log.getTriggerName());
-        assertEquals(LocalDate.of(2026, 4, 7), log.getPartitionDate());
+        assertEquals(partitionDate, log.getPartitionDate());
         assertEquals(Integer.valueOf(100), log.getDataCount());
         assertEquals("TRIGGERED", log.getTriggerStatus());
         assertEquals(Long.valueOf(123L), log.getPipelineTaskId());

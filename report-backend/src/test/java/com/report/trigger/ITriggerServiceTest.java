@@ -75,7 +75,7 @@ public class ITriggerServiceTest {
         log.setTriggerCode("sales_trigger");
         log.setTriggerName("销售触发器");
         log.setTriggerStatus("TRIGGERED");
-        log.setPartitionDate(LocalDate.now());
+        log.setPartitionDate(new Date());
         log.setDataCount(100);
         log.setRetryCount(0);
         log.setExecutionTime(new Date());
