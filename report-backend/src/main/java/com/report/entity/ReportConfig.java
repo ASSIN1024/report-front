@@ -39,6 +39,30 @@ public class ReportConfig implements Serializable {
 
     private String outputMode;
 
+    private Integer startRow;
+
+    private Integer startCol;
+
+    private String mappingMode;
+
+    private String duplicateColStrategy;
+
+    private Integer odsBackupEnabled;
+
+    private String odsTableName;
+
+    private String loadMode;
+
+    private String targetTableType;
+    private String targetDbName;
+    private Integer isOverseas;
+    private String fieldTypeJson;
+    private Integer sparkExecutorNum;
+    private Integer sparkExecutorCores;
+    private String sparkExecutorMemory;
+    private Integer sparkDriverNum;
+    private String sparkDriverMemory;
+
     private Integer status;
 
     private String remark;

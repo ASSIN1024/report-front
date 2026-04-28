@@ -48,7 +48,7 @@ public class ProcessedFileServiceImpl
         record.setFileSize(fileSize);
         record.setStatus(ProcessedFileStatus.PROCESSED.getCode());
         record.setTaskId(taskId);
-        record.setPtDt(new Date());
+        record.setPtDt(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()));
 
         this.save(record);
         log.info("文件已标记为已处理: reportConfigId={}, fileName={}",
@@ -64,7 +64,7 @@ public class ProcessedFileServiceImpl
         record.setStatus(ProcessedFileStatus.FAILED.getCode());
         record.setTaskId(taskId);
         record.setErrorMessage(errorMessage);
-        record.setPtDt(new Date());
+        record.setPtDt(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()));
 
         this.save(record);
         log.warn("文件已标记为处理失败: reportConfigId={}, fileName={}, error={}",

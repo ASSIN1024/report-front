@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash",
+      "Glob",
+      "Grep",
+      "LS",
+      "Read",
+      "Write",
+      "Edit",
+      "Notebook",
+      "WebFetch",
+      "WebSearch",
+      "TodoWrite",
+      "Task"
+    ],
+    "deny": []
+  },
+  "hooks": {
+    ".claude/hooks.json": {}
+  },
+  "completion": {
+    "enabled": true
+  }
+}

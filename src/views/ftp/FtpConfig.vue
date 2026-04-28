@@ -85,6 +85,19 @@
         <el-form-item label="备注">
           <el-input v-model="form.remark" type="textarea" :rows="3" placeholder="请输入备注" />
         </el-form-item>
+        <el-divider content-position="left">目录配置</el-divider>
+        <el-form-item label="暂存目录">
+          <el-input v-model="form.stagingDir" placeholder="默认: {扫描路径}/staging" />
+        </el-form-item>
+        <el-form-item label="待上传目录">
+          <el-input v-model="form.forUploadDir" placeholder="默认: {扫描路径}/for-upload" />
+        </el-form-item>
+        <el-form-item label="归档目录">
+          <el-input v-model="form.archiveDir" placeholder="默认: {扫描路径}/archive" />
+        </el-form-item>
+        <el-form-item label="错误文件目录">
+          <el-input v-model="form.errorDir" placeholder="默认: {扫描路径}/error" />
+        </el-form-item>
       </el-form>
       <span slot="footer">
         <el-button @click="dialogVisible = false">取消</el-button>
@@ -127,7 +140,11 @@ export default {
         filePattern: '*.xlsx',
         scanInterval: 300,
         status: 1,
-        remark: ''
+        remark: '',
+        stagingDir: '',
+        forUploadDir: '',
+        archiveDir: '',
+        errorDir: ''
       },
       rules: {
         configName: [{ required: true, message: '请输入配置名称', trigger: 'blur' }],
@@ -222,7 +239,11 @@ export default {
         filePattern: '*.xlsx',
         scanInterval: 300,
         status: 1,
-        remark: ''
+        remark: '',
+        stagingDir: '',
+        forUploadDir: '',
+        archiveDir: '',
+        errorDir: ''
       }
       this.$refs.form && this.$refs.form.resetFields()
     },

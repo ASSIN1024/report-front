@@ -65,7 +65,8 @@ public class FtpUtil {
                     if (pattern != null && !fileName.matches(pattern.replace("*", ".*"))) {
                         continue;
                     }
-                    files.add(scanPath + "/" + fileName);
+                    String filePath = scanPath.endsWith("/") ? scanPath + fileName : scanPath + "/" + fileName;
+                    files.add(filePath);
                 }
             }
             return files;
@@ -131,7 +132,8 @@ public class FtpUtil {
                 if (pattern != null && !fileName.matches(pattern.replace("*", ".*"))) {
                     continue;
                 }
-                files.add(path + "/" + fileName);
+                String filePath = path.endsWith("/") ? path + fileName : path + "/" + fileName;
+                files.add(filePath);
             }
         }
         return files;
@@ -160,6 +162,43 @@ public class FtpUtil {
                 outputStream.close();
             }
             ftpClient.completePendingCommand();
+        }
+    }
+
+    public static boolean makeDirectory(FTPClient ftpClient, String path) throws IOException {
+        if (path == null || path.isEmpty() || path.equals("/")) {
+            return true;
+        }
+        String[] dirs = path.split("/");
+        String currentPath = "";
+        for (String dir : dirs) {
+            if (dir.isEmpty()) {
+                continue;
+            }
+            currentPath += "/" + dir;
+            if (!ftpClient.changeWorkingDirectory(currentPath)) {
+                if (!ftpClient.makeDirectory(currentPath)) {
+                    log.warn("Failed to create directory: {}", currentPath);
+                    return false;
+                }
+                log.info("Created FTP directory: {}", currentPath);
+            }
+        }
+        return true;
+    }
+
+    public static boolean ensureDirectories(FtpConfig config, String... paths) throws IOException {
+        FTPClient ftpClient = null;
+        try {
+            ftpClient = connect(config);
+            for (String path : paths) {
+                if (path != null && !path.isEmpty()) {
+                    makeDirectory(ftpClient, path);
+                }
+            }
+            return true;
+        } finally {
+            disconnect(ftpClient);
         }
     }
 }

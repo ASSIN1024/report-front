@@ -32,7 +32,7 @@ public class ProcessedFile {
     /**
      * 数据分区日期
      */
-    private Date ptDt;
+    private String ptDt;
 
     /**
      * 处理状态：PROCESSED-已处理，FAILED-处理失败

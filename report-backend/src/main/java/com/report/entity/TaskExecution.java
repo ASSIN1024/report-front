@@ -25,6 +25,16 @@ public class TaskExecution implements Serializable {
 
     private String filePath;
 
+    private String pipelineCode;
+
+    private String partitionValue;
+
+    private String stepName;
+
+    private String outputFile;
+
+    private String ptDt;
+
     private String status;
 
     private Integer totalRows;

@@ -11,10 +11,6 @@
           active-text-color="#409EFF"
           class="sidebar-menu"
         >
-          <el-menu-item index="/data-center">
-            <i class="el-icon-collection"></i>
-            <span>数据中心</span>
-          </el-menu-item>
           <el-menu-item index="/ftp">
             <i class="el-icon-connection"></i>
             <span>FTP配置</span>
@@ -25,11 +21,11 @@
           </el-menu-item>
           <el-menu-item index="/task">
             <i class="el-icon-monitor"></i>
-            <span>任务监控</span>
+            <span>处理记录</span>
           </el-menu-item>
-          <el-menu-item index="/trigger-monitor">
-            <i class="el-icon-video-play"></i>
-            <span>Trigger监控</span>
+          <el-menu-item index="/alert">
+            <i class="el-icon-warning"></i>
+            <span>告警管理</span>
           </el-menu-item>
           <el-menu-item index="/log">
             <i class="el-icon-tickets"></i>
