@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-09T01:00",
+  "lastUpdated": "2026-04-27T00:55",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -234,6 +234,115 @@
       "dependsOn": [],
       "createdAt": "2026-04-12",
       "completedAt": "2026-04-12",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-SKILLS-INTEGRATION",
+      "title": "Harness Skills 集成与配置",
+      "description": "从 SkillHub 安装 Harness Skills 到 .trae/skills/ 目录，添加中文描述，创建使用文档，完成项目 Harness 初始化",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-27",
+      "completedAt": "2026-04-27",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-DESIGN",
+      "title": "FTP数据转换中间件 - 架构设计",
+      "description": "设计FTP报表数据转换中间件的完整架构：FTP扫描、Excel解析、字段映射、批量打包、消费监控、轮转机制",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-DB",
+      "title": "FTP数据转换中间件 - 数据库设计",
+      "description": "创建packing_config、packing_batch、alert_record表，扩展report_config字段",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-DESIGN"],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-ENTITY",
+      "title": "FTP数据转换中间件 - 实体类创建",
+      "description": "创建PackingConfig、PackingBatch、AlertRecord实体类",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-DB"],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-SERVICE",
+      "title": "FTP数据转换中间件 - 核心服务实现",
+      "description": "实现PackingService、ConsumptionWatcher、ConfigTableGenerator、PackingManager核心服务",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-ENTITY"],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-JOB",
+      "title": "FTP数据转换中间件 - 定时任务集成",
+      "description": "创建PackingJob并集成到Quartz调度系统",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-SERVICE"],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-API",
+      "title": "FTP数据转换中间件 - 管理接口实现",
+      "description": "实现打包配置、批次查询、告警管理REST接口",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-JOB"],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-FRONTEND",
+      "title": "FTP数据转换中间件 - 前端界面实现",
+      "description": "实现打包配置、批次监控、告警列表前端界面",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-API"],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-TEST",
+      "title": "FTP数据转换中间件 - 集成测试",
+      "description": "编写PackingService、ConsumptionWatcher单元测试",
+      "status": "pending",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-FRONTEND"],
+      "createdAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PIPELINE-MW-DEPLOY",
+      "title": "FTP数据转换中间件 - 部署验证",
+      "description": "编译打包、启动服务、验证全流程",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-PIPELINE-MW-TEST"],
+      "createdAt": "2026-04-28",
+      "completedAt": "2026-04-28",
       "assignee": "AI Assistant"
     }
   ],

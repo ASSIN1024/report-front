@@ -35,6 +35,14 @@ public class FtpConfig implements Serializable {
 
     private String remark;
 
+    private String stagingDir;
+
+    private String forUploadDir;
+
+    private String archiveDir;
+
+    private String errorDir;
+
     @TableLogic
     private Integer deleted;
 

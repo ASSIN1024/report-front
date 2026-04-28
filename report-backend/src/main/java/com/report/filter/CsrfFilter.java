@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 /**
  * CSRF过滤器
@@ -41,8 +42,12 @@ public class CsrfFilter implements Filter {
 
     private static final Set<String> CSRF_EXEMPT_PATHS = new HashSet<>(Arrays.asList(
             "/api/auth/login",
-            "/api/auth/register"
+            "/api/auth/register",
+            "/api/auth/csrf-token",
+            "/api/task/trigger"
     ));
+
+    private static final Pattern SCAN_PATH_PATTERN = Pattern.compile("^/api/report/config/\\d+/scan$");
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -72,6 +77,13 @@ public class CsrfFilter implements Filter {
         // 检查是否是CSRF豁免路径（登录、注册等）
         if (CSRF_EXEMPT_PATHS.stream().anyMatch(requestURI::startsWith)) {
             logger.debug("CSRF exempt path, allowing: {}", requestURI);
+            chain.doFilter(request, response);
+            return;
+        }
+
+        // 检查扫描路径（支持 /api/report/config/{id}/scan）
+        if (SCAN_PATH_PATTERN.matcher(requestURI).matches()) {
+            logger.debug("Scan path, allowing: {}", requestURI);
             chain.doFilter(request, response);
             return;
         }

@@ -2,7 +2,7 @@ module.exports = {
   transpileDependencies: [],
   lintOnSave: false,
   devServer: {
-    port: 8081,
+    port: 8086,
     proxy: {
       '/api': {
         target: 'http://localhost:8082',

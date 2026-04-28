@@ -72,6 +72,55 @@
 
       <el-card class="box-card" style="margin-top: 20px;">
         <div slot="header">
+          <span>解析与映射配置</span>
+        </div>
+        <el-form-item label="起始行号" prop="startRow">
+          <el-input-number v-model="form.startRow" :min="1" :max="100" :disabled="readonly" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            数据从第几行开始读取（默认1）
+          </span>
+        </el-form-item>
+        <el-form-item label="起始列号" prop="startCol">
+          <el-input-number v-model="form.startCol" :min="1" :max="50" :disabled="readonly" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            数据从第几列开始读取（默认1）
+          </span>
+        </el-form-item>
+        <el-form-item label="映射模式" prop="mappingMode">
+          <el-select v-model="form.mappingMode" :disabled="readonly" style="width: 200px;">
+            <el-option label="按列名" value="BY_NAME" />
+            <el-option label="按列序号" value="BY_INDEX" />
+            <el-option label="双模式（推荐）" value="DUAL" />
+          </el-select>
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            列名优先+列序号兜底
+          </span>
+        </el-form-item>
+        <el-form-item label="重复列名策略" prop="duplicateColStrategy">
+          <el-select v-model="form.duplicateColStrategy" :disabled="readonly" style="width: 200px;">
+            <el-option label="自动加后缀" value="AUTO_SUFFIX" />
+            <el-option label="按序号标识" value="BY_INDEX" />
+          </el-select>
+        </el-form-item>
+      </el-card>
+
+      <el-card class="box-card" style="margin-top: 20px;">
+        <div slot="header">
+          <span>ODS备份配置</span>
+        </div>
+        <el-form-item label="ODS备份">
+          <el-switch v-model="form.odsBackupEnabled" :active-value="1" :inactive-value="0" :disabled="readonly" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            开启后处理结果将备份写入ODS表
+          </span>
+        </el-form-item>
+        <el-form-item label="ODS表名" prop="odsTableName" v-if="form.odsBackupEnabled === 1">
+          <el-input v-model="form.odsTableName" :disabled="readonly" placeholder="如: ods_sales_daily" />
+        </el-form-item>
+      </el-card>
+
+      <el-card class="box-card" style="margin-top: 20px;">
+        <div slot="header">
           <span>列映射配置</span>
           <div style="float: right;" v-if="!readonly">
             <el-button type="text" @click="handleAddColumn">+ 添加映射</el-button>
@@ -196,6 +245,12 @@ export default {
         columnMappings: [],
         outputTable: '',
         outputMode: 'APPEND',
+        startRow: 1,
+        startCol: 1,
+        mappingMode: 'DUAL',
+        duplicateColStrategy: 'AUTO_SUFFIX',
+        odsBackupEnabled: 0,
+        odsTableName: '',
         status: 1,
         remark: ''
       },

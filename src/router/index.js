@@ -16,11 +16,6 @@ const routes = [
     redirect: '/ftp'
   },
   {
-    path: '/data-center',
-    name: 'DataCenter',
-    component: () => import('@/views/data-center/Index.vue')
-  },
-  {
     path: '/ftp',
     name: 'FtpConfig',
     component: () => import('@/views/ftp/FtpConfig.vue')
@@ -42,9 +37,9 @@ const routes = [
     component: () => import('@/views/task/TaskMonitor.vue')
   },
   {
-    path: '/trigger-monitor',
-    name: 'TriggerMonitor',
-    component: () => import('@/views/trigger/TriggerMonitor.vue')
+    path: '/alert',
+    name: 'AlertList',
+    component: () => import('@/views/alert/AlertList.vue')
   },
   {
     path: '/log',
@@ -60,6 +55,21 @@ const routes = [
     path: '/system-log',
     name: 'SystemLog',
     component: () => import('@/views/log/SystemLog.vue')
+  },
+  {
+    path: '/packing/config',
+    name: 'PackingConfig',
+    component: () => import('@/views/packing/PackingConfig.vue')
+  },
+  {
+    path: '/packing/monitor',
+    name: 'PackingMonitor',
+    component: () => import('@/views/packing/PackingMonitor.vue')
+  },
+  {
+    path: '/packing/alerts',
+    name: 'PackingAlertList',
+    component: () => import('@/views/packing/AlertList.vue')
   }
 ]
 
@@ -68,16 +78,12 @@ const router = new VueRouter({
   routes
 })
 
-// 路由守卫
 router.beforeEach((to, from, next) => {
   const token = getToken()
 
-  // 如果路由需要认证
   if (to.meta.requiresAuth !== false && !token) {
-    // 未登录，重定向到登录页
     next('/login')
   } else if (to.path === '/login' && token) {
-    // 已登录，访问登录页时重定向到首页
     next('/')
   } else {
     next()

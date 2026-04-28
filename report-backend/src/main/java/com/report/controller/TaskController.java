@@ -2,24 +2,27 @@ package com.report.controller;
 
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.report.common.result.Result;
+import com.report.engine.MatchedFile;
+import com.report.engine.MiddlewareEngine;
 import com.report.entity.FtpConfig;
 import com.report.entity.ReportConfig;
 import com.report.entity.TaskExecution;
 import com.report.entity.dto.TaskQueryDTO;
-import com.report.job.DataProcessJob;
 import com.report.service.FtpConfigService;
 import com.report.service.ProcessedFileService;
 import com.report.service.ReportConfigService;
 import com.report.service.TaskService;
+import com.report.service.PackagingService;
+import com.report.util.FileNameDateExtractor;
 import com.report.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +45,10 @@ public class TaskController {
     private ProcessedFileService processedFileService;
 
     @Autowired
-    private DataProcessJob dataProcessJob;
+    private MiddlewareEngine middlewareEngine;
+
+    @Autowired
+    private PackagingService packagingService;
 
     @GetMapping("/page")
     public Result<Page<TaskExecution>> page(TaskQueryDTO queryDTO) {
@@ -68,6 +74,21 @@ public class TaskController {
     public Result<Void> cancel(@PathVariable Long id) {
         taskService.updateTaskStatus(id, "CANCELLED");
         return Result.success();
+    }
+
+    @PostMapping("/package")
+    public Result<Map<String, Object>> triggerPackage() {
+        try {
+            log.info("手动触发批量打包...");
+            int count = packagingService.collectAndPackageBySizeLimit(200 * 1024 * 1024);
+            Map<String, Object> result = new HashMap<>();
+            result.put("packageCount", count);
+            result.put("message", count > 0 ? "打包完成，共生成 " + count + " 个包" : "没有待打包的文件");
+            return Result.success(result);
+        } catch (Exception e) {
+            log.error("批量打包失败", e);
+            return Result.fail("批量打包失败: " + e.getMessage());
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -97,7 +118,6 @@ public class TaskController {
 
         FTPClient ftpClient = null;
         File tempFile = null;
-        TaskExecution task = null;
         try {
             ftpClient = FtpUtil.connect(ftpConfig);
             if (ftpClient == null || !ftpClient.isConnected()) {
@@ -139,32 +159,24 @@ public class TaskController {
                 fos.write(fileData);
             }
 
-            task = taskService.createTask(
-                "MANUAL_TRIGGER",
-                "手动触发-" + reportConfig.getReportName(),
-                reportConfig.getId(),
-                fileName,
-                tempFile.getAbsolutePath()
-            );
+            MatchedFile matchedFile = new MatchedFile();
+            matchedFile.setFileName(fileName);
+            matchedFile.setFilePath(remotePath);
+            matchedFile.setReportConfigId(reportConfigId);
+            matchedFile.setLocalFile(tempFile);
+            LocalDate date = FileNameDateExtractor.extractDate(fileName);
+            matchedFile.setPtDt(date != null ? date.toString() : null);
 
-            dataProcessJob.processFile(task.getId(), reportConfig, tempFile);
-            processedFileService.markAsProcessed(reportConfig.getId(), fileName, tempFile.length(), task.getId());
-            tempFile.delete();
+            middlewareEngine.processFile(matchedFile, reportConfig);
 
-            TaskExecution completedTask = taskService.getById(task.getId());
             Map<String, Object> result = new HashMap<>();
-            result.put("taskId", task.getId());
-            result.put("status", completedTask.getStatus());
-            result.put("totalRows", completedTask.getTotalRows());
-            result.put("successRows", completedTask.getSuccessRows());
-            result.put("failedRows", completedTask.getFailedRows());
+            result.put("reportConfigId", reportConfigId);
+            result.put("fileName", fileName);
+            result.put("status", "PROCESSED");
             return Result.success(result);
 
         } catch (Exception e) {
             log.error("手动触发任务失败", e);
-            if (task != null) {
-                processedFileService.markAsFailed(reportConfig.getId(), fileName, task.getId(), e.getMessage());
-            }
             return Result.fail("任务执行失败: " + e.getMessage());
         } finally {
             FtpUtil.disconnect(ftpClient);

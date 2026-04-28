@@ -34,6 +34,18 @@ public class ReportConfigDTO implements Serializable {
 
     private String outputMode;
 
+    private Integer startRow;
+
+    private Integer startCol;
+
+    private String mappingMode;
+
+    private String duplicateColStrategy;
+
+    private Integer odsBackupEnabled;
+
+    private String odsTableName;
+
     private Integer status;
 
     private String remark;

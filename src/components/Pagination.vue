@@ -5,7 +5,7 @@
       :current-page="currentPage"
       :page-sizes="[10, 20, 50, 100]"
       :page-size="pageSize"
-      :total="total"
+      :total="totalNumber"
       layout="total, sizes, prev, pager, next, jumper"
       @size-change="handleSizeChange"
       @current-change="handleCurrentChange"
@@ -26,8 +26,13 @@ export default {
       default: 10
     },
     total: {
-      type: Number,
+      type: [Number, String],
       default: 0
+    }
+  },
+  computed: {
+    totalNumber() {
+      return Number(this.total) || 0
     }
   },
   methods: {
