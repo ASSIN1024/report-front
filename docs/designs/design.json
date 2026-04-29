@@ -1,0 +1,238 @@
+{
+  "name": "报表数据处理平台 UI 设计规范",
+  "version": "1.0",
+  "canvas": {
+    "width": 1440,
+    "height": 900
+  },
+  "colors": {
+    "primary": "#409EFF",
+    "success": "#67C23A",
+    "warning": "#E6A23C",
+    "danger": "#F56C6C",
+    "info": "#909399",
+    "dark": "#1a1a2e",
+    "light": "#F5F7FA",
+    "white": "#FFFFFF",
+    "background": "#F5F7FA",
+    "text": {
+      "primary": "#303133",
+      "secondary": "#606266",
+      "placeholder": "#C0C4CC"
+    },
+    "border": "#DCDFE6",
+    "tableHeader": "#F5F7FA",
+    "tableBorder": "#EBEEF5"
+  },
+  "borderRadius": {
+    "small": "4px",
+    "medium": "6px",
+    "large": "8px",
+    "xlarge": "12px"
+  },
+  "shadow": "0 2px 12px rgba(0,0,0,0.1)",
+  "spacing": {
+    "xs": "4px",
+    "sm": "8px",
+    "md": "12px",
+    "lg": "16px",
+    "xl": "20px",
+    "xxl": "24px"
+  },
+  "pages": [
+    {
+      "id": "dashboard",
+      "name": "1. 主仪表板/首页概览",
+      "elements": {
+        "header": {
+          "type": "frame",
+          "y": 0,
+          "width": "fill",
+          "height": 64,
+          "fill": "#1a1a2e",
+          "padding": "0 16px",
+          "layout": "horizontal",
+          "children": [
+            {
+              "id": "logo-container",
+              "type": "frame",
+              "layout": "horizontal",
+              "gap": 12,
+              "children": [
+                {"id": "logo", "type": "frame", "width": 40, "height": 40, "cornerRadius": 8, "fill": "#409EFF"},
+                {"id": "title", "type": "text", "content": "报表数据处理平台", "fontSize": 20, "fontWeight": "bold", "textColor": "#FFFFFF"}
+              ]
+            },
+            {
+              "id": "nav",
+              "type": "frame",
+              "layout": "horizontal",
+              "gap": 8,
+              "marginLeft": 48,
+              "children": [
+                {"id": "nav-dashboard", "type": "frame", "cornerRadius": 6, "padding": "8px", "width": 100, "fill": "#409EFF", "text": "Dashboard", "textColor": "#FFFFFF"},
+                {"id": "nav-ftp", "type": "frame", "cornerRadius": 6, "padding": "8px", "width": 80, "fill": "transparent", "text": "FTP配置", "textColor": "#909399"},
+                {"id": "nav-report", "type": "frame", "cornerRadius": 6, "padding": "8px", "width": 100, "fill": "transparent", "text": "报表配置", "textColor": "#909399"},
+                {"id": "nav-task", "type": "frame", "cornerRadius": 6, "padding": "8px", "width": 80, "fill": "transparent", "text": "任务监控", "textColor": "#909399"},
+                {"id": "nav-alert", "type": "frame", "cornerRadius": 6, "padding": "8px", "width": 80, "fill": "transparent", "text": "告警中心", "textColor": "#909399"}
+              ]
+            },
+            {
+              "id": "user-area",
+              "type": "frame",
+              "layout": "horizontal",
+              "gap": 8,
+              "marginLeft": "auto",
+              "children": [
+                {"id": "avatar", "type": "frame", "width": 36, "height": 36, "cornerRadius": 18, "fill": "#67C23A"},
+                {"id": "username", "type": "text", "content": "Admin", "fontSize": 14, "textColor": "#909399"}
+              ]
+            }
+          ]
+        },
+        "main": {
+          "type": "frame",
+          "y": 64,
+          "width": "fill",
+          "height": "fill",
+          "fill": "#F5F7FA",
+          "padding": 24,
+          "gap": 24,
+          "layout": "vertical",
+          "children": [
+            {
+              "id": "page-title",
+              "type": "text",
+              "content": "系统概览 Dashboard",
+              "fontSize": 24,
+              "fontWeight": "bold",
+              "textColor": "#303133"
+            },
+            {
+              "id": "stats-row",
+              "type": "frame",
+              "layout": "horizontal",
+              "gap": 20,
+              "height": 120,
+              "children": [
+                {"id": "stat-1", "type": "frame", "layout": "vertical", "cornerRadius": 12, "padding": 20, "fill": "#FFFFFF", "shadow": "0 2px 12px rgba(0,0,0,0.1)", "value": "12", "label": "FTP配置数", "iconFill": "#E6F7FF"},
+                {"id": "stat-2", "type": "frame", "layout": "vertical", "cornerRadius": 12, "padding": 20, "fill": "#FFFFFF", "shadow": "0 2px 12px rgba(0,0,0,0.1)", "value": "28", "label": "报表配置数", "iconFill": "#E8F5E9"},
+                {"id": "stat-3", "type": "frame", "layout": "vertical", "cornerRadius": 12, "padding": 20, "fill": "#FFFFFF", "shadow": "0 2px 12px rgba(0,0,0,0.1)", "value": "156", "label": "今日执行任务", "iconFill": "#FFF3E6"},
+                {"id": "stat-4", "type": "frame", "layout": "vertical", "cornerRadius": 12, "padding": 20, "fill": "#FFFFFF", "shadow": "0 2px 12px rgba(0,0,0,0.1)", "value": "3", "label": "待处理告警", "iconFill": "#FFE6E6"}
+              ]
+            },
+            {
+              "id": "content-row",
+              "type": "frame",
+              "layout": "horizontal",
+              "gap": 20,
+              "height": 300,
+              "children": [
+                {
+                  "id": "panel-tasks",
+                  "type": "frame",
+                  "layout": "vertical",
+                  "cornerRadius": 12,
+                  "padding": 20,
+                  "fill": "#FFFFFF",
+                  "shadow": "0 2px 12px rgba(0,0,0,0.1)",
+                  "width": "fill",
+                  "children": [
+                    {"id": "panel-title", "type": "text", "content": "最近执行任务", "fontSize": 16, "fontWeight": "bold", "textColor": "#303133"},
+                    {"id": "table-header", "type": "frame", "layout": "horizontal", "fill": "#F5F7FA", "height": 40, "padding": "0 8px", "columns": ["任务名称", "状态", "执行时间"]},
+                    {"id": "row-1", "type": "frame", "layout": "horizontal", "height": 48, "padding": "0 8px", "border": {"color": "#EBEEF5", "type": "bottom"}, "data": ["日报_销售报表_20260428", "成功", "2026-04-28 09:30"], "statusColor": "#67C23A"},
+                    {"id": "row-2", "type": "frame", "layout": "horizontal", "height": 48, "padding": "0 8px", "border": {"color": "#EBEEF5", "type": "bottom"}, "data": ["周报_库存统计_20260428", "成功", "2026-04-28 08:00"], "statusColor": "#67C23A"},
+                    {"id": "row-3", "type": "frame", "layout": "horizontal", "height": 48, "padding": "0 8px", "border": {"color": "#EBEEF5", "type": "bottom"}, "data": ["月报_财务汇总_20260428", "运行中", "2026-04-28 07:00"], "statusColor": "#E6A23C"}
+                  ]
+                },
+                {
+                  "id": "panel-actions",
+                  "type": "frame",
+                  "layout": "vertical",
+                  "cornerRadius": 12,
+                  "padding": 20,
+                  "width": 300,
+                  "fill": "#FFFFFF",
+                  "shadow": "0 2px 12px rgba(0,0,0,0.1)",
+                  "children": [
+                    {"id": "panel-title-2", "type": "text", "content": "快捷操作", "fontSize": 16, "fontWeight": "bold", "textColor": "#303133"},
+                    {"id": "btn-1", "type": "frame", "layout": "horizontal", "cornerRadius": 8, "padding": 16, "fill": "#409EFF", "gap": 12, "text": "新增FTP配置"},
+                    {"id": "btn-2", "type": "frame", "layout": "horizontal", "cornerRadius": 8, "padding": 16, "fill": "#67C23A", "gap": 12, "text": "新增报表配置"},
+                    {"id": "btn-3", "type": "frame", "layout": "horizontal", "cornerRadius": 8, "padding": 16, "fill": "#E6A23C", "gap": 12, "text": "查看任务监控"},
+                    {"id": "btn-4", "type": "frame", "layout": "horizontal", "cornerRadius": 8, "padding": 16, "fill": "#F56C6C", "gap": 12, "text": "处理告警"}
+                  ]
+                }
+              ]
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "ftp",
+      "name": "2. FTP配置管理页面",
+      "similarTo": "dashboard",
+      "differences": {
+        "pageTitle": "FTP配置管理",
+        "addButton": "新增配置",
+        "searchFields": ["配置名称", "状态"],
+        "tableColumns": ["配置名称", "主机地址", "端口", "根目录", "状态", "操作"],
+        "tableData": [
+          ["生产环境FTP", "ftp.production.com", "21", "/data/reports", "启用", ["编辑", "测试", "扫描", "删除"]],
+          ["测试环境FTP", "ftp.test.com", "21", "/test/reports", "启用", ["编辑", "测试", "扫描", "删除"]]
+        ]
+      }
+    },
+    {
+      "id": "report",
+      "name": "3. 报表配置管理页面",
+      "similarTo": "ftp",
+      "differences": {
+        "pageTitle": "报表配置管理",
+        "addButton": "新增报表",
+        "searchFields": ["报表名称", "状态"],
+        "tableColumns": ["报表编码", "报表名称", "关联FTP", "文件匹配", "输出表", "输出模式", "状态", "操作"],
+        "tableData": [
+          ["RPT_DAILY_SALES", "日报_销售报表", "生产环境FTP", "sales_*.xlsx", "rpt_daily_sales", "追加", "启用", ["编辑", "查看", "立即扫描", "删除"]],
+          ["RPT_WEEKLY_INV", "周报_库存统计", "生产环境FTP", "inventory_*.xlsx", "rpt_weekly_inv", "覆盖", "启用", ["编辑", "查看", "立即扫描", "删除"]]
+        ]
+      }
+    },
+    {
+      "id": "task",
+      "name": "4. 任务监控中心页面",
+      "similarTo": "dashboard",
+      "differences": {
+        "pageTitle": "任务监控中心",
+        "statsRow": [
+          {"label": "今日总任务", "value": "156"},
+          {"label": "成功", "value": "148", "color": "#67C23A"},
+          {"label": "进行中", "value": "5", "color": "#E6A23C"},
+          {"label": "失败", "value": "3", "color": "#F56C6C"}
+        ],
+        "tableColumns": ["任务ID", "任务名称", "任务类型", "状态", "开始时间", "结束时间", "耗时", "操作"],
+        "tableData": [
+          ["1001", "日报_销售报表_20260428", "定时扫描", "成功", "2026-04-28 09:30:00", "2026-04-28 09:32:45", "2分45秒", ["详情", "日志"]],
+          ["1002", "月报_财务汇总_20260428", "立即扫描", "进行中", "2026-04-28 10:00:00", "-", "-", ["详情", "日志"]],
+          ["1003", "周报_库存统计_20260428", "定时扫描", "失败", "2026-04-28 08:00:00", "2026-04-28 08:01:30", "1分30秒", ["详情", "日志"]]
+        ]
+      }
+    },
+    {
+      "id": "alert",
+      "name": "5. 告警中心页面",
+      "similarTo": "ftp",
+      "differences": {
+        "pageTitle": "告警中心",
+        "navAlert": "#F56C6C",
+        "searchFields": ["告警类型", "告警级别", "处理状态"],
+        "tableColumns": ["级别", "告警类型", "告警标题", "来源", "发生时间", "状态", "操作"],
+        "tableData": [
+          ["高危", "任务失败", "周报_库存统计 任务执行失败", "RPT_WEEKLY_INV", "2026-04-28 08:01:30", "待处理", ["处理", "详情", "忽略"], "levelColor": "#F56C6C"],
+          ["中危", "连接异常", "FTP连接超时: ftp.backup.com", "备份环境FTP", "2026-04-28 07:30:00", "已处理", ["处理", "详情", "忽略"], "levelColor": "#E6A23C"],
+          ["低危", "数据异常", "文件格式不匹配: sales_abc.csv", "RPT_DAILY_SALES", "2026-04-28 09:35:00", "待处理", ["处理", "详情", "忽略"], "levelColor": "#409EFF"]
+        ]
+      }
+    }
+  ]
+}
