@@ -1,6 +1,5 @@
 package com.report.engine;
 
-import com.report.entity.FtpConfig;
 import com.report.entity.ProcessedFile;
 import com.report.entity.ReportConfig;
 import com.report.service.*;

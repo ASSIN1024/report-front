@@ -1,12 +1,10 @@
 package com.report.service.impl;
 
-import com.report.entity.FtpConfig;
 import com.report.entity.ReportConfig;
-import com.report.mapper.FtpConfigMapper;
+import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigService;
 import com.report.service.ArchiveService;
-import com.report.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -14,6 +12,9 @@ import org.springframework.util.StringUtils;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -21,8 +22,8 @@ import java.util.Date;
 @Service
 public class ArchiveServiceImpl implements ArchiveService {
 
-    @Autowired
-    private FtpConfigMapper ftpConfigMapper;
+    @Autowired(required = false)
+    private BuiltInFtpConfigService builtInFtpConfigService;
 
     @Override
     public void archiveToSuccess(File localFile, ReportConfig config) {
@@ -39,63 +40,45 @@ public class ArchiveServiceImpl implements ArchiveService {
             return;
         }
 
-        FtpConfig ftpConfig = ftpConfigMapper.selectById(config.getFtpConfigId());
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigService != null ? builtInFtpConfigService.getConfig() : null;
         if (ftpConfig == null) {
-            log.warn("FTP config not found for archiving, keeping local file: {}", localFile.getName());
+            log.warn("Built-in FTP config not found for archiving, keeping local file: {}", localFile.getName());
             return;
         }
 
-        String targetDir = resolveDir(ftpConfig, dirType);
-        String remotePath = targetDir + "/" + localFile.getName();
+        String targetDir = resolveDir(ftpConfig, config.getScanPath(), dirType);
+        Path targetPath = new File(ftpConfig.getRootDirectory(), targetDir).toPath();
+        Path targetFile = targetPath.resolve(localFile.getName());
 
-        FTPClient ftpClient = null;
         FileInputStream fis = null;
         try {
-            ftpClient = FtpUtil.connect(ftpConfig);
-            ftpClient.makeDirectory(targetDir);
+            Files.createDirectories(targetPath);
 
-            if (fileExistsOnFtp(ftpClient, remotePath)) {
+            if (Files.exists(targetFile)) {
                 SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMddHHmmss");
-                remotePath = targetDir + "/" + localFile.getName().replace(".", "_" + sdf.format(new Date()) + ".");
+                String newFileName = localFile.getName().replace(".", "_" + sdf.format(new Date()) + ".");
+                targetFile = targetPath.resolve(newFileName);
             }
 
-            fis = new FileInputStream(localFile);
-            boolean stored = ftpClient.storeFile(remotePath, fis);
-            if (stored) {
-                localFile.delete();
-                log.info("Archived file to {}: {}", dirType, remotePath);
-            } else {
-                log.warn("Failed to archive file, keeping local: {}", localFile.getName());
-            }
+            Files.copy(localFile.toPath(), targetFile, StandardCopyOption.REPLACE_EXISTING);
+            localFile.delete();
+            log.info("Archived file to {}: {}", dirType, targetFile);
         } catch (Exception e) {
             log.warn("Archive failed, keeping local file: {}", localFile.getName(), e);
-        } finally {
-            if (fis != null) {
-                try { fis.close(); } catch (IOException ignored) {}
-            }
-            FtpUtil.disconnect(ftpClient);
         }
     }
 
-    private boolean fileExistsOnFtp(FTPClient ftpClient, String remotePath) throws IOException {
-        String[] names = ftpClient.listNames(remotePath);
-        return names != null && names.length > 0;
-    }
-
-    private String resolveDir(FtpConfig ftpConfig, String dirType) {
+    private String resolveDir(BuiltInFtpConfig ftpConfig, String scanPath, String dirType) {
+        if (scanPath == null || scanPath.isEmpty()) {
+            scanPath = "/upload";
+        }
         switch (dirType) {
             case "archive":
-                if (StringUtils.hasText(ftpConfig.getArchiveDir())) {
-                    return ftpConfig.getArchiveDir();
-                }
-                return ftpConfig.getScanPath() + "/archive";
+                return scanPath + "/archive";
             case "error":
-                if (StringUtils.hasText(ftpConfig.getErrorDir())) {
-                    return ftpConfig.getErrorDir();
-                }
-                return ftpConfig.getScanPath() + "/error";
+                return scanPath + "/error";
             default:
-                return ftpConfig.getScanPath() + "/" + dirType;
+                return scanPath + "/" + dirType;
         }
     }
 }
