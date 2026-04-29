@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-27T00:55",
+  "lastUpdated": "2026-04-29",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -343,6 +343,17 @@
       "dependsOn": ["H-PIPELINE-MW-TEST"],
       "createdAt": "2026-04-28",
       "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-FTP-REFACTOR",
+      "title": "FTP配置简化重构 - 移除外部FTP体系",
+      "description": "废弃多FTP设计方案，统一采用内置FTP：1) 移除FtpConfig实体及相关代码 2) report_config新增scan_path字段 3) 扫描路径迁移至报表配置 4) 删除FTP管理页面",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-29",
+      "completedAt": "2026-04-29",
       "assignee": "AI Assistant"
     }
   ],
