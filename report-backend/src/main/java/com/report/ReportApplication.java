@@ -7,7 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
 @EnableScheduling
-@MapperScan({"com.report.mapper", "com.report.ftp", "com.report.trigger", "com.report.packing"})
+@MapperScan({"com.report.mapper", "com.report.ftp", "com.report.trigger", "com.report.packing.mapper"})
 public class ReportApplication {
 
     public static void main(String[] args) {

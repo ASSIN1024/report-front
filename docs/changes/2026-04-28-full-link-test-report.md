@@ -58,11 +58,40 @@
 | /api/packing/config | GET | ✅ 通过 | <100ms | 返回6条配置 |
 | /api/packing/batch | GET | ✅ 通过 | <100ms | 返回批次列表 |
 | /api/packing/alerts | GET | ✅ 通过 | <100ms | 返回告警列表 |
-| /api/packing/trigger | POST | ⚠️ 限制 | - | 需要CSRF token |
-| /api/packing/config | PUT | ⚠️ 限制 | - | 需要CSRF token |
+| /api/packing/trigger | POST | ✅ 通过 | <100ms | 需要CSRF token (2026-04-28验证) |
+| /api/packing/config | PUT | ✅ 通过 | <100ms | 需要CSRF token (2026-04-28验证) |
 | /api/batch | GET | ⚠️ 异常 | - | BuiltInFtpConfigService 初始化问题 |
 
-### 3.2 问题记录
+### 3.2 CSRF Token 验证测试 (2026-04-28)
+
+| 测试项 | 方法 | 状态 | 说明 |
+|--------|------|------|------|
+| 登录获取token | POST /api/auth/login | ✅ 通过 | 返回csrfToken和JSESSIONID |
+| 触发打包 | POST /api/packing/trigger | ✅ 通过 | 带X-CSRF-Token和Cookie |
+| 更新配置 | PUT /api/packing/config | ✅ 通过 | polling_interval已更新为60 |
+
+#### 测试命令示例
+```bash
+# 1. 登录获取token和session
+curl -X POST http://localhost:8082/api/auth/login \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "username=admin&password=admin123" \
+  -c /tmp/cookies.txt
+
+# 2. 触发打包（使用token）
+curl -X POST http://localhost:8082/api/packing/trigger \
+  -H "Content-Type: application/json" \
+  -H "X-CSRF-Token: <token>" \
+  -b /tmp/cookies.txt \
+  -d '{}'
+
+# 3. 更新配置
+curl -X PUT "http://localhost:8082/api/packing/config?key=polling_interval&value=60" \
+  -H "X-CSRF-Token: <token>" \
+  -b /tmp/cookies.txt
+```
+
+### 3.3 问题记录
 
 #### 问题 1: CSRF 验证
 - **描述**: POST/PUT 请求需要 CSRF token
@@ -140,12 +169,11 @@
 - ✅ 数据库表结构创建正确
 - ✅ packing_config 配置初始化成功
 - ✅ REST API GET 端点全部正常
+- ✅ REST API POST/PUT 端点 CSRF 验证通过
 - ✅ 前端页面正常显示
 - ✅ E2E 测试通过
 
 ### 7.2 待解决项
-- ⚠️ CSRF token 验证（需要前端配合）
-- ⚠️ 打包触发需要完整登录会话
 - ⚠️ FTP 扫描服务需要内置 FTP 配置
 
 ### 7.3 建议

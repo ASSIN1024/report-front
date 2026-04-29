@@ -1,0 +1,49 @@
+{
+  "version": "2.11",
+  "children": [
+    {
+      "type": "frame",
+      "id": "bi8Au",
+      "x": 0,
+      "y": 0,
+      "name": "Frame",
+      "clip": true,
+      "width": 800,
+      "height": 600,
+      "fill": "#FFFFFF",
+      "layout": "none"
+    },
+    {
+      "type": "frame",
+      "id": "CRvs6",
+      "x": 0,
+      "y": 0,
+      "name": "Test Frame",
+      "layout": "vertical",
+      "gap": 16,
+      "padding": 24,
+      "children": [
+        {
+          "type": "text",
+          "id": "M5vm2L",
+          "name": "title",
+          "fill": "#333333",
+          "content": "Pencil MCP 测试",
+          "fontFamily": "Inter",
+          "fontSize": 24,
+          "fontWeight": "bold"
+        },
+        {
+          "type": "text",
+          "id": "YNzRn",
+          "name": "desc",
+          "fill": "#666666",
+          "content": "这是一个测试设计文件，用于验证 Pencil MCP 是否正常工作。",
+          "fontFamily": "Inter",
+          "fontSize": 14,
+          "fontWeight": "normal"
+        }
+      ]
+    }
+  ]
+}
