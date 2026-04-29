@@ -4,27 +4,24 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.report.common.result.Result;
 import com.report.engine.MatchedFile;
 import com.report.engine.MiddlewareEngine;
-import com.report.entity.FtpConfig;
 import com.report.entity.ReportConfig;
 import com.report.entity.TaskExecution;
 import com.report.entity.dto.TaskQueryDTO;
-import com.report.service.FtpConfigService;
+import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.EmbeddedFtpServer;
 import com.report.service.ProcessedFileService;
 import com.report.service.ReportConfigService;
 import com.report.service.TaskService;
 import com.report.service.PackagingService;
 import com.report.util.FileNameDateExtractor;
-import com.report.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.time.LocalDate;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
@@ -39,9 +36,6 @@ public class TaskController {
     private ReportConfigService reportConfigService;
 
     @Autowired
-    private FtpConfigService ftpConfigService;
-
-    @Autowired
     private ProcessedFileService processedFileService;
 
     @Autowired
@@ -49,6 +43,12 @@ public class TaskController {
 
     @Autowired
     private PackagingService packagingService;
+
+    @Autowired(required = false)
+    private BuiltInFtpConfigService builtInFtpConfigService;
+
+    @Autowired(required = false)
+    private EmbeddedFtpServer embeddedFtpServer;
 
     @GetMapping("/page")
     public Result<Page<TaskExecution>> page(TaskQueryDTO queryDTO) {
@@ -72,6 +72,10 @@ public class TaskController {
 
     @PostMapping("/cancel/{id}")
     public Result<Void> cancel(@PathVariable Long id) {
+        TaskExecution task = taskService.getById(id);
+        if (task == null) {
+            return Result.error("任务不存在");
+        }
         taskService.updateTaskStatus(id, "CANCELLED");
         return Result.success();
     }
@@ -111,33 +115,42 @@ public class TaskController {
             return Result.fail("报表配置不存在");
         }
 
-        FtpConfig ftpConfig = ftpConfigService.getById(reportConfig.getFtpConfigId());
+        if (embeddedFtpServer == null || !embeddedFtpServer.isRunning()) {
+            return Result.fail("内置FTP服务未运行");
+        }
+
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigService.getConfig();
         if (ftpConfig == null) {
             return Result.fail("FTP配置不存在");
         }
 
-        FTPClient ftpClient = null;
         File tempFile = null;
         try {
-            ftpClient = FtpUtil.connect(ftpConfig);
-            if (ftpClient == null || !ftpClient.isConnected()) {
-                return Result.fail("FTP连接失败");
+            String scanPath = reportConfig.getScanPath();
+            if (scanPath == null || scanPath.isEmpty()) {
+                scanPath = "/upload";
+            }
+
+            File ftpRoot = new File(ftpConfig.getRootDirectory());
+            File scanDir = new File(ftpRoot, scanPath);
+
+            if (!scanDir.exists() || !scanDir.isDirectory()) {
+                return Result.fail("扫描目录不存在: " + scanDir.getAbsolutePath());
             }
 
             if (fileName == null || fileName.isEmpty()) {
-                List<String> files = FtpUtil.listFiles(ftpClient, ftpConfig.getScanPath(), "*.xlsx");
-                if (files == null || files.isEmpty()) {
-                    return Result.fail("FTP目录中没有找到文件");
-                }
                 String pattern = reportConfig.getFilePattern();
-                for (String f : files) {
-                    if (f.matches(pattern.replace("*", ".*").replace("?", "."))) {
-                        fileName = f;
-                        break;
-                    }
+                String fileRegex = pattern.replace("*", ".*").replace("?", ".");
+                File[] files = scanDir.listFiles((dir, name) -> name.matches(fileRegex));
+                if (files == null || files.length == 0) {
+                    return Result.fail("目录中没有找到匹配的文件");
                 }
-                if (fileName == null) {
-                    return Result.fail("没有找到匹配 " + reportConfig.getFilePattern() + " 的文件");
+                tempFile = files[0];
+                fileName = tempFile.getName();
+            } else {
+                tempFile = new File(scanDir, fileName);
+                if (!tempFile.exists()) {
+                    return Result.fail("文件不存在: " + fileName);
                 }
             }
 
@@ -145,25 +158,16 @@ public class TaskController {
                 return Result.fail("文件已处理过: " + fileName);
             }
 
-            String remotePath = ftpConfig.getScanPath() + "/" + fileName;
-            if (remotePath.startsWith("//")) {
-                remotePath = remotePath.substring(1);
-            }
-            byte[] fileData = FtpUtil.downloadFile(ftpClient, remotePath);
-            if (fileData == null || fileData.length == 0) {
-                return Result.fail("文件下载失败: " + fileName);
-            }
-
-            tempFile = File.createTempFile("trigger_", "_" + fileName);
-            try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                fos.write(fileData);
+            File finalTempFile = File.createTempFile("trigger_", "_" + fileName);
+            try (java.io.FileOutputStream fos = new java.io.FileOutputStream(finalTempFile)) {
+                java.nio.file.Files.copy(tempFile.toPath(), fos);
             }
 
             MatchedFile matchedFile = new MatchedFile();
             matchedFile.setFileName(fileName);
-            matchedFile.setFilePath(remotePath);
+            matchedFile.setFilePath(tempFile.getAbsolutePath());
             matchedFile.setReportConfigId(reportConfigId);
-            matchedFile.setLocalFile(tempFile);
+            matchedFile.setLocalFile(finalTempFile);
             LocalDate date = FileNameDateExtractor.extractDate(fileName);
             matchedFile.setPtDt(date != null ? date.toString() : null);
 
@@ -178,11 +182,6 @@ public class TaskController {
         } catch (Exception e) {
             log.error("手动触发任务失败", e);
             return Result.fail("任务执行失败: " + e.getMessage());
-        } finally {
-            FtpUtil.disconnect(ftpClient);
-            if (tempFile != null && tempFile.exists()) {
-                tempFile.delete();
-            }
         }
     }
 }
