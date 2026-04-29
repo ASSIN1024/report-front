@@ -19,10 +19,13 @@
         <el-form-item label="报表名称" prop="reportName">
           <el-input v-model="form.reportName" :disabled="readonly" placeholder="如: 销售报表" />
         </el-form-item>
-        <el-form-item label="关联FTP" prop="ftpConfigId">
-          <el-select v-model="form.ftpConfigId" :disabled="readonly" placeholder="请选择FTP配置">
-            <el-option v-for="item in ftpConfigList" :key="item.id" :label="item.configName" :value="item.id" />
+        <el-form-item label="FTP配置">
+          <el-select v-model="form.ftpConfigId" disabled placeholder="内置FTP">
+            <el-option label="内置FTP" :value="-1" />
           </el-select>
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            (已统一使用内置FTP)
+          </span>
         </el-form-item>
         <el-form-item label="备注">
           <el-input v-model="form.remark" :disabled="readonly" type="textarea" :rows="2" />
@@ -33,6 +36,12 @@
         <div slot="header">
           <span>文件扫描配置</span>
         </div>
+        <el-form-item label="扫描路径" prop="scanPath">
+          <el-input v-model="form.scanPath" :disabled="readonly" placeholder="如: /upload/SALES_REPORT" style="width: 300px;" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            相对于FTP根目录，默认 /upload
+          </span>
+        </el-form-item>
         <el-form-item label="文件匹配" prop="filePattern">
           <el-input v-model="form.filePattern" :disabled="readonly" placeholder="如: sales_*.xlsx" />
         </el-form-item>
@@ -218,7 +227,6 @@
 
 <script>
 import { getReportConfigById, saveReportConfig, updateReportConfig, getReportConfigListEnabled } from '@/api/reportConfig'
-import { getFtpConfigListEnabled } from '@/api/ftpConfig'
 import CleanRulesDialog from './CleanRulesDialog.vue'
 import JsonImportDialog from './JsonImportDialog.vue'
 
@@ -235,7 +243,8 @@ export default {
         id: null,
         reportCode: '',
         reportName: '',
-        ftpConfigId: null,
+        ftpConfigId: -1,
+        scanPath: '/upload',
         filePattern: '*.xlsx',
         sheetIndex: 0,
         headerRow: 0,
@@ -254,7 +263,6 @@ export default {
         status: 1,
         remark: ''
       },
-      ftpConfigList: [],
       cleanRulesVisible: false,
       currentColumnIndex: null,
       currentColumn: {},
@@ -262,7 +270,6 @@ export default {
       rules: {
         reportCode: [{ required: true, message: '请输入报表编码', trigger: 'blur' }],
         reportName: [{ required: true, message: '请输入报表名称', trigger: 'blur' }],
-        ftpConfigId: [{ required: true, message: '请选择FTP配置', trigger: 'change' }],
         filePattern: [{ required: true, message: '请输入文件匹配模式', trigger: 'blur' }],
         outputTable: [{ required: true, message: '请输入输出表名', trigger: 'blur' }]
       }
@@ -275,24 +282,21 @@ export default {
   },
   created() {
     this.readonly = this.$route.query.readonly === 'true'
-    this.loadFtpConfigList()
     if (this.id) {
       this.loadData()
     }
   },
   methods: {
-    async loadFtpConfigList() {
-      try {
-        const res = await getFtpConfigListEnabled()
-        this.ftpConfigList = res.data
-      } catch (error) {
-        console.error('加载FTP配置列表失败', error)
-      }
-    },
     async loadData() {
       try {
         const res = await getReportConfigById(this.id)
         this.form = res.data
+        if (!this.form.scanPath) {
+          this.form.scanPath = '/upload'
+        }
+        if (!this.form.ftpConfigId) {
+          this.form.ftpConfigId = -1
+        }
       } catch (error) {
         console.error('加载数据失败', error)
       }
