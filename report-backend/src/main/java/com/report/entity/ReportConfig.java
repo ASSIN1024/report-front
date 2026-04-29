@@ -21,6 +21,8 @@ public class ReportConfig implements Serializable {
 
     private Long ftpConfigId;
 
+    private String scanPath;
+
     private String filePattern;
 
     private Integer sheetIndex;
