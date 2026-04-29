@@ -1,8 +1,8 @@
 # Harness Engineering 进度记录
 
-> **文档版本**: V1.3
+> **文档版本**: V1.4
 > **创建日期**: 2026-04-04
-> **最后更新**: 2026-04-29
+> **最后更新**: 2026-04-30
 
 ---
 
@@ -966,4 +966,68 @@ DROP TABLE IF EXISTS ftp_config;
 **下一步计划**:
 - [ ] 执行数据迁移脚本
 - [ ] 功能验证测试
+
+---
+
+### 2026-04-30 - 报表配置保存和扫描功能Bug修复
+
+**会话目标**: 修复新增报表配置保存失败和立即扫描功能异常问题
+
+**问题诊断**:
+
+1. **"请求包含未知字段"错误**
+   - 原因: ReportConfigDTO缺少skipColumns和dateExtractPattern字段
+   - 影响: 前端发送这两个字段时Jackson反序列化报错
+
+2. **编译错误: getOutputMode()方法不存在**
+   - 位置: ReportConfigServiceImpl.java:80
+   - 原因: 调用了ReportConfig实体中不存在的getOutputMode()方法
+
+3. **MyBatis绑定错误: BindingException**
+   - 原因: BuiltInFtpConfigService.getConfig()调用无法正确绑定MyBatis Mapper
+   - 影响范围: ReportConfigController, TaskController, PackagingServiceImpl, ArchiveServiceImpl, FtpScanJob
+
+4. **数据库列缺失错误**
+   - alert_record表缺少alert_level列
+   - alert_record表缺少alert_message列
+
+**修复内容**:
+
+| 文件 | 修复内容 |
+|------|----------|
+| ReportConfigDTO.java | 添加skipColumns和dateExtractPattern字段 |
+| ReportConfigServiceImpl.java | 删除不存在的getOutputMode()调用，添加skipColumns和dateExtractPattern映射 |
+| ReportConfigController.java | 添加BuiltInFtpConfigMapper注入，改为直接调用Mapper |
+| TaskController.java | 同上 |
+| PackagingServiceImpl.java | 同上 |
+| ArchiveServiceImpl.java | 同上 |
+| FtpScanJob.java | 同上 |
+
+**数据库变更**:
+```sql
+-- report_config表添加partition_info列
+ALTER TABLE report_config ADD COLUMN partition_info varchar(50) DEFAULT NULL;
+
+-- alert_record表添加缺失列
+ALTER TABLE alert_record ADD COLUMN alert_level varchar(20) DEFAULT 'INFO';
+ALTER TABLE alert_record ADD COLUMN alert_message varchar(500) DEFAULT NULL;
+```
+
+**验证结果**:
+- ✅ 新增报表配置保存成功
+- ✅ 立即扫描功能正常工作
+- ✅ 扫描返回: {"code":200,"message":"操作成功","data":{"fileName":"test120260429.xlsx",...}}
+
+**Git提交**:
+- `xxx` - fix: 修复报表配置保存和扫描功能的多个问题
+
+**Harness上下文同步检查**:
+- ✅ tasks.json 添加H-BUGFIX-0430任务
+- ✅ progress-notes.md 会话记录已追加
+- ✅ Git 已提交
+
+**下一步计划**:
+- [x] Bug修复完成
+- [x] 功能验证通过
+- [x] Git提交并推送
 

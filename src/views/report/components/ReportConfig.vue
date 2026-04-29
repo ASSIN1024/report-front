@@ -152,23 +152,23 @@
               <el-select v-model="row.fieldType" :disabled="readonly">
                 <el-option label="字符串" value="STRING" />
                 <el-option label="整数" value="INTEGER" />
-                <el-option label="小数" value="DECIMAL" />
+                <el-option label="数值" value="DECIMAL" />
                 <el-option label="日期" value="DATE" />
                 <el-option label="日期时间" value="DATETIME" />
               </el-select>
+            </template>
+          </el-table-column>
+          <el-table-column label="数值精度" prop="scale" width="120">
+            <template slot-scope="{ row, $index }">
+              <el-input-number v-model="row.scale" :min="0" :max="10" :disabled="readonly"
+                v-if="row.fieldType === 'DECIMAL'" />
+              <span v-else class="field-hint">-</span>
             </template>
           </el-table-column>
           <el-table-column label="日期格式" prop="dateFormat" width="150">
             <template slot-scope="{ row, $index }">
               <el-input v-model="row.dateFormat" :disabled="readonly" placeholder="如: yyyy-MM-dd"
                 v-if="row.fieldType === 'DATE' || row.fieldType === 'DATETIME'" />
-              <span v-else class="field-hint">-</span>
-            </template>
-          </el-table-column>
-          <el-table-column label="小数精度" prop="scale" width="120">
-            <template slot-scope="{ row, $index }">
-              <el-input-number v-model="row.scale" :min="0" :max="10" :disabled="readonly"
-                v-if="row.fieldType === 'DECIMAL' || row.fieldType === 'INTEGER'" />
               <span v-else class="field-hint">-</span>
             </template>
           </el-table-column>
@@ -191,14 +191,82 @@
         <div slot="header">
           <span>输出配置</span>
         </div>
-        <el-form-item label="输出表名" prop="outputTable">
-          <el-input v-model="form.outputTable" :disabled="readonly" placeholder="如: t_sales_data" />
+        <el-form-item label="目标表类型" prop="targetTableType">
+          <el-select v-model="form.targetTableType" :disabled="readonly" placeholder="请选择表类型" style="width: 200px;">
+            <el-option label="Hive" value="hive" />
+            <el-option label="MPP" value="mpp" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="输出模式" prop="outputMode">
-          <el-radio-group v-model="form.outputMode" :disabled="readonly">
-            <el-radio label="APPEND">追加</el-radio>
-            <el-radio label="OVERWRITE">覆盖</el-radio>
-          </el-radio-group>
+        <el-form-item label="目标库名" prop="targetDbName">
+          <el-input v-model="form.targetDbName" :disabled="readonly" placeholder="hive时填库名, mpp时填mppSchema" style="width: 300px;" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            Hive填写库名, MPP填写mppSchema
+          </span>
+        </el-form-item>
+        <el-form-item label="输出表名" prop="outputTable">
+          <el-input v-model="form.outputTable" :disabled="readonly" placeholder="如: t_sales_data" style="width: 300px;" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            bi_前缀不用填写,会自动拼接上
+          </span>
+        </el-form-item>
+        <el-form-item label="是否境外" prop="isOverseas">
+          <el-select v-model="form.isOverseas" :disabled="readonly" placeholder="MPP时必填" style="width: 150px;">
+            <el-option label="否" :value="0" />
+            <el-option label="是" :value="1" />
+          </el-select>
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            MPP时应该填写,不填默认0
+          </span>
+        </el-form-item>
+        <el-form-item label="数据载入模式" prop="loadMode">
+          <el-select v-model="form.loadMode" :disabled="readonly" placeholder="请选择载入模式" style="width: 250px;">
+            <el-option label="无分区追加 (non-partitioned-append)" value="non-partitioned-append" />
+            <el-option label="无分区覆盖 (non-partitioned-overwrite)" value="non-partitioned-overwrite" />
+            <el-option label="有分区追加 (partitioned-append)" value="partitioned-append" />
+            <el-option label="有分区覆盖 (partitioned-overwrite)" value="partitioned-overwrite" />
+          </el-select>
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            Hive支持4种, MPP支持前两种
+          </span>
+        </el-form-item>
+        <el-form-item label="分区信息" prop="partitionInfo">
+          <el-input v-model="form.partitionInfo" :disabled="readonly" placeholder="如: pt_dt" style="width: 300px;" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            仅填写分区字段名，系统自动从文件名提取日期值
+          </span>
+        </el-form-item>
+        <el-form-item label="Spark executor数量" prop="sparkExecutorNum">
+          <el-input-number v-model="form.sparkExecutorNum" :min="1" :disabled="readonly" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            不填默认4
+          </span>
+        </el-form-item>
+        <el-form-item label="Spark executor核数" prop="sparkExecutorCores">
+          <el-input-number v-model="form.sparkExecutorCores" :min="1" :disabled="readonly" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            不填默认4
+          </span>
+        </el-form-item>
+        <el-form-item label="Spark executor内存" prop="sparkExecutorMemory">
+          <el-select v-model="form.sparkExecutorMemory" :disabled="readonly" placeholder="不填默认8G" style="width: 150px;">
+            <el-option label="4G" value="4G" />
+            <el-option label="8G" value="8G" />
+            <el-option label="16G" value="16G" />
+            <el-option label="32G" value="32G" />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Spark driver数量" prop="sparkDriverNum">
+          <el-input-number v-model="form.sparkDriverNum" :min="1" :disabled="readonly" />
+          <span style="margin-left: 10px; color: #909399; font-size: 12px;">
+            不填默认2
+          </span>
+        </el-form-item>
+        <el-form-item label="Spark driver内存" prop="sparkDriverMemory">
+          <el-select v-model="form.sparkDriverMemory" :disabled="readonly" placeholder="不填默认2G" style="width: 150px;">
+            <el-option label="2G" value="2G" />
+            <el-option label="4G" value="4G" />
+            <el-option label="8G" value="8G" />
+          </el-select>
         </el-form-item>
         <el-form-item label="状态" prop="status">
           <el-radio-group v-model="form.status" :disabled="readonly">
@@ -253,13 +321,22 @@ export default {
         dateExtractPattern: '',
         columnMappings: [],
         outputTable: '',
-        outputMode: 'APPEND',
         startRow: 1,
         startCol: 1,
         mappingMode: 'DUAL',
         duplicateColStrategy: 'AUTO_SUFFIX',
         odsBackupEnabled: 0,
         odsTableName: '',
+        targetTableType: '',
+        targetDbName: '',
+        isOverseas: 0,
+        loadMode: 'partitioned-append',
+        partitionInfo: '',
+        sparkExecutorNum: 4,
+        sparkExecutorCores: 4,
+        sparkExecutorMemory: '8G',
+        sparkDriverNum: 2,
+        sparkDriverMemory: '2G',
         status: 1,
         remark: ''
       },

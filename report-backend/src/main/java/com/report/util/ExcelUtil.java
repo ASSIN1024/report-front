@@ -94,7 +94,7 @@ public class ExcelUtil {
         
         CellType cellType = cell.getCellType();
         String fieldType = mapping != null ? mapping.getFieldType() : "STRING";
-        
+
         try {
             switch (cellType) {
                 case STRING:
@@ -112,7 +112,7 @@ public class ExcelUtil {
                         return sdf.parse(strValue);
                     }
                     return strValue;
-                    
+
                 case NUMERIC:
                     if (DateUtil.isCellDateFormatted(cell)) {
                         Date date = cell.getDateCellValue();
@@ -341,7 +341,7 @@ public class ExcelUtil {
             return null;
         }
         strValue = strValue.trim();
-        
+
         try {
             switch (fieldType.toUpperCase()) {
                 case "INTEGER":

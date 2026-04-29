@@ -13,7 +13,6 @@
         <result column="data_start_row" property="dataStartRow"/>
         <result column="column_mapping" property="columnMapping"/>
         <result column="output_table" property="outputTable"/>
-        <result column="output_mode" property="outputMode"/>
         <result column="status" property="status"/>
         <result column="remark" property="remark"/>
         <result column="deleted" property="deleted"/>

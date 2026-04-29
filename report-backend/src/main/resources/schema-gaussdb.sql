@@ -183,7 +183,6 @@ CREATE TABLE report_config (
     date_extract_pattern VARCHAR(50),
     column_mapping TEXT NOT NULL,
     output_table VARCHAR(50) NOT NULL,
-    output_mode VARCHAR(20) NOT NULL DEFAULT 'APPEND',
     status SMALLINT NOT NULL DEFAULT 1,
     remark VARCHAR(500),
     deleted SMALLINT NOT NULL DEFAULT 0,
@@ -211,7 +210,6 @@ COMMENT ON COLUMN report_config.skip_columns IS '跳过前N列';
 COMMENT ON COLUMN report_config.date_extract_pattern IS '日期提取规则';
 COMMENT ON COLUMN report_config.column_mapping IS '列映射配置(JSON)';
 COMMENT ON COLUMN report_config.output_table IS '输出表名';
-COMMENT ON COLUMN report_config.output_mode IS '输出模式: APPEND-追加, OVERWRITE-覆盖';
 COMMENT ON COLUMN report_config.status IS '状态: 0-禁用, 1-启用';
 COMMENT ON COLUMN report_config.remark IS '备注';
 COMMENT ON COLUMN report_config.deleted IS '删除标记';
@@ -585,8 +583,8 @@ INSERT INTO built_in_ftp_config (enabled, port, username, password, root_directo
 (0, 2021, 'rpa_user', 'rpa_password', '/data/ftp-root', 10, 300, 1, 50000, 50100);
 
 -- 示例报表配置
-INSERT INTO report_config (id, report_code, report_name, ftp_config_id, scan_path, file_pattern, sheet_index, header_row, data_start_row, skip_columns, date_extract_pattern, column_mapping, output_table, output_mode, status, remark) VALUES
-(nextval('report_config_id_seq'), 'SALES_REPORT', '销售报表', -1, '/upload', 'sales_*.xlsx', 0, 0, 1, 0, NULL, '[{"excelColumn":"A","fieldName":"order_id","fieldType":"STRING"},{"excelColumn":"B","fieldName":"product_name","fieldType":"STRING"},{"excelColumn":"C","fieldName":"quantity","fieldType":"INTEGER"},{"excelColumn":"D","fieldName":"amount","fieldType":"DECIMAL"},{"excelColumn":"E","fieldName":"order_date","fieldType":"DATE"}]', 't_sales_data', 'APPEND', 1, '销售数据报表配置');
+INSERT INTO report_config (id, report_code, report_name, ftp_config_id, scan_path, file_pattern, sheet_index, header_row, data_start_row, skip_columns, date_extract_pattern, column_mapping, output_table, status, remark) VALUES
+(nextval('report_config_id_seq'), 'SALES_REPORT', '销售报表', -1, '/upload', 'sales_*.xlsx', 0, 0, 1, 0, NULL, '[{"excelColumn":"A","fieldName":"order_id","fieldType":"STRING"},{"excelColumn":"B","fieldName":"product_name","fieldType":"STRING"},{"excelColumn":"C","fieldName":"quantity","fieldType":"INTEGER"},{"excelColumn":"D","fieldName":"amount","fieldType":"DECIMAL"},{"excelColumn":"E","fieldName":"order_date","fieldType":"DATE"}]', 't_sales_data', 1, '销售数据报表配置');
 
 SELECT setval('report_config_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM report_config));
 

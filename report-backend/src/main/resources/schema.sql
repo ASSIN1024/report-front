@@ -376,7 +376,6 @@ CREATE TABLE `report_config` (
   `date_extract_pattern` varchar(50) DEFAULT NULL COMMENT '日期提取规则: AUTO/yyyyMMdd/yyyy-MM-dd等',
   `column_mapping` text NOT NULL COMMENT '列映射配置(JSON)',
   `output_table` varchar(50) NOT NULL COMMENT '输出表名',
-  `output_mode` varchar(20) NOT NULL DEFAULT 'APPEND' COMMENT '输出模式: APPEND-追加, OVERWRITE-覆盖',
   `start_row` int DEFAULT '0' COMMENT '起始行',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态: 0-禁用, 1-启用',
   `remark` varchar(500) DEFAULT NULL COMMENT '备注',

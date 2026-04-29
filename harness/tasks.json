@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "lastUpdated": "2026-04-29",
+  "lastUpdated": "2026-04-30",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -343,6 +343,17 @@
       "dependsOn": ["H-PIPELINE-MW-TEST"],
       "createdAt": "2026-04-28",
       "completedAt": "2026-04-28",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-BUGFIX-0430",
+      "title": "报表配置保存和扫描功能Bug修复",
+      "description": "修复报表配置保存和扫描功能的多个问题：1) ReportConfigDTO缺少skipColumns和dateExtractPattern字段 2) ReportConfigServiceImpl中不存在的getOutputMode()调用 3) MyBatis绑定问题 4) 数据库缺失partition_info和alert_record表字段",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-04-30",
+      "completedAt": "2026-04-30",
       "assignee": "AI Assistant"
     },
     {

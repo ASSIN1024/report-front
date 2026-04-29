@@ -30,11 +30,13 @@ public class ReportConfigDTO implements Serializable {
 
     private Integer dataStartRow;
 
+    private Integer skipColumns;
+
+    private String dateExtractPattern;
+
     private List<ColumnMapping> columnMappings;
 
     private String outputTable;
-
-    private String outputMode;
 
     private Integer startRow;
 
@@ -47,6 +49,28 @@ public class ReportConfigDTO implements Serializable {
     private Integer odsBackupEnabled;
 
     private String odsTableName;
+
+    private String targetTableType;
+
+    private String targetDbName;
+
+    private Integer isOverseas;
+
+    private String loadMode;
+
+    private String fieldTypeJson;
+
+    private Integer sparkExecutorNum;
+
+    private Integer sparkExecutorCores;
+
+    private String sparkExecutorMemory;
+
+    private Integer sparkDriverNum;
+
+    private String sparkDriverMemory;
+
+    private String partitionInfo;
 
     private Integer status;
 

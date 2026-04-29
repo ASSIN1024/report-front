@@ -5,6 +5,7 @@ import com.report.engine.MatchedFile;
 import com.report.engine.MiddlewareEngine;
 import com.report.entity.ReportConfig;
 import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
 import com.report.ftp.EmbeddedFtpServer;
 import com.report.service.ProcessedFileService;
@@ -40,6 +41,9 @@ public class FtpScanJob implements Job {
     private BuiltInFtpConfigService builtInFtpConfigService;
 
     @Autowired(required = false)
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+
+    @Autowired(required = false)
     private EmbeddedFtpServer embeddedFtpServer;
 
     @Override
@@ -62,7 +66,7 @@ public class FtpScanJob implements Job {
             return;
         }
 
-        BuiltInFtpConfig config = builtInFtpConfigService.getConfig();
+        BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
         if (config == null || !config.getEnabled()) {
             log.info("内置FTP未启用");
             return;
