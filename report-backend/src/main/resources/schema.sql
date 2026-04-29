@@ -278,38 +278,6 @@ CREATE TABLE `built_in_ftp_config` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `ftp_config`
---
-
-DROP TABLE IF EXISTS `ftp_config`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ftp_config` (
-  `id` bigint NOT NULL COMMENT '主键ID',
-  `config_name` varchar(100) NOT NULL COMMENT '配置名称',
-  `host` varchar(100) NOT NULL COMMENT 'FTP服务器地址',
-  `port` int NOT NULL DEFAULT '21' COMMENT 'FTP端口',
-  `username` varchar(50) NOT NULL COMMENT '用户名',
-  `password` varchar(100) NOT NULL COMMENT '密码',
-  `scan_path` varchar(200) DEFAULT NULL COMMENT '扫描路径',
-  `file_pattern` varchar(100) DEFAULT NULL COMMENT '文件匹配模式',
-  `scan_interval` int NOT NULL DEFAULT '300' COMMENT '扫描间隔(秒)',
-  `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态: 0-禁用, 1-启用',
-  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
-  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '删除标记: 0-未删除, 1-已删除',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `staging_dir` varchar(200) DEFAULT NULL COMMENT '暂存目录',
-  `for_upload_dir` varchar(200) DEFAULT NULL COMMENT '上传目录',
-  `archive_dir` varchar(200) DEFAULT NULL COMMENT '归档目录',
-  `error_dir` varchar(200) DEFAULT NULL COMMENT '错误目录',
-  PRIMARY KEY (`id`),
-  KEY `idx_config_name` (`config_name`),
-  KEY `idx_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='FTP配置表';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `operation_log`
 --
 
@@ -398,7 +366,8 @@ CREATE TABLE `report_config` (
   `id` bigint NOT NULL COMMENT '主键ID',
   `report_code` varchar(50) NOT NULL COMMENT '报表编码',
   `report_name` varchar(100) NOT NULL COMMENT '报表名称',
-  `ftp_config_id` bigint DEFAULT NULL COMMENT '关联FTP配置ID',
+  `ftp_config_id` bigint DEFAULT NULL COMMENT '关联FTP配置ID(已废弃,仅保留兼容)',
+  `scan_path` varchar(200) DEFAULT '/upload' COMMENT '扫描路径',
   `file_pattern` varchar(100) DEFAULT NULL COMMENT '文件匹配模式',
   `sheet_index` int NOT NULL DEFAULT '0' COMMENT 'Sheet索引',
   `header_row` int NOT NULL DEFAULT '0' COMMENT '表头行号',

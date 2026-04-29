@@ -126,52 +126,6 @@ COMMENT ON COLUMN operation_log.duration IS '执行时长(毫秒)';
 COMMENT ON COLUMN operation_log.create_time IS '创建时间';
 
 -- =============================================================================
--- FTP配置表
--- =============================================================================
-DROP TABLE IF EXISTS ftp_config CASCADE;
-CREATE TABLE ftp_config (
-    id BIGINT NOT NULL,
-    config_name VARCHAR(100) NOT NULL,
-    host VARCHAR(100) NOT NULL,
-    port INT NOT NULL DEFAULT 21,
-    username VARCHAR(50) NOT NULL,
-    password VARCHAR(100) NOT NULL,
-    scan_path VARCHAR(200),
-    file_pattern VARCHAR(100),
-    scan_interval INT NOT NULL DEFAULT 300,
-    status SMALLINT NOT NULL DEFAULT 1,
-    remark VARCHAR(500),
-    deleted SMALLINT NOT NULL DEFAULT 0,
-    create_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    update_time TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    PRIMARY KEY (id)
-);
-
-CREATE INDEX idx_ftp_config_name ON ftp_config(config_name);
-CREATE INDEX idx_ftp_config_status ON ftp_config(status);
-
-COMMENT ON TABLE ftp_config IS 'FTP配置表';
-COMMENT ON COLUMN ftp_config.id IS '主键ID';
-COMMENT ON COLUMN ftp_config.config_name IS '配置名称';
-COMMENT ON COLUMN ftp_config.host IS 'FTP服务器地址';
-COMMENT ON COLUMN ftp_config.port IS 'FTP端口';
-COMMENT ON COLUMN ftp_config.username IS '用户名';
-COMMENT ON COLUMN ftp_config.password IS '密码';
-COMMENT ON COLUMN ftp_config.scan_path IS '扫描路径';
-COMMENT ON COLUMN ftp_config.file_pattern IS '文件匹配模式';
-COMMENT ON COLUMN ftp_config.scan_interval IS '扫描间隔(秒)';
-COMMENT ON COLUMN ftp_config.status IS '状态: 0-禁用, 1-启用';
-COMMENT ON COLUMN ftp_config.remark IS '备注';
-COMMENT ON COLUMN ftp_config.deleted IS '删除标记: 0-未删除, 1-已删除';
-COMMENT ON COLUMN ftp_config.create_time IS '创建时间';
-COMMENT ON COLUMN ftp_config.update_time IS '更新时间';
-
-CREATE TRIGGER trigger_ftp_config_update
-    BEFORE UPDATE ON ftp_config
-    FOR EACH ROW
-    EXECUTE FUNCTION update_timestamp();
-
--- =============================================================================
 -- 内置FTP配置表
 -- =============================================================================
 DROP TABLE IF EXISTS built_in_ftp_config CASCADE;
@@ -220,6 +174,7 @@ CREATE TABLE report_config (
     report_code VARCHAR(50) NOT NULL,
     report_name VARCHAR(100) NOT NULL,
     ftp_config_id BIGINT,
+    scan_path VARCHAR(200) DEFAULT '/upload',
     file_pattern VARCHAR(100),
     sheet_index INT NOT NULL DEFAULT 0,
     header_row INT NOT NULL DEFAULT 0,
@@ -246,7 +201,8 @@ COMMENT ON TABLE report_config IS '报表配置表';
 COMMENT ON COLUMN report_config.id IS '主键ID';
 COMMENT ON COLUMN report_config.report_code IS '报表编码';
 COMMENT ON COLUMN report_config.report_name IS '报表名称';
-COMMENT ON COLUMN report_config.ftp_config_id IS '关联FTP配置ID';
+COMMENT ON COLUMN report_config.ftp_config_id IS '关联FTP配置ID(已废弃,仅保留兼容)';
+COMMENT ON COLUMN report_config.scan_path IS '扫描路径';
 COMMENT ON COLUMN report_config.file_pattern IS '文件匹配模式';
 COMMENT ON COLUMN report_config.sheet_index IS 'Sheet索引';
 COMMENT ON COLUMN report_config.header_row IS '表头行号';
@@ -610,7 +566,6 @@ CREATE TRIGGER trigger_table_layer_mapping_update
 -- 序列创建 (用于非 SERIAL 主键的表)
 -- =============================================================================
 CREATE SEQUENCE IF NOT EXISTS sys_config_id_seq START WITH 1;
-CREATE SEQUENCE IF NOT EXISTS ftp_config_id_seq START WITH 1;
 CREATE SEQUENCE IF NOT EXISTS report_config_id_seq START WITH 1;
 CREATE SEQUENCE IF NOT EXISTS task_execution_id_seq START WITH 1;
 
@@ -629,15 +584,9 @@ SELECT setval('sys_user_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM sys_user)
 INSERT INTO built_in_ftp_config (enabled, port, username, password, root_directory, max_connections, idle_timeout, passive_mode, passive_port_start, passive_port_end) VALUES
 (0, 2021, 'rpa_user', 'rpa_password', '/data/ftp-root', 10, 300, 1, 50000, 50100);
 
--- 示例FTP配置
-INSERT INTO ftp_config (id, config_name, host, port, username, password, scan_path, file_pattern, scan_interval, status, remark) VALUES
-(nextval('ftp_config_id_seq'), '测试FTP服务器', '192.168.1.100', 21, 'ftpuser', 'ftppass', '/data/reports', '*.xlsx', 300, 1, '测试用FTP配置');
-
-SELECT setval('ftp_config_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM ftp_config));
-
 -- 示例报表配置
-INSERT INTO report_config (id, report_code, report_name, ftp_config_id, file_pattern, sheet_index, header_row, data_start_row, skip_columns, date_extract_pattern, column_mapping, output_table, output_mode, status, remark) VALUES
-(nextval('report_config_id_seq'), 'SALES_REPORT', '销售报表', 1, 'sales_*.xlsx', 0, 0, 1, 0, NULL, '[{"excelColumn":"A","fieldName":"order_id","fieldType":"STRING"},{"excelColumn":"B","fieldName":"product_name","fieldType":"STRING"},{"excelColumn":"C","fieldName":"quantity","fieldType":"INTEGER"},{"excelColumn":"D","fieldName":"amount","fieldType":"DECIMAL"},{"excelColumn":"E","fieldName":"order_date","fieldType":"DATE"}]', 't_sales_data', 'APPEND', 1, '销售数据报表配置');
+INSERT INTO report_config (id, report_code, report_name, ftp_config_id, scan_path, file_pattern, sheet_index, header_row, data_start_row, skip_columns, date_extract_pattern, column_mapping, output_table, output_mode, status, remark) VALUES
+(nextval('report_config_id_seq'), 'SALES_REPORT', '销售报表', -1, '/upload', 'sales_*.xlsx', 0, 0, 1, 0, NULL, '[{"excelColumn":"A","fieldName":"order_id","fieldType":"STRING"},{"excelColumn":"B","fieldName":"product_name","fieldType":"STRING"},{"excelColumn":"C","fieldName":"quantity","fieldType":"INTEGER"},{"excelColumn":"D","fieldName":"amount","fieldType":"DECIMAL"},{"excelColumn":"E","fieldName":"order_date","fieldType":"DATE"}]', 't_sales_data', 'APPEND', 1, '销售数据报表配置');
 
 SELECT setval('report_config_id_seq', (SELECT COALESCE(MAX(id), 0) + 1 FROM report_config));
 
