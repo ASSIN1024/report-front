@@ -13,12 +13,7 @@ const routes = [
   },
   {
     path: '/',
-    redirect: '/ftp'
-  },
-  {
-    path: '/ftp',
-    name: 'FtpConfig',
-    component: () => import('@/views/ftp/FtpConfig.vue')
+    redirect: '/report'
   },
   {
     path: '/report',
