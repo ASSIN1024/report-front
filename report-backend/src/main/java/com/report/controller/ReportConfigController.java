@@ -8,16 +8,15 @@ import com.report.entity.TaskExecution;
 import com.report.entity.dto.ReportConfigDTO;
 import com.report.engine.MatchedFile;
 import com.report.engine.MiddlewareEngine;
-import com.report.service.ReportConfigService;
-import com.report.service.FtpConfigService;
+import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.EmbeddedFtpServer;
 import com.report.service.LogService;
+import com.report.service.ReportConfigService;
+import com.report.service.TaskService;
 import com.report.util.ColumnMappingValidator;
 import com.report.util.FileNameDateExtractor;
-import com.report.service.TaskService;
-import com.report.entity.FtpConfig;
-import com.report.util.FtpUtil;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -40,8 +39,11 @@ public class ReportConfigController {
     @Autowired
     private TaskService taskService;
 
-    @Autowired
-    private FtpConfigService ftpConfigService;
+    @Autowired(required = false)
+    private BuiltInFtpConfigService builtInFtpConfigService;
+
+    @Autowired(required = false)
+    private EmbeddedFtpServer embeddedFtpServer;
 
     @Autowired
     private MiddlewareEngine middlewareEngine;
@@ -74,6 +76,7 @@ public class ReportConfigController {
         config.setReportCode(dto.getReportCode());
         config.setReportName(dto.getReportName());
         config.setFtpConfigId(dto.getFtpConfigId());
+        config.setScanPath(dto.getScanPath());
         config.setFilePattern(dto.getFilePattern());
         config.setSheetIndex(dto.getSheetIndex());
         config.setHeaderRow(dto.getHeaderRow());
@@ -100,6 +103,7 @@ public class ReportConfigController {
         config.setReportCode(dto.getReportCode());
         config.setReportName(dto.getReportName());
         config.setFtpConfigId(dto.getFtpConfigId());
+        config.setScanPath(dto.getScanPath());
         config.setFilePattern(dto.getFilePattern());
         config.setSheetIndex(dto.getSheetIndex());
         config.setHeaderRow(dto.getHeaderRow());
@@ -214,72 +218,59 @@ public class ReportConfigController {
             return Result.fail("报表配置不存在");
         }
 
-        FtpConfig ftpConfig = ftpConfigService.getById(config.getFtpConfigId());
+        if (embeddedFtpServer == null || !embeddedFtpServer.isRunning()) {
+            return Result.fail("内置FTP服务未运行");
+        }
+
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigService.getConfig();
         if (ftpConfig == null) {
             return Result.fail("FTP配置不存在");
         }
 
         TaskExecution task = taskService.createTask("SCAN", "立即扫描-" + config.getReportName(), id, null, null);
         Long taskId = task.getId();
-        logService.logInfo(taskId, "开始扫描FTP目录...");
+        logService.logInfo(taskId, "开始扫描内置FTP目录...");
 
-        FTPClient ftpClient = null;
         File tempFile = null;
         try {
-            logService.logInfo(taskId, "连接FTP服务器: " + ftpConfig.getHost() + ":" + ftpConfig.getPort());
-            ftpClient = FtpUtil.connect(ftpConfig);
-            if (ftpClient == null || !ftpClient.isConnected()) {
-                taskService.finishTask(taskId, "FAILED", "FTP连接失败");
-                logService.logError(taskId, "FTP连接失败");
-                return Result.fail("FTP连接失败");
+            String scanPath = config.getScanPath();
+            if (scanPath == null || scanPath.isEmpty()) {
+                scanPath = "/upload";
             }
 
-            String scanPath = ftpConfig.getScanPath();
-            logService.logInfo(taskId, "扫描目录: " + scanPath);
-            List<String> files = FtpUtil.listFiles(ftpClient, scanPath, "*.xlsx");
-            if (files == null || files.isEmpty()) {
-                taskService.finishTask(taskId, "FAILED", "FTP目录中没有找到Excel文件");
-                logService.logError(taskId, "FTP目录中没有找到Excel文件");
-                return Result.fail("FTP目录中没有找到Excel文件");
+            File ftpRoot = new File(ftpConfig.getRootDirectory());
+            File scanDir = new File(ftpRoot, scanPath);
+
+            if (!scanDir.exists() || !scanDir.isDirectory()) {
+                taskService.finishTask(taskId, "FAILED", "扫描目录不存在: " + scanDir.getAbsolutePath());
+                logService.logError(taskId, "扫描目录不存在");
+                return Result.fail("扫描目录不存在");
             }
+
+            logService.logInfo(taskId, "扫描目录: " + scanDir.getAbsolutePath());
 
             String pattern = config.getFilePattern();
-            logService.logInfo(taskId, "匹配模式: " + pattern);
-            String matchedFileName = null;
-            for (String f : files) {
-                String fileName = new java.io.File(f).getName();
-                if (fileName.matches(pattern.replace("*", ".*").replace("?", "."))) {
-                    matchedFileName = fileName;
-                    break;
-                }
+            String fileRegex = pattern.replace("*", ".*").replace("?", ".");
+
+            File[] files = scanDir.listFiles((dir, name) -> name.matches(fileRegex));
+            if (files == null || files.length == 0) {
+                taskService.finishTask(taskId, "FAILED", "目录中没有找到匹配的文件");
+                logService.logError(taskId, "目录中没有找到匹配的文件");
+                return Result.fail("目录中没有找到匹配的文件");
             }
 
-            if (matchedFileName == null) {
-                taskService.finishTask(taskId, "FAILED", "没有找到匹配 " + pattern + " 的文件");
-                logService.logError(taskId, "没有找到匹配 " + pattern + " 的文件");
-                return Result.fail("没有找到匹配 " + pattern + " 的文件");
-            }
-
+            File targetFile = files[0];
+            String matchedFileName = targetFile.getName();
             logService.logInfo(taskId, "找到文件: " + matchedFileName);
-            String remotePath = scanPath.endsWith("/") ? scanPath + matchedFileName : scanPath + "/" + matchedFileName;
-
-            byte[] fileData = FtpUtil.downloadFile(ftpClient, remotePath);
-            if (fileData == null || fileData.length == 0) {
-                taskService.finishTask(taskId, "FAILED", "文件下载失败: " + matchedFileName);
-                logService.logError(taskId, "文件下载失败: " + matchedFileName);
-                return Result.fail("文件下载失败: " + matchedFileName);
-            }
 
             tempFile = File.createTempFile("scan_", "_" + matchedFileName);
             try (FileOutputStream fos = new FileOutputStream(tempFile)) {
-                fos.write(fileData);
+                java.nio.file.Files.copy(targetFile.toPath(), fos);
             }
-
-            logService.logInfo(taskId, "开始处理文件...");
 
             MatchedFile matchedFile = new MatchedFile();
             matchedFile.setFileName(matchedFileName);
-            matchedFile.setFilePath(remotePath);
+            matchedFile.setFilePath(targetFile.getAbsolutePath());
             matchedFile.setReportConfigId(id);
             matchedFile.setLocalFile(tempFile);
             LocalDate date = FileNameDateExtractor.extractDate(matchedFileName);
@@ -303,7 +294,6 @@ public class ReportConfigController {
             logService.logError(taskId, "扫描异常: " + e.getMessage());
             return Result.fail("扫描失败: " + e.getMessage());
         } finally {
-            FtpUtil.disconnect(ftpClient);
             if (tempFile != null && tempFile.exists()) {
                 tempFile.delete();
             }
