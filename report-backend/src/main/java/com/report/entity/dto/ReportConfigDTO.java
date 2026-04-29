@@ -20,6 +20,8 @@ public class ReportConfigDTO implements Serializable {
 
     private String ftpConfigName;
 
+    private String scanPath;
+
     private String filePattern;
 
     private Integer sheetIndex;
