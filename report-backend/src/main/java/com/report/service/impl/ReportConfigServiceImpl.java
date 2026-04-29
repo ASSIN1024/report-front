@@ -76,8 +76,26 @@ public class ReportConfigServiceImpl extends ServiceImpl<ReportConfigMapper, Rep
         dto.setSheetIndex(config.getSheetIndex());
         dto.setHeaderRow(config.getHeaderRow());
         dto.setDataStartRow(config.getDataStartRow());
+        dto.setSkipColumns(config.getSkipColumns());
+        dto.setDateExtractPattern(config.getDateExtractPattern());
         dto.setOutputTable(config.getOutputTable());
-        dto.setOutputMode(config.getOutputMode());
+        dto.setStartRow(config.getStartRow());
+        dto.setStartCol(config.getStartCol());
+        dto.setMappingMode(config.getMappingMode());
+        dto.setDuplicateColStrategy(config.getDuplicateColStrategy());
+        dto.setOdsBackupEnabled(config.getOdsBackupEnabled());
+        dto.setOdsTableName(config.getOdsTableName());
+        dto.setTargetTableType(config.getTargetTableType());
+        dto.setTargetDbName(config.getTargetDbName());
+        dto.setIsOverseas(config.getIsOverseas());
+        dto.setLoadMode(config.getLoadMode());
+        dto.setFieldTypeJson(config.getFieldTypeJson());
+        dto.setSparkExecutorNum(config.getSparkExecutorNum());
+        dto.setSparkExecutorCores(config.getSparkExecutorCores());
+        dto.setSparkExecutorMemory(config.getSparkExecutorMemory());
+        dto.setSparkDriverNum(config.getSparkDriverNum());
+        dto.setSparkDriverMemory(config.getSparkDriverMemory());
+        dto.setPartitionInfo(config.getPartitionInfo());
         dto.setStatus(config.getStatus());
         dto.setRemark(config.getRemark());
 

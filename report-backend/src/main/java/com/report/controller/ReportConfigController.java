@@ -9,6 +9,7 @@ import com.report.entity.dto.ReportConfigDTO;
 import com.report.engine.MatchedFile;
 import com.report.engine.MiddlewareEngine;
 import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
 import com.report.ftp.EmbeddedFtpServer;
 import com.report.service.LogService;
@@ -41,6 +42,9 @@ public class ReportConfigController {
 
     @Autowired(required = false)
     private BuiltInFtpConfigService builtInFtpConfigService;
+
+    @Autowired(required = false)
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
 
     @Autowired(required = false)
     private EmbeddedFtpServer embeddedFtpServer;
@@ -81,15 +85,27 @@ public class ReportConfigController {
         config.setSheetIndex(dto.getSheetIndex());
         config.setHeaderRow(dto.getHeaderRow());
         config.setDataStartRow(dto.getDataStartRow());
+        config.setSkipColumns(dto.getSkipColumns());
+        config.setDateExtractPattern(dto.getDateExtractPattern());
         config.setColumnMapping(JSONUtil.toJsonStr(dto.getColumnMappings()));
         config.setOutputTable(dto.getOutputTable());
-        config.setOutputMode(dto.getOutputMode());
         config.setStartRow(dto.getStartRow());
         config.setStartCol(dto.getStartCol());
         config.setMappingMode(dto.getMappingMode());
         config.setDuplicateColStrategy(dto.getDuplicateColStrategy());
         config.setOdsBackupEnabled(dto.getOdsBackupEnabled());
         config.setOdsTableName(dto.getOdsTableName());
+        config.setTargetTableType(dto.getTargetTableType());
+        config.setTargetDbName(dto.getTargetDbName());
+        config.setIsOverseas(dto.getIsOverseas());
+        config.setLoadMode(dto.getLoadMode());
+        config.setFieldTypeJson(dto.getFieldTypeJson());
+        config.setSparkExecutorNum(dto.getSparkExecutorNum());
+        config.setSparkExecutorCores(dto.getSparkExecutorCores());
+        config.setSparkExecutorMemory(dto.getSparkExecutorMemory());
+        config.setSparkDriverNum(dto.getSparkDriverNum());
+        config.setSparkDriverMemory(dto.getSparkDriverMemory());
+        config.setPartitionInfo(dto.getPartitionInfo());
         config.setStatus(dto.getStatus());
         config.setRemark(dto.getRemark());
         reportConfigService.save(config);
@@ -108,15 +124,27 @@ public class ReportConfigController {
         config.setSheetIndex(dto.getSheetIndex());
         config.setHeaderRow(dto.getHeaderRow());
         config.setDataStartRow(dto.getDataStartRow());
+        config.setSkipColumns(dto.getSkipColumns());
+        config.setDateExtractPattern(dto.getDateExtractPattern());
         config.setColumnMapping(JSONUtil.toJsonStr(dto.getColumnMappings()));
         config.setOutputTable(dto.getOutputTable());
-        config.setOutputMode(dto.getOutputMode());
         config.setStartRow(dto.getStartRow());
         config.setStartCol(dto.getStartCol());
         config.setMappingMode(dto.getMappingMode());
         config.setDuplicateColStrategy(dto.getDuplicateColStrategy());
         config.setOdsBackupEnabled(dto.getOdsBackupEnabled());
         config.setOdsTableName(dto.getOdsTableName());
+        config.setTargetTableType(dto.getTargetTableType());
+        config.setTargetDbName(dto.getTargetDbName());
+        config.setIsOverseas(dto.getIsOverseas());
+        config.setLoadMode(dto.getLoadMode());
+        config.setFieldTypeJson(dto.getFieldTypeJson());
+        config.setSparkExecutorNum(dto.getSparkExecutorNum());
+        config.setSparkExecutorCores(dto.getSparkExecutorCores());
+        config.setSparkExecutorMemory(dto.getSparkExecutorMemory());
+        config.setSparkDriverNum(dto.getSparkDriverNum());
+        config.setSparkDriverMemory(dto.getSparkDriverMemory());
+        config.setPartitionInfo(dto.getPartitionInfo());
         config.setStatus(dto.getStatus());
         config.setRemark(dto.getRemark());
         reportConfigService.updateById(config);
@@ -222,7 +250,7 @@ public class ReportConfigController {
             return Result.fail("内置FTP服务未运行");
         }
 
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigService.getConfig();
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper.getConfig();
         if (ftpConfig == null) {
             return Result.fail("FTP配置不存在");
         }

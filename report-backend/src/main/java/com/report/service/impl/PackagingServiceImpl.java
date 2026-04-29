@@ -2,6 +2,7 @@ package com.report.service.impl;
 
 import com.report.entity.BatchRecord;
 import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
 import com.report.mapper.BatchRecordMapper;
 import com.report.service.PackagingService;
@@ -26,6 +27,9 @@ public class PackagingServiceImpl implements PackagingService {
 
     @Autowired(required = false)
     private BuiltInFtpConfigService builtInFtpConfigService;
+
+    @Autowired(required = false)
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
 
     @Autowired
     private BatchRecordMapper batchRecordMapper;
@@ -90,7 +94,7 @@ public class PackagingServiceImpl implements PackagingService {
 
     @Override
     public String packageToStaging(Long ftpConfigId, String standardExcelPath, String sourceFileName, TransformResult result) {
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigService != null ? builtInFtpConfigService.getConfig() : null;
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
         String stagingDir;
         if (ftpConfig != null) {
             stagingDir = ftpConfig.getRootDirectory() + "/staging";

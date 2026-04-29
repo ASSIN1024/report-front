@@ -39,8 +39,6 @@ public class ReportConfig implements Serializable {
 
     private String outputTable;
 
-    private String outputMode;
-
     private Integer startRow;
 
     private Integer startCol;
@@ -64,6 +62,7 @@ public class ReportConfig implements Serializable {
     private String sparkExecutorMemory;
     private Integer sparkDriverNum;
     private String sparkDriverMemory;
+    private String partitionInfo;
 
     private Integer status;
 

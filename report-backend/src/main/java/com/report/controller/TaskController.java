@@ -8,6 +8,7 @@ import com.report.entity.ReportConfig;
 import com.report.entity.TaskExecution;
 import com.report.entity.dto.TaskQueryDTO;
 import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
 import com.report.ftp.EmbeddedFtpServer;
 import com.report.service.ProcessedFileService;
@@ -46,6 +47,9 @@ public class TaskController {
 
     @Autowired(required = false)
     private BuiltInFtpConfigService builtInFtpConfigService;
+
+    @Autowired(required = false)
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
 
     @Autowired(required = false)
     private EmbeddedFtpServer embeddedFtpServer;
@@ -119,7 +123,7 @@ public class TaskController {
             return Result.fail("内置FTP服务未运行");
         }
 
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigService.getConfig();
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper.getConfig();
         if (ftpConfig == null) {
             return Result.fail("FTP配置不存在");
         }

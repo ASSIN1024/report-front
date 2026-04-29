@@ -2,6 +2,7 @@ package com.report.service.impl;
 
 import com.report.entity.ReportConfig;
 import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
 import com.report.service.ArchiveService;
 import lombok.extern.slf4j.Slf4j;
@@ -25,6 +26,9 @@ public class ArchiveServiceImpl implements ArchiveService {
     @Autowired(required = false)
     private BuiltInFtpConfigService builtInFtpConfigService;
 
+    @Autowired(required = false)
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+
     @Override
     public void archiveToSuccess(File localFile, ReportConfig config) {
         archive(localFile, config, "archive");
@@ -40,7 +44,7 @@ public class ArchiveServiceImpl implements ArchiveService {
             return;
         }
 
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigService != null ? builtInFtpConfigService.getConfig() : null;
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
         if (ftpConfig == null) {
             log.warn("Built-in FTP config not found for archiving, keeping local file: {}", localFile.getName());
             return;
