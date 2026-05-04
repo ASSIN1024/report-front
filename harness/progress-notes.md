@@ -1,8 +1,8 @@
 # Harness Engineering 进度记录
 
-> **文档版本**: V1.4
+> **文档版本**: V1.6
 > **创建日期**: 2026-04-04
-> **最后更新**: 2026-04-30
+> **最后更新**: 2026-05-05
 
 ---
 
@@ -1030,4 +1030,145 @@ ALTER TABLE alert_record ADD COLUMN alert_message varchar(500) DEFAULT NULL;
 - [x] Bug修复完成
 - [x] 功能验证通过
 - [x] Git提交并推送
+
+---
+
+### 2026-05-02 - 服务启动配置与Docker持久化
+
+**会话目标**: 配置Docker数据库容器自动启动、实现前后端启动命令持久化和日志持久化
+
+**执行任务**:
+
+| 任务ID | 任务名称 | 状态 | 备注 |
+|--------|----------|------|------|
+| H-SERVICE-AUTO-START | Docker容器自动启动配置 | ✅ 完成 | 配置unless-stopped策略 |
+| H-PERSISTENT-STORAGE | Docker持久化存储配置 | ✅ 完成 | report-mysql-data volume |
+| H-STARTUP-PERSISTENCE | 启动命令持久化 | ✅ 完成 | 已记录到harness上下文 |
+| H-LOG-PERSISTENCE | 日志持久化配置 | ✅ 完成 | 日志目录持久化 |
+
+**Docker配置详情**:
+
+| 配置项 | 值 | 说明 |
+|--------|-----|------|
+| 容器名称 | report-mysql | MySQL数据库容器 |
+| 重启策略 | unless-stopped | Docker服务重启时自动启动 |
+| 数据卷 | report-mysql-data | 持久化MySQL数据 |
+| 端口映射 | 3306:3306 | MySQL默认端口 |
+| 数据库密码 | root123456 | 与application-dev.yml一致 |
+
+**服务状态**:
+
+| 服务 | 状态 | 端口 | PID |
+|------|------|------|-----|
+| Docker MySQL | 运行中 | 3306 | - |
+| 后端 (Spring Boot) | 运行中 | 8082 | 19302 |
+| 前端 (Vue) | 运行中 | 8086 | - |
+
+**启动命令**:
+```bash
+# Docker MySQL
+docker run -d --name report-mysql --restart=unless-stopped -p 3306:3306 -v report-mysql-data:/var/lib/mysql -e MYSQL_ROOT_PASSWORD=root123456 -e MYSQL_DATABASE=report_db mysql:8.0
+
+# 后端启动
+cd /home/nova/projects/report-front/report-backend && mvn spring-boot:run -Dmaven.test.skip=true
+
+# 前端启动
+cd /home/nova/projects/report-front/src && npm run serve
+
+# 或使用标准化脚本
+cd /home/nova/projects/report-front && ./scripts/start.sh all
+```
+
+**日志位置**:
+| 日志类型 | 路径 |
+|----------|------|
+| 后端日志 | /home/nova/projects/report-front/logs/backend.log |
+| 前端日志 | /home/nova/projects/report-front/logs/frontend.log |
+
+**验证结果**:
+- ✅ Docker容器自动重启配置生效
+- ✅ MySQL数据持久化到report-mysql-data volume
+- ✅ 前后端服务启动成功
+- ✅ 数据库schema初始化成功
+
+**Harness上下文同步检查**:
+- ✅ tasks.json 添加新任务
+- ✅ progress-notes.md 会话记录已追加
+- ✅ 启动命令已持久化到harness文档
+
+**下一步计划**:
+- [ ] 生产环境部署验证
+- [ ] 系统重启后的自动恢复验证
+
+---
+
+### 2026-05-05 - ODS备份逻辑修复
+
+**会话目标**: 修复ODS备份失败和Archive删除逻辑问题
+
+**问题诊断**:
+
+1. **ODS备份失败 - 表不存在**
+   - 原因: `ods_backup_enabled=1` 时尝试向 `ods_table_name` 表（test表）插入数据，但该表不存在
+
+2. **ODS备份失败 - 中文字段名导致重复列**
+   - 原因: Excel表头是中文（"姓名"、"年龄"、"性别"），`sanitizeColumnName` 把所有非英文字符替换成 `_`，导致三个列都变成了 `__`，MySQL报 `Duplicate column name '__'`
+
+3. **Archive文件删除失败被吞异常**
+   - 原因: `archiveToSuccess` 中 `localFile.delete()` 失败但异常被catch吞掉
+
+**修复内容**:
+
+| 文件 | 修复内容 |
+|------|----------|
+| ArchiveServiceImpl.java | 修复删除逻辑，删除失败时记录ERROR并返回 |
+| TransformResult.java | 添加sourceFile, fileSize, headers, rows字段 |
+| ExcelTransformServiceImpl.java | 设置headers和rows到TransformResult |
+| OdsBackupServiceImpl.java | 重写ODS备份逻辑，支持自动创建表和插入Excel数据 |
+| schema.sql | 添加ods_backup表定义 |
+
+**核心修复 - extractColumnNames方法**:
+
+```java
+private List<String> extractColumnNames(TransformResult result) {
+    // 1. 优先使用fieldMappingJson中的英文字段名（name, age, gender）
+    String fieldMappingJson = result.getFieldMappingJson();
+    if (fieldMappingJson != null && !fieldMappingJson.isEmpty()) {
+        Map<String, Object> fieldMap = objectMapper.readValue(fieldMappingJson, Map.class);
+        if (fieldMap != null && !fieldMap.isEmpty()) {
+            return new ArrayList<>(fieldMap.keySet());
+        }
+    }
+    
+    // 2. sanitize表头名 + 自动去重（__, __1, __2）
+    // 3. 兜底：col_1, col_2, col_3
+}
+```
+
+**ods_backup表结构**:
+
+```sql
+CREATE TABLE ods_backup (
+  id bigint PRIMARY KEY AUTO_INCREMENT,
+  source_file varchar(200) NOT NULL,
+  pt_dt varchar(20),
+  db_name varchar(128),
+  table_name varchar(128),
+  report_config_id bigint,
+  file_size bigint,
+  create_time datetime DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+**Git提交**:
+- `63c95fc` - fix: ODS备份逻辑修复及Archive删除逻辑完善
+
+**Harness上下文同步检查**:
+- ✅ tasks.json 添加H-ODS-BACKUP-FIX任务
+- ✅ progress-notes.md 会话记录已追加
+- ✅ Git 已提交
+
+**下一步计划**:
+- [x] ODS备份逻辑修复完成
+- [ ] 功能验证测试（需重启后端）
 

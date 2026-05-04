@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "lastUpdated": "2026-04-30",
+  "version": "1.1",
+  "lastUpdated": "2026-05-02",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -365,6 +365,61 @@
       "dependsOn": [],
       "createdAt": "2026-04-29",
       "completedAt": "2026-04-29",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-SERVICE-AUTO-START",
+      "title": "Docker容器自动启动配置",
+      "description": "配置Docker MySQL容器为自动启动模式，使用unless-stopped策略确保系统重启后自动恢复",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-05-02",
+      "completedAt": "2026-05-02",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PERSISTENT-STORAGE",
+      "title": "Docker持久化存储配置",
+      "description": "创建并配置report-mysql-data volume挂载到MySQL数据目录，确保数据在容器重启后不丢失",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": ["H-SERVICE-AUTO-START"],
+      "createdAt": "2026-05-02",
+      "completedAt": "2026-05-02",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-STARTUP-PERSISTENCE",
+      "title": "启动命令持久化",
+      "description": "将前后端启动命令标准化并持久化到harness上下文，确保其他会话可读取执行",
+      "status": "completed",
+      "priority": "medium",
+      "dependsOn": [],
+      "createdAt": "2026-05-02",
+      "completedAt": "2026-05-02",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-LOG-PERSISTENCE",
+      "title": "日志持久化配置",
+      "description": "配置日志持久化到harness上下文指定目录，包含完整日期时间信息便于问题排查",
+      "status": "completed",
+      "priority": "medium",
+      "dependsOn": [],
+      "createdAt": "2026-05-02",
+      "completedAt": "2026-05-02",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-ODS-BACKUP-FIX",
+      "title": "ODS备份逻辑修复 - 中文字段名处理",
+      "description": "修复ODS备份失败问题：1) 中文字段名被sanitize后变成重复列名__ 2) 重写OdsBackupServiceImpl支持自动创建表和插入Excel数据 3) 新增extractColumnNames方法优先使用fieldMappingJson中的英文字段名 4) 修复ArchiveServiceImpl删除逻辑 5) schema.sql添加ods_backup表定义",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-05-05",
+      "completedAt": "2026-05-05",
       "assignee": "AI Assistant"
     }
   ],
