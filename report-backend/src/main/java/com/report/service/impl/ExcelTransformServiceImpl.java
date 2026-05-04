@@ -85,16 +85,21 @@ public class ExcelTransformServiceImpl implements ExcelTransformService {
             String outputDir = System.getProperty("java.io.tmpdir") + File.separator + "standard-excel";
             new File(outputDir).mkdirs();
             String sourceFileName = new File(filePath).getName();
+            long fileSize = new File(filePath).length();
             String outputFile = outputDir + File.separator + sourceFileName.replace(".xlsx", "_standard.xlsx").replace(".xls", "_standard.xlsx");
 
             StandardExcelWriter.write(outputFile, headers, rows);
 
             result.setSuccess(true);
+            result.setSourceFile(sourceFileName);
             result.setStandardExcelPath(outputFile);
             result.setDbName("ods_layer");
             result.setTableName(config.getOdsTableName());
             result.setFieldMappingJson(buildFieldMappingJson(headers, config.getColumnMapping()));
             result.setPtDt(extractPtDt(sourceFileName));
+            result.setFileSize(fileSize);
+            result.setHeaders(new ArrayList<>(headers));
+            result.setRows(new ArrayList<>(rows));
 
             log.info("Excel transform success: {} rows, output={}", rows.size(), outputFile);
 

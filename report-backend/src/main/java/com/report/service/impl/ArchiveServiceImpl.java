@@ -54,7 +54,6 @@ public class ArchiveServiceImpl implements ArchiveService {
         Path targetPath = new File(ftpConfig.getRootDirectory(), targetDir).toPath();
         Path targetFile = targetPath.resolve(localFile.getName());
 
-        FileInputStream fis = null;
         try {
             Files.createDirectories(targetPath);
 
@@ -65,10 +64,15 @@ public class ArchiveServiceImpl implements ArchiveService {
             }
 
             Files.copy(localFile.toPath(), targetFile, StandardCopyOption.REPLACE_EXISTING);
-            localFile.delete();
-            log.info("Archived file to {}: {}", dirType, targetFile);
+            log.info("Copied file to archive: {} -> {}", localFile.getName(), targetFile);
+
+            if (!localFile.delete()) {
+                log.error("Failed to delete original file after archive: {}", localFile.getAbsolutePath());
+                return;
+            }
+            log.info("Archived and deleted original file: {}", localFile.getName());
         } catch (Exception e) {
-            log.warn("Archive failed, keeping local file: {}", localFile.getName(), e);
+            log.error("Archive failed for file: {}", localFile.getName(), e);
         }
     }
 

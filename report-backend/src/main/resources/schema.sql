@@ -358,6 +358,29 @@ CREATE TABLE `processed_file` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `ods_backup`
+--
+
+DROP TABLE IF EXISTS `ods_backup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ods_backup` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `source_file` varchar(200) NOT NULL COMMENT '源文件名',
+  `pt_dt` varchar(20) DEFAULT NULL COMMENT '分区日期',
+  `db_name` varchar(128) DEFAULT NULL COMMENT '数据库名',
+  `table_name` varchar(128) DEFAULT NULL COMMENT '表名',
+  `report_config_id` bigint DEFAULT NULL COMMENT '报表配置ID',
+  `file_size` bigint DEFAULT NULL COMMENT '文件大小',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_pt_dt` (`pt_dt`),
+  KEY `idx_source_file` (`source_file`),
+  KEY `idx_report_config_id` (`report_config_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='ODS备份记录表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `report_config`
 --
 
