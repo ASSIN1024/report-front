@@ -641,6 +641,7 @@ CREATE TABLE `alert_record` (
   `file_name` varchar(200) DEFAULT NULL COMMENT '相关文件名',
   `report_config_id` bigint DEFAULT NULL COMMENT '关联报表配置ID',
   `alert_level` varchar(20) DEFAULT NULL COMMENT '告警级别',
+  `alert_message` varchar(500) DEFAULT NULL COMMENT '告警消息',
   `reason` varchar(500) DEFAULT NULL COMMENT '告警原因',
   `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING-待处理, RESOLVED-已解决, IGNORED-已忽略',
   `resolve_time` datetime DEFAULT NULL COMMENT '解决时间',
