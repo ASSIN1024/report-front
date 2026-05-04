@@ -12,6 +12,7 @@ import com.report.ftp.BuiltInFtpConfig;
 import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
 import com.report.ftp.EmbeddedFtpServer;
+import com.report.service.FtpDirectoryService;
 import com.report.service.LogService;
 import com.report.service.ReportConfigService;
 import com.report.service.TaskService;
@@ -54,6 +55,9 @@ public class ReportConfigController {
 
     @Autowired
     private LogService logService;
+
+    @Autowired
+    private FtpDirectoryService ftpDirectoryService;
 
     @GetMapping("/page")
     public Result<Page<ReportConfigDTO>> page(
@@ -109,6 +113,13 @@ public class ReportConfigController {
         config.setStatus(dto.getStatus());
         config.setRemark(dto.getRemark());
         reportConfigService.save(config);
+        if (config.getScanPath() != null && !config.getScanPath().isEmpty()) {
+            try {
+                ftpDirectoryService.getOrCreateMonitorId(config.getReportCode(), config.getScanPath());
+            } catch (Exception e) {
+                log.warn("FTP目录自动创建失败，但不影响配置保存: {}", e.getMessage());
+            }
+        }
         return Result.success();
     }
 
@@ -148,6 +159,13 @@ public class ReportConfigController {
         config.setStatus(dto.getStatus());
         config.setRemark(dto.getRemark());
         reportConfigService.updateById(config);
+        if (config.getScanPath() != null && !config.getScanPath().isEmpty()) {
+            try {
+                ftpDirectoryService.getOrCreateMonitorId(config.getReportCode(), config.getScanPath());
+            } catch (Exception e) {
+                log.warn("FTP目录自动创建失败，但不影响配置更新: {}", e.getMessage());
+            }
+        }
         return Result.success();
     }
 
