@@ -343,6 +343,7 @@ CREATE TABLE `processed_file` (
   `file_name` varchar(200) NOT NULL COMMENT '文件名',
   `file_path` varchar(500) DEFAULT NULL COMMENT '文件路径',
   `file_size` bigint DEFAULT NULL COMMENT '文件大小',
+  `pt_dt` varchar(20) DEFAULT NULL COMMENT '分区日期',
   `checksum` varchar(64) DEFAULT NULL COMMENT '文件校验和',
   `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING-待处理, PROCESSING-处理中, PROCESSED-已处理, FAILED-失败',
   `error_message` text COMMENT '错误信息',
