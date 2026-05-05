@@ -3,14 +3,21 @@ package com.report.common.config;
 import com.report.job.BatchPackagingJob;
 import com.report.job.FtpScanJob;
 import org.quartz.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class QuartzConfig {
 
+    @Autowired
+    private JobProperties jobProperties;
+
     @Bean
     public JobDetail ftpScanJobDetail() {
+        if (!jobProperties.getFtpScan().isEnabled()) {
+            return null;
+        }
         return JobBuilder.newJob(FtpScanJob.class)
                 .withIdentity("ftpScanJob")
                 .withDescription("FTP扫描任务")
@@ -20,8 +27,11 @@ public class QuartzConfig {
 
     @Bean
     public Trigger ftpScanJobTrigger() {
+        if (!jobProperties.getFtpScan().isEnabled()) {
+            return null;
+        }
         SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
-                .withIntervalInMinutes(5)
+                .withIntervalInMinutes(jobProperties.getFtpScan().getIntervalMinutes())
                 .repeatForever();
 
         return TriggerBuilder.newTrigger()
@@ -35,6 +45,9 @@ public class QuartzConfig {
 
     @Bean
     public JobDetail batchPackagingJobDetail() {
+        if (!jobProperties.getBatchPackaging().isEnabled()) {
+            return null;
+        }
         return JobBuilder.newJob(BatchPackagingJob.class)
                 .withIdentity("batchPackagingJob")
                 .withDescription("批量打包任务")
@@ -44,8 +57,11 @@ public class QuartzConfig {
 
     @Bean
     public Trigger batchPackagingJobTrigger() {
+        if (!jobProperties.getBatchPackaging().isEnabled()) {
+            return null;
+        }
         SimpleScheduleBuilder scheduleBuilder = SimpleScheduleBuilder.simpleSchedule()
-                .withIntervalInHours(1)
+                .withIntervalInMinutes(jobProperties.getBatchPackaging().getIntervalMinutes())
                 .repeatForever();
 
         return TriggerBuilder.newTrigger()

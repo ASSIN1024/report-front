@@ -273,7 +273,7 @@ public class ReportConfigController {
             return Result.fail("FTP配置不存在");
         }
 
-        TaskExecution task = taskService.createTask("SCAN", "立即扫描-" + config.getReportName(), id, null, null);
+        TaskExecution task = taskService.createTask("SCAN", "立即扫描-" + config.getReportName(), id, "", null);
         Long taskId = task.getId();
         logService.logInfo(taskId, "开始扫描内置FTP目录...");
 

@@ -2,36 +2,46 @@ package com.report.util;
 
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.text.SimpleDateFormat;
+import java.io.InputStream;
 import java.util.*;
 
 public class ConfigExcelWriter {
 
-    public static String write(String outputPath, List<Map<String, Object>> configRecords) throws Exception {
-        File templateFile = new File("src/main/resources/informationTemplate.xlsx");
+    private static final Logger log = LoggerFactory.getLogger(ConfigExcelWriter.class);
 
+    public static String write(String outputPath, List<Map<String, Object>> configRecords) throws Exception {
         Workbook workbook;
         Sheet sheet;
 
-        if (templateFile.exists()) {
-            try (FileInputStream fis = new FileInputStream(templateFile)) {
-                workbook = new XSSFWorkbook(fis);
+        InputStream templateStream = ConfigExcelWriter.class.getClassLoader()
+            .getResourceAsStream("informationTemplate.xlsx");
+
+        if (templateStream != null) {
+            try (InputStream is = templateStream) {
+                workbook = new XSSFWorkbook(is);
                 sheet = workbook.getSheetAt(0);
+                log.info("Loaded informationTemplate.xlsx from classpath");
             }
         } else {
-            workbook = new XSSFWorkbook();
-            sheet = workbook.createSheet("批量上传文件并生成数据表模板");
-            createHeaders(sheet);
+            File templateFile = new File("src/main/resources/informationTemplate.xlsx");
+            if (templateFile.exists()) {
+                workbook = new XSSFWorkbook(new java.io.FileInputStream(templateFile));
+                sheet = workbook.getSheetAt(0);
+                log.info("Loaded informationTemplate.xlsx from file system");
+            } else {
+                workbook = new XSSFWorkbook();
+                sheet = workbook.createSheet("批量上传文件并生成数据表模板");
+                createHeaders(sheet);
+                log.info("Created new workbook with headers (template not found)");
+            }
         }
 
-        int startRow = sheet.getLastRowNum() + 1;
-        if (startRow < 2) {
-            startRow = 2;
-        }
+        int startRow = findDataStartRow(sheet);
 
         for (int i = 0; i < configRecords.size(); i++) {
             Map<String, Object> record = configRecords.get(i);
@@ -44,7 +54,34 @@ public class ConfigExcelWriter {
             workbook.write(fos);
         }
         workbook.close();
+        log.info("informationTemplate.xlsx written: {} ({} records)", outputPath, configRecords.size());
         return outputPath;
+    }
+
+    private static int findDataStartRow(Sheet sheet) {
+        int lastRow = sheet.getLastRowNum();
+        if (lastRow < 0) {
+            return 1;
+        }
+        for (int i = 0; i <= lastRow; i++) {
+            Row row = sheet.getRow(i);
+            if (row == null) continue;
+            boolean hasData = false;
+            for (int c = 0; c < row.getLastCellNum(); c++) {
+                Cell cell = row.getCell(c);
+                if (cell != null && cell.getCellType() != CellType.BLANK) {
+                    String val = getCellStringValue(cell);
+                    if (val != null && !val.trim().isEmpty()) {
+                        hasData = true;
+                        break;
+                    }
+                }
+            }
+            if (!hasData) {
+                return i;
+            }
+        }
+        return lastRow + 1;
     }
 
     private static void createHeaders(Sheet sheet) {
@@ -88,7 +125,7 @@ public class ConfigExcelWriter {
         style.setWrapText(true);
 
         setCell(row, 0, seq, style);
-        setCell(row, 1, record.get("source_file"), style);
+        setCell(row, 1, record.get("standard_file"), style);
         setCell(row, 2, record.get("table_type"), style);
         setCell(row, 3, record.get("db_name"), style);
         setCell(row, 4, record.get("table_name"), style);
@@ -114,6 +151,30 @@ public class ConfigExcelWriter {
             cell.setCellValue((Boolean) value);
         } else {
             cell.setCellValue(value.toString());
+        }
+    }
+
+    private static String getCellStringValue(Cell cell) {
+        if (cell == null) return "";
+        switch (cell.getCellType()) {
+            case STRING:
+                return cell.getStringCellValue();
+            case NUMERIC:
+                double d = cell.getNumericCellValue();
+                if (d == Math.floor(d) && !Double.isInfinite(d)) {
+                    return String.valueOf((long) d);
+                }
+                return String.valueOf(d);
+            case BOOLEAN:
+                return String.valueOf(cell.getBooleanCellValue());
+            case FORMULA:
+                try {
+                    return cell.getStringCellValue();
+                } catch (Exception e) {
+                    return String.valueOf(cell.getNumericCellValue());
+                }
+            default:
+                return "";
         }
     }
 }

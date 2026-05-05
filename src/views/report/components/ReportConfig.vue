@@ -349,7 +349,9 @@ export default {
         reportName: [{ required: true, message: '请输入报表名称', trigger: 'blur' }],
         filePattern: [{ required: true, message: '请输入文件匹配模式', trigger: 'blur' }],
         outputTable: [{ required: true, message: '请输入输出表名', trigger: 'blur' }]
-      }
+      },
+      excelColumnPattern: /^[A-Z]+$/,
+      fieldNamePattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/
     }
   },
   computed: {
@@ -378,6 +380,22 @@ export default {
         console.error('加载数据失败', error)
       }
     },
+    validateColumnMapping(row) {
+      const errors = []
+      if (!row.excelColumn) {
+        errors.push('Excel列名不能为空')
+      } else if (!this.excelColumnPattern.test(row.excelColumn)) {
+        errors.push('Excel列名只能是英文字母（A-Z），如A、B、C等')
+      }
+      if (!row.fieldName) {
+        errors.push('字段名称不能为空')
+      } else if (!this.fieldNamePattern.test(row.fieldName)) {
+        errors.push('字段名称只能包含英文字母、数字和下划线，且必须以字母或下划线开头')
+      } else if (/^_+$/.test(row.fieldName)) {
+        errors.push('字段名称不能为纯下划线')
+      }
+      return errors
+    },
     handleAddColumn() {
       this.form.columnMappings.push({
         excelColumn: '',
@@ -386,6 +404,16 @@ export default {
         dateFormat: '',
         scale: null
       })
+    },
+    validateAllColumns() {
+      for (let i = 0; i < this.form.columnMappings.length; i++) {
+        const errors = this.validateColumnMapping(this.form.columnMappings[i])
+        if (errors.length > 0) {
+          this.$message.error(`列映射第 ${i + 1} 行: ${errors.join(', ')}`)
+          return false
+        }
+      }
+      return true
     },
     handleDeleteColumn(index) {
       this.form.columnMappings.splice(index, 1)
@@ -396,6 +424,9 @@ export default {
     async handleSave() {
       try {
         await this.$refs.form.validate()
+        if (!this.validateAllColumns()) {
+          return
+        }
         if (this.form.id) {
           await updateReportConfig(this.form)
         } else {

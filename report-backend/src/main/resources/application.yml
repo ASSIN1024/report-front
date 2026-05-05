@@ -58,6 +58,14 @@ ftp:
     passive-port-end: 50100
     max-threads: 5
 
+job:
+  ftp-scan:
+    enabled: true
+    interval-minutes: 5
+  batch-packaging:
+    enabled: true
+    interval-minutes: 1
+
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml
   type-aliases-package: com.report.entity

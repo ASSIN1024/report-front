@@ -124,18 +124,26 @@ public class FtpScanJob implements Job {
 
             log.info("检测到新文件: {}, 报表配置: {}", fileName, reportConfig.getReportName());
 
-            MatchedFile matchedFile = new MatchedFile();
-            matchedFile.setFileName(fileName);
-            matchedFile.setFilePath(file.getAbsolutePath());
-            matchedFile.setReportConfigId(reportConfig.getId());
-            matchedFile.setLocalFile(file);
-            LocalDate date = FileNameDateExtractor.extractDate(fileName);
-            matchedFile.setPtDt(date != null ? date.toString() : null);
-
+            File tempFile = null;
             try {
+                tempFile = File.createTempFile("scan_", "_" + fileName);
+                java.nio.file.Files.copy(file.toPath(), tempFile.toPath());
+
+                MatchedFile matchedFile = new MatchedFile();
+                matchedFile.setFileName(fileName);
+                matchedFile.setFilePath(file.getAbsolutePath());
+                matchedFile.setReportConfigId(reportConfig.getId());
+                matchedFile.setLocalFile(tempFile);
+                LocalDate date = FileNameDateExtractor.extractDate(fileName);
+                matchedFile.setPtDt(date != null ? date.toString() : null);
+
                 middlewareEngine.processFile(matchedFile, reportConfig);
             } catch (Exception e) {
                 log.error("文件处理失败: {}", fileName, e);
+            } finally {
+                if (tempFile != null && tempFile.exists()) {
+                    tempFile.delete();
+                }
             }
         }
     }

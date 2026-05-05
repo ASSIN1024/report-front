@@ -9,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.io.File;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Slf4j
 @Service
@@ -37,6 +41,10 @@ public class OdsBackupServiceImpl implements OdsBackupService {
         try {
             if (!tableExists(tableName)) {
                 createOdsTable(tableName, result);
+            } else if (!isTableSchemaValid(tableName, result)) {
+                log.warn("Table schema mismatch, recreating table: {}", tableName);
+                dropTable(tableName);
+                createOdsTable(tableName, result);
             }
 
             insertOdsData(tableName, result, sourceFileName);
@@ -56,6 +64,46 @@ public class OdsBackupServiceImpl implements OdsBackupService {
         } catch (Exception e) {
             log.error("ODS backup failed: file={}, table={}", sourceFileName, tableName, e);
             throw e;
+        }
+    }
+
+    private boolean isTableSchemaValid(String tableName, TransformResult result) {
+        try {
+            List<String> colNames = extractColumnNames(result);
+
+            String sql = "SELECT COLUMN_NAME FROM information_schema.columns WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND COLUMN_NAME NOT IN ('id', 'source_file', 'pt_dt', 'create_time')";
+            List<Map<String, Object>> columns = jdbcTemplate.queryForList(sql, tableName);
+
+            if (columns.size() != colNames.size()) {
+                log.warn("Column count mismatch: expected {}, found {}", colNames.size(), columns.size());
+                return false;
+            }
+
+            Set<String> existingCols = new HashSet<>();
+            for (Map<String, Object> col : columns) {
+                existingCols.add((String) col.get("COLUMN_NAME"));
+            }
+
+            for (String expectedCol : colNames) {
+                if (!existingCols.contains(expectedCol)) {
+                    log.warn("Expected column '{}' not found in table", expectedCol);
+                    return false;
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            log.warn("Failed to validate table schema: {}", tableName, e);
+            return false;
+        }
+    }
+
+    private void dropTable(String tableName) {
+        try {
+            jdbcTemplate.execute("DROP TABLE IF EXISTS `" + tableName + "`");
+            log.info("Dropped table: {}", tableName);
+        } catch (Exception e) {
+            log.error("Failed to drop table: {}", tableName, e);
+            throw new RuntimeException("Failed to drop table: " + tableName, e);
         }
     }
 
@@ -79,8 +127,17 @@ public class OdsBackupServiceImpl implements OdsBackupService {
         createSql.append("create_time datetime DEFAULT CURRENT_TIMESTAMP, ");
 
         List<String> colNames = extractColumnNames(result);
+        Map<String, String> fieldTypes = extractFieldTypes(result);
+
         for (int i = 0; i < colNames.size(); i++) {
-            createSql.append("`").append(colNames.get(i)).append("` varchar(500) DEFAULT NULL");
+            String colName = colNames.get(i);
+            String sqlType = fieldTypes.get(colName);
+            if (sqlType == null) {
+                sqlType = "varchar(500)";
+            } else {
+                sqlType = convertToSqlType(sqlType);
+            }
+            createSql.append("`").append(colName).append("` ").append(sqlType).append(" DEFAULT NULL");
             if (i < colNames.size() - 1) {
                 createSql.append(", ");
             }
@@ -95,6 +152,51 @@ public class OdsBackupServiceImpl implements OdsBackupService {
         } catch (Exception e) {
             log.error("Failed to create ODS table: {}. SQL: {}", tableName, createSql, e);
             throw new RuntimeException("Failed to create ODS table: " + tableName, e);
+        }
+    }
+
+    private Map<String, String> extractFieldTypes(TransformResult result) {
+        Map<String, String> fieldTypes = new HashMap<>();
+        String fieldMappingJson = result.getFieldMappingJson();
+        if (fieldMappingJson != null && !fieldMappingJson.isEmpty()) {
+            try {
+                Map<String, Map<String, String>> fieldMap = objectMapper.readValue(fieldMappingJson,
+                    new com.fasterxml.jackson.core.type.TypeReference<Map<String, Map<String, String>>>() {});
+                for (Map.Entry<String, Map<String, String>> entry : fieldMap.entrySet()) {
+                    String fieldName = entry.getKey();
+                    Map<String, String> fieldInfo = entry.getValue();
+                    String type = fieldInfo.get("type");
+                    if (type != null) {
+                        fieldTypes.put(fieldName, type);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to parse field types from fieldMappingJson", e);
+            }
+        }
+        return fieldTypes;
+    }
+
+    private String convertToSqlType(String fieldType) {
+        if (fieldType == null) {
+            return "varchar(500)";
+        }
+        switch (fieldType.toUpperCase()) {
+            case "INTEGER":
+            case "INT":
+                return "bigint";
+            case "DECIMAL":
+            case "FLOAT":
+            case "DOUBLE":
+                return "decimal(20,4)";
+            case "DATE":
+                return "date";
+            case "DATETIME":
+                return "datetime";
+            case "BOOLEAN":
+                return "tinyint(1)";
+            default:
+                return "varchar(500)";
         }
     }
 
@@ -148,25 +250,33 @@ public class OdsBackupServiceImpl implements OdsBackupService {
 
     private List<String> extractColumnNames(TransformResult result) {
         String fieldMappingJson = result.getFieldMappingJson();
+        List<String> fieldMappingNames = null;
+
         if (fieldMappingJson != null && !fieldMappingJson.isEmpty()) {
             try {
                 Map<String, Object> fieldMap = objectMapper.readValue(fieldMappingJson, Map.class);
                 if (fieldMap != null && !fieldMap.isEmpty()) {
-                    List<String> names = new java.util.ArrayList<>(fieldMap.keySet());
-                    log.info("Extracted column names from fieldMappingJson: {}", names);
-                    return names;
+                    fieldMappingNames = new java.util.ArrayList<>(fieldMap.keySet());
                 }
             } catch (Exception e) {
-                log.warn("Failed to parse fieldMappingJson, using numbered columns", e);
+                log.warn("Failed to parse fieldMappingJson", e);
             }
         }
 
         List<String> headers = result.getHeaders();
+        if (fieldMappingNames != null && !fieldMappingNames.isEmpty() && !containsOnlyPlaceholderNames(fieldMappingNames)) {
+            log.info("Extracted column names from fieldMappingJson: {}", fieldMappingNames);
+            return fieldMappingNames;
+        }
+
         if (headers != null && !headers.isEmpty()) {
             List<String> names = new java.util.ArrayList<>();
             java.util.Set<String> used = new java.util.HashSet<>();
             for (int i = 0; i < headers.size(); i++) {
                 String sanitized = sanitizeColumnName(headers.get(i));
+                if (sanitized == null || sanitized.isEmpty()) {
+                    sanitized = "col_" + (i + 1);
+                }
                 String unique = sanitized;
                 int suffix = 1;
                 while (used.contains(unique)) {
@@ -176,7 +286,13 @@ public class OdsBackupServiceImpl implements OdsBackupService {
                 used.add(unique);
                 names.add(unique);
             }
+            log.info("Extracted column names from Excel headers: {}", names);
             return names;
+        }
+
+        if (fieldMappingNames != null && !fieldMappingNames.isEmpty()) {
+            log.info("Extracted column names from fieldMappingJson (fallback): {}", fieldMappingNames);
+            return fieldMappingNames;
         }
 
         if (result.getRows() != null && !result.getRows().isEmpty()) {
@@ -191,6 +307,15 @@ public class OdsBackupServiceImpl implements OdsBackupService {
         }
 
         return java.util.Collections.emptyList();
+    }
+
+    private boolean containsOnlyPlaceholderNames(List<String> names) {
+        for (String name : names) {
+            if (name != null && !name.matches("^field_\\d+$") && !name.matches("^col_\\d+$")) {
+                return false;
+            }
+        }
+        return true;
     }
 
     private String sanitizeColumnName(String name) {

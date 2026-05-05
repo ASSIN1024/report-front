@@ -5,7 +5,10 @@ import router from '@/router'
 
 const request = axios.create({
   baseURL: '/api',
-  timeout: 30000
+  timeout: 30000,
+  headers: {
+    'Content-Type': 'application/json;charset=utf-8'
+  }
 })
 
 request.interceptors.request.use(

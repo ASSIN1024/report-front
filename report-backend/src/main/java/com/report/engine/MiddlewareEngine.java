@@ -8,6 +8,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.io.File;
 import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
@@ -43,12 +44,21 @@ public class MiddlewareEngine {
     @Autowired
     private LogService logService;
 
+    @Autowired
+    private TaskService taskService;
+
     public void processFile(MatchedFile file, ReportConfig config) {
-        String fileName = file.getFileName();
         Long taskId = file.getTaskId();
+        processFile(file, config, taskId);
+    }
+
+    public void processFile(MatchedFile file, ReportConfig config, Long taskId) {
+        String fileName = file.getFileName();
 
         if (taskId != null) {
             logService.logInfo(taskId, "开始处理文件: " + fileName);
+            taskService.updateTaskStatus(taskId, "RUNNING");
+            taskService.updateTaskProgress(taskId, 0, 0, 0);
         }
 
         log.info("MiddlewareEngine processing: {}", fileName);
@@ -64,10 +74,12 @@ public class MiddlewareEngine {
         if (taskId != null) {
             logService.logInfo(taskId, "转换Excel文件: " + fileName);
         }
-        TransformResult result = excelTransformService.transform(file.getLocalFile().getAbsolutePath(), config.getId());
+        TransformResult result = excelTransformService.transform(file.getLocalFile().getAbsolutePath(), config.getId(), fileName);
         result.setLoadMode(config.getLoadMode() != null ? config.getLoadMode() : "partitioned-append");
 
         if (result.isSuccess()) {
+            int totalRows = result.getRows() != null ? result.getRows().size() : 0;
+
             if (config.getOdsBackupEnabled() != null && config.getOdsBackupEnabled() == 1) {
                 try {
                     if (taskId != null) {
@@ -89,23 +101,38 @@ public class MiddlewareEngine {
             packagingService.moveToStagingDir(
                 result.getStandardExcelPath(),
                 fileName,
-                result
+                result,
+                config
             );
 
             processedFileService.markAsProcessed(config.getId(), fileName, file.getLocalFile().length(), null);
             archiveService.archiveToSuccess(file.getLocalFile(), config);
 
-            log.info("File processed successfully: {}", fileName);
-            if (taskId != null) {
-                logService.logInfo(taskId, "文件处理成功: " + fileName);
+            if (file.getFilePath() != null) {
+                File originalFile = new File(file.getFilePath());
+                if (originalFile.exists() && originalFile.delete()) {
+                    log.info("Deleted original file from FTP: {}", originalFile.getAbsolutePath());
+                }
             }
+
+            if (taskId != null) {
+                taskService.updateTaskProgress(taskId, totalRows, totalRows, 0);
+                taskService.updateTaskStatus(taskId, "SUCCESS");
+                logService.logInfo(taskId, "文件处理成功，共 " + totalRows + " 行");
+            }
+
+            log.info("File processed successfully: {}", fileName);
         } else {
             alertService.createAlert(config.getId(), fileName, "ERROR", "MAPPING_FAILED", result.getErrorMessage());
             archiveService.archiveToError(file.getLocalFile(), config);
-            log.error("File processing failed: {}, reason: {}", fileName, result.getErrorMessage());
+
             if (taskId != null) {
+                taskService.updateTaskProgress(taskId, 0, 0, 0);
+                taskService.updateTaskStatus(taskId, "FAILED");
                 logService.logError(taskId, "文件处理失败: " + result.getErrorMessage());
             }
+
+            log.error("File processing failed: {}, reason: {}", fileName, result.getErrorMessage());
         }
     }
 

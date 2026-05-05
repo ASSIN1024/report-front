@@ -13,6 +13,7 @@ public class TransformResult {
     private String dbName;
     private String tableName;
     private String fieldMappingJson;
+    private String sourceToFieldMapping;
     private String loadMode;
     private String errorMessage;
     private Long fileSize;

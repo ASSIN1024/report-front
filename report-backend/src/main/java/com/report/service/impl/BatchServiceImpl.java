@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.report.entity.BatchRecord;
 import com.report.ftp.BuiltInFtpConfig;
+import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
 import com.report.mapper.BatchRecordMapper;
 import com.report.service.BatchService;
@@ -12,7 +13,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.io.File;
 import java.util.Date;
+import java.util.List;
 
 @Slf4j
 @Service
@@ -20,6 +23,9 @@ public class BatchServiceImpl extends ServiceImpl<BatchRecordMapper, BatchRecord
 
     @Autowired(required = false)
     private BuiltInFtpConfigService builtInFtpConfigService;
+
+    @Autowired(required = false)
+    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
 
     @Override
     public Page<BatchRecord> pageList(Integer pageNum, Integer pageSize, String status) {
@@ -33,6 +39,55 @@ public class BatchServiceImpl extends ServiceImpl<BatchRecordMapper, BatchRecord
 
     @Override
     public void deliverZipIfReady(Long ftpConfigId) {
-        log.info("deliverZipIfReady called with ftpConfigId: {} (no-op in simplified version, use built-in FTP)", ftpConfigId);
+        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
+        if (ftpConfig == null) {
+            log.warn("FTP config not found, cannot deliver zip");
+            return;
+        }
+
+        String stagingDir = ftpConfig.getRootDirectory() + File.separator + "staging";
+        File dir = new File(stagingDir);
+        if (!dir.exists() || !dir.isDirectory()) {
+            log.info("Staging directory not found: {}", stagingDir);
+            return;
+        }
+
+        File[] zipFiles = dir.listFiles((d, name) -> name.endsWith(".zip"));
+        if (zipFiles == null || zipFiles.length == 0) {
+            log.info("No zip files to deliver");
+            return;
+        }
+
+        String deliveryDir = ftpConfig.getRootDirectory() + File.separator + "delivery";
+        new File(deliveryDir).mkdirs();
+
+        for (File zipFile : zipFiles) {
+            try {
+                File destFile = new File(deliveryDir, zipFile.getName());
+                java.nio.file.Files.copy(zipFile.toPath(), destFile.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+
+                BatchRecord batchRecord = findBatchByZipName(zipFile.getName());
+                if (batchRecord != null) {
+                    batchRecord.setStatus("DELIVERED");
+                    batchRecord.setDeliveredAt(new Date());
+                    batchRecord.setUpdateTime(new Date());
+                    updateById(batchRecord);
+                }
+
+                zipFile.delete();
+                log.info("Delivered zip: {} -> {}", zipFile.getName(), destFile.getAbsolutePath());
+
+            } catch (Exception e) {
+                log.error("Failed to deliver zip: {}", zipFile.getName(), e);
+            }
+        }
+    }
+
+    private BatchRecord findBatchByZipName(String zipFileName) {
+        LambdaQueryWrapper<BatchRecord> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(BatchRecord::getZipFileName, zipFileName);
+        wrapper.last("LIMIT 1");
+        return getOne(wrapper);
     }
 }

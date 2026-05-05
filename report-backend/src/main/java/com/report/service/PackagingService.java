@@ -1,10 +1,10 @@
 package com.report.service;
 
-import java.util.List;
+import com.report.entity.ReportConfig;
 
 public interface PackagingService {
 
-    void moveToStagingDir(String standardExcelPath, String sourceFileName, TransformResult result);
+    void moveToStagingDir(String standardExcelPath, String sourceFileName, TransformResult result, ReportConfig config);
 
     void collectAndPackageAll();
 

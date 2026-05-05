@@ -1,41 +1,44 @@
-# IDE
-.idea/
-*.iml
-.vscode/
-*.swp
-*.swo
-
-# OS
-.DS_Store
-Thumbs.db
 
 # Build
-node_modules/
-dist/
-target/
-*.class
-*.jar
-*.war
-
-# Logs
-*.log
-logs/
-
-# Temp
-*.tmp
-*.temp
-
-# Environment
-.env
-.env.local
-.env.*.local
-
 # Docker
-docker/vsftpd/
-docker/mysql/
-
+# Environment
+# IDE
+# Logs
+# OS
 # PID
-.pid/
-
+# Temp
 # Test
+*.class
+*.iml
+*.jar
+*.log
+*.swo
+*.swp
+*.temp
+*.tmp
+*.war
+*.xlsx
+*.zip
+.DS_Store
+.classpath
+.env
+.env.*.local
+.env.local
+.idea/
+.pid/
+.project
+.recommenders/
+.settings/
+.vscode/
 /coverage/
+Thumbs.db
+data/ftp-root/staging/*.zip
+data/ftp-root/upload/test/archive/*.xlsx
+dist/
+docker/mysql/
+docker/vsftpd/
+logs/
+node_modules/
+rebel.xml
+target/
+tmp/

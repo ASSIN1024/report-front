@@ -2,7 +2,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: org.opengauss.Driver
-    url: jdbc:opengauss://${GAUSSDB_HOST:localhost}:${GAUSSDB_PORT:5432}/${GAUSSDB_DB:report_db}?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:opengauss://${GAUSSDB_HOST:localhost}:${GAUSSDB_PORT:5432}/${GAUSSDB_DB:report_db}?useUnicode=true&characterEncoding=utf8mb4&useSSL=false&serverTimezone=Asia/Shanghai
     username: ${GAUSSDB_USER:report_user}
     password: ${GAUSSDB_PASSWORD:password}
     druid:

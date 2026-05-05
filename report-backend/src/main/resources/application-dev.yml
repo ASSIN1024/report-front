@@ -2,7 +2,7 @@ spring:
   datasource:
     type: com.alibaba.druid.pool.DruidDataSource
     driver-class-name: com.mysql.cj.jdbc.Driver
-    url: jdbc:mysql://localhost:33060/report_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    url: jdbc:mysql://localhost:33060/report_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
     password: root123456
     druid:
@@ -48,6 +48,14 @@ ftp:
     root-directory: /home/nova/projects/report-front/data/ftp-root
     idle-timeout: 300
     max-connections: 10
+
+job:
+  ftp-scan:
+    enabled: true
+    interval-minutes: 5
+  batch-packaging:
+    enabled: true
+    interval-minutes: 1
 
 logging:
   level:
