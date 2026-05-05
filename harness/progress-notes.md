@@ -1,8 +1,8 @@
 # Harness Engineering 进度记录
 
-> **文档版本**: V1.6
+> **文档版本**: V1.7
 > **创建日期**: 2026-04-04
-> **最后更新**: 2026-05-05
+> **最后更新**: 2026-05-06
 
 ---
 
@@ -1171,4 +1171,85 @@ CREATE TABLE ods_backup (
 **下一步计划**:
 - [x] ODS备份逻辑修复完成
 - [ ] 功能验证测试（需重启后端）
+
+---
+
+### 2026-05-06 - ZIP打包内容修复
+
+**会话目标**: 修复ZIP打包内容问题：标准Excel使用英文字段名+pt_dt，移除.meta文件改用informationTemplate.xlsx
+
+**问题诊断**:
+
+1. **压缩包内xlsx文件为原始文件**
+   - 原因: ExcelTransformServiceImpl写入标准Excel时使用原始中文表头（"姓名"、"年龄"），而非映射后的英文字段名（"name"、"age"），且未添加pt_dt分区列
+
+2. **.meta文件不符合PRD规范**
+   - 原因: PackagingServiceImpl使用`.meta`属性文件存储元数据，PRD要求使用`informationTemplate.xlsx`配置表
+
+3. **pt_dt日期提取错误**
+   - 原因: FileNameDateExtractor正则表达式末尾有`.*`，导致`matcher.find()`贪婪匹配，从临时文件名（scan_xxx_test120260515.xlsx）提取日期时匹配到了`2026-05-05`（当前日期）
+
+4. **ConfigExcelWriter POI类型兼容问题**
+   - 原因: `cell.getStringCellValue()`在遇到数字类型单元格时抛出`Cannot get STRING value from NUMERIC cell`异常
+
+**修复内容**:
+
+| 文件 | 修复内容 |
+|------|----------|
+| ExcelTransformServiceImpl.java | 重构transform方法：新增headerToFieldNameMap双模式映射，mappedHeaders为英文字段名，standardHeaders再添加pt_dt，新增sourceToFieldMapping记录中文→英文映射，新增带originalFileName参数的重载方法 |
+| TransformResult.java | 新增sourceToFieldMapping字段 |
+| ExcelTransformService.java | 新增带originalFileName参数的重载方法 |
+| MiddlewareEngine.java | 传递原始文件名和ReportConfig到moveToStagingDir |
+| PackagingServiceImpl.java | 完全重写：moveToStagingDir()生成JSON元数据文件替代.meta，collectAndPackageAll()使用ConfigExcelWriter生成informationTemplate.xlsx |
+| PackagingService.java | 接口新增ReportConfig参数 |
+| FileNameDateExtractor.java | 去掉正则表达式`.*`前缀和后缀使matcher.find()正确工作 |
+| ConfigExcelWriter.java | 使用classpath加载模板（兼容JAR部署），修复POI类型兼容问题（getCellStringValue辅助方法） |
+
+**验证结果**:
+
+1. **标准Excel内容**（test120260515_standard.xlsx）:
+   - 表头: `name, age, field_3, pt_dt`（英文字段名+分区日期列）
+   - 数据: `[张三, 25, 北京, 2026-05-15]`, `[李四, 30, 上海, 2026-05-15]`, `[王五, 0, 广州, 2026-05-15]`
+   - 异常值"-"已清洗为0
+   - pt_dt正确提取为2026-05-15
+
+2. **ZIP包内容**:
+   - `test120260515_standard.xlsx` - 标准化Excel
+   - `informationTemplate.xlsx` - 配置表（替代.meta文件）
+
+3. **informationTemplate.xlsx内容**:
+   - 基于informationTemplate.xlsx模板生成
+   - 包含完整的14列表头说明
+   - 数据行包含: 序号=1, 文件名=test120260515_standard.xlsx, 目标表类型=hive, 目标库名=test, 目标表名=test, 字段类型列表={"name":{"type":"STRING"},"age":{"type":"INTEGER"}}, 数据载入模式=partitioned-append, 分区信息=pt_dt
+
+**Git提交**:
+- `bbb559e` - feat(packing): 修复ZIP打包内容问题
+- 27 files changed, 1383 insertions(+), 741 deletions(-)
+
+**Harness上下文同步检查**:
+- ✅ tasks.json 添加H-PACKING-FIX-0506任务
+- ✅ progress-notes.md 会话记录已追加
+- ✅ Git 已提交
+- ✅ .gitignore 已更新（排除.zip, staging/, archive/等）
+
+**服务状态**:
+| 服务 | 状态 | 端口 |
+|------|------|------|
+| Docker MySQL | 运行中 | 3306 |
+| 后端 (Spring Boot) | 运行中 | 8082 |
+| 前端 (Vue) | 运行中 | 8081 |
+
+**下一步计划**:
+- [x] ZIP打包内容修复完成
+- [x] 功能验证测试通过
+- [x] Git提交完成
+
+**睡前检查清单**:
+- ✅ 所有代码变更已提交Git
+- ✅ tasks.json 已更新
+- ✅ progress-notes.md 已更新
+- ✅ .gitignore 已完善
+- ✅ 后端服务运行正常 (port 8082)
+- ✅ 前端服务运行正常 (port 8081)
+- ✅ 数据库服务运行正常 (port 3306)
 

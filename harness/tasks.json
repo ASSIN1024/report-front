@@ -1,6 +1,6 @@
 {
   "version": "1.1",
-  "lastUpdated": "2026-05-02",
+  "lastUpdated": "2026-05-06",
   "description": "Harness Engineering 任务清单",
   "owner": "AI Assistant",
   "source": "AI Agent",
@@ -420,6 +420,17 @@
       "dependsOn": [],
       "createdAt": "2026-05-05",
       "completedAt": "2026-05-05",
+      "assignee": "AI Assistant"
+    },
+    {
+      "id": "H-PACKING-FIX-0506",
+      "title": "ZIP打包内容修复 - 标准Excel和配置表",
+      "description": "修复ZIP打包内容问题：1) ExcelTransformServiceImpl标准Excel使用英文字段名+pt_dt列 2) 移除.meta文件改用informationTemplate.xlsx 3) FileNameDateExtractor正则贪婪匹配修复 4) ConfigExcelWriter POI类型兼容修复",
+      "status": "completed",
+      "priority": "high",
+      "dependsOn": [],
+      "createdAt": "2026-05-06",
+      "completedAt": "2026-05-06",
       "assignee": "AI Assistant"
     }
   ],
