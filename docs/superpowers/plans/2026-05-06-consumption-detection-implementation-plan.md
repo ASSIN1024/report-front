@@ -268,3 +268,63 @@ Expected:
 - [ ] `PackingServiceImpl.isBeingConsumed()` 检测 outputs.zip 存在性
 - [ ] `PackingManagerImpl` 预估打包大小并分批处理
 - [ ] 端到端消费流程正常工作
+
+---
+
+## Task 6: 分区日期提取 - 有效性校验
+
+**Files:**
+- Modify: `report-backend/src/main/java/com/report/service/impl/ProcessedFileServiceImpl.java`
+
+**问题背景:**
+文件名 `scan_12026052_test120260520.xlsx` 包含两个8位数字：
+- `12026052` → 1202年60月52日 ❌ 无效月份和日期
+- `20260520` → 2026年05月20日 ✅ 有效
+
+**实现方案:**
+
+从文件名提取所有8位数字候选，从后向前校验有效性（月份1-12，日期1-31），返回第一个有效日期。
+
+- [ ] **Step 1: 实现有效性校验逻辑**
+
+修改 `extractDateFromFileName()` 方法：
+
+```java
+private String extractDateFromFileName(String fileName) {
+    if (fileName == null || fileName.trim().isEmpty()) {
+        return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
+    }
+    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{8})");
+    java.util.regex.Matcher matcher = pattern.matcher(fileName);
+    java.util.ArrayList<String> candidates = new java.util.ArrayList<>();
+    while (matcher.find()) {
+        candidates.add(matcher.group(1));
+    }
+    // 从后向前校验有效性
+    for (int i = candidates.size() - 1; i >= 0; i--) {
+        String dateStr = candidates.get(i);
+        int month = Integer.parseInt(dateStr.substring(4, 6));
+        int day = Integer.parseInt(dateStr.substring(6, 8));
+        if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+            return dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8);
+        }
+    }
+    return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
+}
+```
+
+- [ ] **Step 2: 编译验证**
+
+Run: `cd report-backend && mvn compile -q`
+Expected: 编译成功
+
+- [ ] **Step 3: 提交**
+
+```bash
+git add report-backend/src/main/java/com/report/service/impl/ProcessedFileServiceImpl.java
+git commit -m "fix(packing): 添加分区日期有效性校验"
+```
+
+- [ ] **Step 4: 更新设计文档**
+
+在 `docs/superpowers/specs/2026-05-06-consumption-detection-design.md` 中添加第11章「分区日期提取规则」

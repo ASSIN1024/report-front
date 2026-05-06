@@ -68,9 +68,17 @@ public class ProcessedFileServiceImpl
         }
         java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{8})");
         java.util.regex.Matcher matcher = pattern.matcher(fileName);
-        if (matcher.find()) {
-            String dateStr = matcher.group(1);
-            return dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8);
+        java.util.ArrayList<String> candidates = new java.util.ArrayList<>();
+        while (matcher.find()) {
+            candidates.add(matcher.group(1));
+        }
+        for (int i = candidates.size() - 1; i >= 0; i--) {
+            String dateStr = candidates.get(i);
+            int month = Integer.parseInt(dateStr.substring(4, 6));
+            int day = Integer.parseInt(dateStr.substring(6, 8));
+            if (month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+                return dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8);
+            }
         }
         return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
     }
