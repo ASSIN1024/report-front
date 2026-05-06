@@ -1,7 +1,7 @@
 package com.report.common.config;
 
-import com.report.job.BatchPackagingJob;
 import com.report.job.FtpScanJob;
+import com.report.packing.job.PackingJob;
 import org.quartz.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -44,19 +44,19 @@ public class QuartzConfig {
     }
 
     @Bean
-    public JobDetail batchPackagingJobDetail() {
+    public JobDetail packingJobDetail() {
         if (!jobProperties.getBatchPackaging().isEnabled()) {
             return null;
         }
-        return JobBuilder.newJob(BatchPackagingJob.class)
-                .withIdentity("batchPackagingJob")
-                .withDescription("批量打包任务")
+        return JobBuilder.newJob(PackingJob.class)
+                .withIdentity("packingJob")
+                .withDescription("打包任务")
                 .storeDurably()
                 .build();
     }
 
     @Bean
-    public Trigger batchPackagingJobTrigger() {
+    public Trigger packingJobTrigger() {
         if (!jobProperties.getBatchPackaging().isEnabled()) {
             return null;
         }
@@ -65,9 +65,9 @@ public class QuartzConfig {
                 .repeatForever();
 
         return TriggerBuilder.newTrigger()
-                .forJob(batchPackagingJobDetail())
-                .withIdentity("batchPackagingTrigger")
-                .withDescription("批量打包触发器")
+                .forJob(packingJobDetail())
+                .withIdentity("packingTrigger")
+                .withDescription("打包触发器")
                 .withSchedule(scheduleBuilder)
                 .startNow()
                 .build();
