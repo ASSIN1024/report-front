@@ -54,12 +54,25 @@ public class ProcessedFileServiceImpl
         record.setFileSize(fileSize);
         record.setStatus(ProcessedFileStatus.PROCESSED.getCode());
         record.setTaskId(taskId);
-        record.setPtDt(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        record.setPtDt(extractDateFromFileName(fileName));
         record.setFilePath(filePath);
 
         this.save(record);
         log.info("文件已标记为已处理: reportConfigId={}, fileName={}",
                  reportConfigId, fileName);
+    }
+
+    private String extractDateFromFileName(String fileName) {
+        if (fileName == null || fileName.trim().isEmpty()) {
+            return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
+        }
+        java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d{8})");
+        java.util.regex.Matcher matcher = pattern.matcher(fileName);
+        if (matcher.find()) {
+            String dateStr = matcher.group(1);
+            return dateStr.substring(0, 4) + "-" + dateStr.substring(4, 6) + "-" + dateStr.substring(6, 8);
+        }
+        return new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date());
     }
 
     @Override
