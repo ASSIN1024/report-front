@@ -46,7 +46,7 @@ logging:
 
 ftp:
   built-in:
-    enabled: false
+    enabled: true
     port: 2021
     username: rpa_user
     password: rpa_password
