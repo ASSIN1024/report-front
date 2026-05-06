@@ -137,7 +137,7 @@ public class ConfigExcelWriter {
         setCell(row, 3, record.get("db_name"), style);
         setCell(row, 4, record.get("table_name"), style);
         setCell(row, 5, record.get("is_overseas"), style);
-        setCell(row, 6, record.get("field_mapping"), style);
+        setCell(row, 6, record.get("field_type_json"), style);
         setCell(row, 7, record.get("load_mode"), style);
         setCell(row, 8, record.get("partition_info"), style);
         setCell(row, 9, record.get("executor_num"), style);
