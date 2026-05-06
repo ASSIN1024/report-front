@@ -46,7 +46,7 @@ public class ConfigTableGeneratorImpl implements ConfigTableGenerator {
             record.put("db_name", reportConfig != null ? reportConfig.getTargetDbName() : "");
             record.put("table_name", reportConfig != null ? reportConfig.getOutputTable() : "");
             record.put("is_overseas", reportConfig != null ? reportConfig.getIsOverseas() : 0);
-            record.put("field_mapping", reportConfig != null ? reportConfig.getColumnMapping() : "");
+            record.put("field_mapping", buildSimpleFieldMapping(reportConfig));
             record.put("field_type_json", buildFieldTypeJson(reportConfig));
             record.put("load_mode", reportConfig != null ? reportConfig.getLoadMode() : "partitioned-append");
 
@@ -181,6 +181,32 @@ public class ConfigTableGeneratorImpl implements ConfigTableGenerator {
                 return "timestamp";
             default:
                 return "string";
+        }
+    }
+
+    private String buildSimpleFieldMapping(ReportConfig reportConfig) {
+        if (reportConfig == null || reportConfig.getColumnMapping() == null || reportConfig.getColumnMapping().trim().isEmpty()) {
+            return "";
+        }
+
+        try {
+            List<ColumnMapping> mappings = JSONUtil.toList(reportConfig.getColumnMapping(), ColumnMapping.class);
+            StringBuilder sb = new StringBuilder();
+
+            for (int i = 0; i < mappings.size(); i++) {
+                ColumnMapping mapping = mappings.get(i);
+                if (mapping.getExcelColumn() != null && !mapping.getExcelColumn().trim().isEmpty()) {
+                    if (i > 0) {
+                        sb.append(",");
+                    }
+                    sb.append(mapping.getExcelColumn()).append(":").append(convertToTargetType(mapping.getFieldType()));
+                }
+            }
+
+            return sb.toString();
+        } catch (Exception e) {
+            log.warn("生成简化字段映射失败: {}", e.getMessage());
+            return "";
         }
     }
 }
