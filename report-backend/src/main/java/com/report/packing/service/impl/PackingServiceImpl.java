@@ -10,6 +10,7 @@ import com.report.packing.service.ConsumptionWatcher;
 import com.report.packing.service.PackingConfigService;
 import com.report.packing.service.PackingService;
 import com.report.util.FtpUtil;
+import com.report.util.ZipPackager;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.net.ftp.FTPClient;
 import org.springframework.beans.factory.annotation.Autowired;
