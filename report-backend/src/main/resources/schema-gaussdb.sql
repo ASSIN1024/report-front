@@ -232,6 +232,7 @@ CREATE TABLE processed_file (
     file_size BIGINT DEFAULT NULL,
     pt_dt DATE DEFAULT NULL,
     status VARCHAR(20) DEFAULT 'PROCESSED',
+    batch_no VARCHAR(50) DEFAULT NULL,
     task_id BIGINT DEFAULT NULL,
     error_message TEXT,
     create_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -240,6 +241,7 @@ CREATE TABLE processed_file (
 
 CREATE INDEX idx_processed_file_pt_dt ON processed_file(pt_dt);
 CREATE INDEX idx_processed_file_status ON processed_file(status);
+CREATE INDEX idx_processed_file_batch_no ON processed_file(batch_no);
 
 COMMENT ON TABLE processed_file IS '已处理文件记录表';
 COMMENT ON COLUMN processed_file.id IS '主键ID';
@@ -247,7 +249,8 @@ COMMENT ON COLUMN processed_file.report_config_id IS '报表配置ID';
 COMMENT ON COLUMN processed_file.file_name IS '文件名（不含路径）';
 COMMENT ON COLUMN processed_file.file_size IS '文件大小（字节）';
 COMMENT ON COLUMN processed_file.pt_dt IS '数据分区日期';
-COMMENT ON COLUMN processed_file.status IS '处理状态：PROCESSED-已处理，FAILED-处理失败';
+COMMENT ON COLUMN processed_file.status IS '处理状态：PROCESSED-已处理，FAILED-失败';
+COMMENT ON COLUMN processed_file.batch_no IS '打包批次号';
 COMMENT ON COLUMN processed_file.task_id IS '关联任务ID';
 COMMENT ON COLUMN processed_file.error_message IS '错误信息';
 COMMENT ON COLUMN processed_file.create_time IS '创建时间';

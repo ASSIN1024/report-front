@@ -55,6 +55,13 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
         batch.setStartTime(new Date());
         this.save(batch);
 
+        for (Long fileId : processedFileIds) {
+            ProcessedFile file = new ProcessedFile();
+            file.setId(fileId);
+            file.setBatchNo(batchNo);
+            processedFileMapper.updateById(file);
+        }
+
         try {
             File configExcel = configTableGenerator.generate(processedFileIds, batchNo);
             batch.setStatus(PackingBatch.STATUS_DONE);

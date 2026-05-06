@@ -346,6 +346,7 @@ CREATE TABLE `processed_file` (
   `pt_dt` varchar(20) DEFAULT NULL COMMENT '分区日期',
   `checksum` varchar(64) DEFAULT NULL COMMENT '文件校验和',
   `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING-待处理, PROCESSING-处理中, PROCESSED-已处理, FAILED-失败',
+  `batch_no` varchar(50) DEFAULT NULL COMMENT '打包批次号',
   `error_message` text COMMENT '错误信息',
   `process_time` datetime DEFAULT NULL COMMENT '处理时间',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -353,6 +354,7 @@ CREATE TABLE `processed_file` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_report_file` (`report_config_id`,`file_name`),
   KEY `idx_status` (`status`),
+  KEY `idx_batch_no` (`batch_no`),
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='已处理文件记录表';
 /*!40101 SET character_set_client = @saved_cs_client */;

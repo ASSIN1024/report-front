@@ -43,6 +43,13 @@ public class ConfigExcelWriter {
 
         int startRow = findDataStartRow(sheet);
 
+        for (int i = sheet.getLastRowNum(); i >= startRow; i--) {
+            Row row = sheet.getRow(i);
+            if (row != null) {
+                sheet.removeRow(row);
+            }
+        }
+
         for (int i = 0; i < configRecords.size(); i++) {
             Map<String, Object> record = configRecords.get(i);
             Row row = sheet.createRow(startRow + i);

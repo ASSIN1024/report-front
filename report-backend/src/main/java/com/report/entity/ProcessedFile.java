@@ -40,6 +40,11 @@ public class ProcessedFile {
     private String status;
 
     /**
+     * 打包批次号
+     */
+    private String batchNo;
+
+    /**
      * 关联任务ID
      */
     private Long taskId;
