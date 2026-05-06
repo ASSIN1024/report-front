@@ -63,7 +63,7 @@ public class ConfigTableGeneratorImpl implements ConfigTableGenerator {
 
         String localTempDir = System.getProperty("java.io.tmpdir") + File.separator + "packaging";
         new File(localTempDir).mkdirs();
-        String localConfigExcel = localTempDir + File.separator + "config_" + batchNo + ".xlsx";
+        String localConfigExcel = localTempDir + File.separator + "informationTemplate.xlsx";
 
         try {
             ConfigExcelWriter.write(localConfigExcel, configRecords);
