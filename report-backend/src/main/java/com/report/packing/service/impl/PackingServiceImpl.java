@@ -80,13 +80,27 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
                 if (pf != null && pf.getFilePath() != null) {
                     File f = new File(pf.getFilePath());
                     if (f.exists()) {
-                        filesToPackage.add(f.getAbsolutePath());
+                        String originalFileName = pf.getFileName();
+                        File tempFile = new File(stagingDir, originalFileName);
+                        java.nio.file.Files.copy(f.toPath(), tempFile.toPath(),
+                            java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+                        filesToPackage.add(tempFile.getAbsolutePath());
                     }
                 }
             }
             filesToPackage.add(configExcel.getAbsolutePath());
 
             ZipPackager.packageFiles(stagingZipFile.getAbsolutePath(), filesToPackage);
+
+            for (Long fileId : processedFileIds) {
+                ProcessedFile pf = processedFileMapper.selectById(fileId);
+                if (pf != null && pf.getFilePath() != null) {
+                    File stagingFile = new File(stagingDir, pf.getFileName());
+                    if (stagingFile.exists()) {
+                        stagingFile.delete();
+                    }
+                }
+            }
 
             java.nio.file.Files.copy(
                 stagingZipFile.toPath(),
