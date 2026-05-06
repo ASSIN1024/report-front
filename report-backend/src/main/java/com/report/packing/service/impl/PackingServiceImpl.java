@@ -143,10 +143,11 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
         String uploadDir = getUploadDir();
         String fixedFilename = getFixedFilename();
         try {
-            return false;
+            File targetFile = new File(uploadDir, fixedFilename);
+            return targetFile.exists();
         } catch (Exception e) {
             log.error("Failed to check FTP file existence", e);
-            return true;
+            return true;  // 保守策略：异常时认为正在被消费
         }
     }
 

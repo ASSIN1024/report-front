@@ -1,7 +1,9 @@
 package com.report.packing.service.impl;
 
 import com.report.packing.service.ConsumptionWatcher;
+import com.report.packing.service.PackingService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -13,6 +15,9 @@ public class ConsumptionWatcherImpl implements ConsumptionWatcher {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
     private final AtomicReference<String> currentBatchNo = new AtomicReference<>();
+
+    @Autowired
+    private PackingService packingService;
 
     @Override
     public void start(String batchNo) {
@@ -33,7 +38,7 @@ public class ConsumptionWatcherImpl implements ConsumptionWatcher {
         if (!running.get()) {
             return false;
         }
-        return false;
+        return !packingService.isBeingConsumed();
     }
 
     @Override
