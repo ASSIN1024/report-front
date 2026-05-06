@@ -26,6 +26,16 @@ public interface ProcessedFileService extends IService<ProcessedFile> {
     void markAsProcessed(Long reportConfigId, String fileName, Long fileSize, Long taskId);
 
     /**
+     * 标记文件为已处理（带文件路径）
+     * @param reportConfigId 报表配置ID
+     * @param fileName 文件名
+     * @param fileSize 文件大小
+     * @param taskId 任务ID
+     * @param filePath 标准文件路径
+     */
+    void markAsProcessed(Long reportConfigId, String fileName, Long fileSize, Long taskId, String filePath);
+
+    /**
      * 标记文件处理失败
      * @param reportConfigId 报表配置ID
      * @param fileName 文件名

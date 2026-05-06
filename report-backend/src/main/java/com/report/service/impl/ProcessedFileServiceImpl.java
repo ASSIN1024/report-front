@@ -42,6 +42,12 @@ public class ProcessedFileServiceImpl
     @Override
     public void markAsProcessed(Long reportConfigId, String fileName,
                                 Long fileSize, Long taskId) {
+        markAsProcessed(reportConfigId, fileName, fileSize, taskId, null);
+    }
+
+    @Override
+    public void markAsProcessed(Long reportConfigId, String fileName,
+                                Long fileSize, Long taskId, String filePath) {
         ProcessedFile record = new ProcessedFile();
         record.setReportConfigId(reportConfigId);
         record.setFileName(fileName);
@@ -49,6 +55,7 @@ public class ProcessedFileServiceImpl
         record.setStatus(ProcessedFileStatus.PROCESSED.getCode());
         record.setTaskId(taskId);
         record.setPtDt(new java.text.SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        record.setFilePath(filePath);
 
         this.save(record);
         log.info("文件已标记为已处理: reportConfigId={}, fileName={}",

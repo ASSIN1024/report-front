@@ -30,6 +30,11 @@ public class ProcessedFile {
     private Long fileSize;
 
     /**
+     * 标准文件路径（打包时使用）
+     */
+    private String filePath;
+
+    /**
      * 数据分区日期
      */
     private String ptDt;

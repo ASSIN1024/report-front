@@ -230,6 +230,7 @@ CREATE TABLE processed_file (
     report_config_id BIGINT NOT NULL,
     file_name VARCHAR(200) NOT NULL,
     file_size BIGINT DEFAULT NULL,
+    file_path VARCHAR(500) DEFAULT NULL,
     pt_dt DATE DEFAULT NULL,
     status VARCHAR(20) DEFAULT 'PROCESSED',
     batch_no VARCHAR(50) DEFAULT NULL,

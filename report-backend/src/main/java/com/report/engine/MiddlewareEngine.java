@@ -105,7 +105,7 @@ public class MiddlewareEngine {
                 config
             );
 
-            processedFileService.markAsProcessed(config.getId(), fileName, file.getLocalFile().length(), null);
+            processedFileService.markAsProcessed(config.getId(), fileName, file.getLocalFile().length(), null, result.getStandardExcelPath());
             archiveService.archiveToSuccess(file.getLocalFile(), config);
 
             if (file.getFilePath() != null) {

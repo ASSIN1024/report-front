@@ -64,10 +64,42 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
 
         try {
             File configExcel = configTableGenerator.generate(processedFileIds, batchNo);
+            File stagingDir = new File(getStagingDir());
+            stagingDir.mkdirs();
+
+            String fixedFilename = getFixedFilename();
+            File stagingZipFile = new File(stagingDir, fixedFilename);
+            File uploadDir = new File(getUploadDir());
+            uploadDir.mkdirs();
+            File uploadZipFile = new File(uploadDir, fixedFilename);
+
+            List<String> filesToPackage = new java.util.ArrayList<>();
+            for (Long fileId : processedFileIds) {
+                ProcessedFile pf = processedFileMapper.selectById(fileId);
+                if (pf != null && pf.getFilePath() != null) {
+                    File f = new File(pf.getFilePath());
+                    if (f.exists()) {
+                        filesToPackage.add(f.getAbsolutePath());
+                    }
+                }
+            }
+            filesToPackage.add(configExcel.getAbsolutePath());
+
+            ZipPackager.packageFiles(stagingZipFile.getAbsolutePath(), filesToPackage);
+
+            java.nio.file.Files.copy(
+                stagingZipFile.toPath(),
+                uploadZipFile.toPath(),
+                java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            );
+
+            stagingZipFile.delete();
+            configExcel.delete();
+
             batch.setStatus(PackingBatch.STATUS_DONE);
             batch.setEndTime(new Date());
             this.updateById(batch);
-            log.info("Batch packed successfully: {}", batchNo);
+            log.info("Batch packed successfully: {} -> outputs.zip", batchNo);
             return batchNo;
         } catch (Exception e) {
             log.error("Failed to pack batch: {}", batchNo, e);
@@ -75,6 +107,10 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
             this.updateById(batch);
             throw new RuntimeException("Packing failed: " + e.getMessage(), e);
         }
+    }
+
+    private String getStagingDir() {
+        return configService.getStringValue("staging_dir", "/data/ftp-root/staging");
     }
 
     @Override
