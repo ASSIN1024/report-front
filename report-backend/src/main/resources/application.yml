@@ -65,6 +65,7 @@ job:
   batch-packaging:
     enabled: true
     interval-minutes: 1
+    max-package-size: 209715200  # 单包大小上限(字节),默认200MB
 
 mybatis-plus:
   mapper-locations: classpath:mapper/**/*.xml

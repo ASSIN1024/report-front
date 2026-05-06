@@ -1,5 +1,6 @@
 package com.report.packing.manager.impl;
 
+import com.report.common.config.JobProperties;
 import com.report.entity.ProcessedFile;
 import com.report.mapper.ProcessedFileMapper;
 import com.report.packing.entity.PackingBatch;
@@ -27,6 +28,8 @@ public class PackingManagerImpl implements PackingManager {
     private ConsumptionWatcher consumptionWatcher;
     @Autowired
     private ProcessedFileMapper processedFileMapper;
+    @Autowired
+    private JobProperties jobProperties;
 
     @Override
     public void executePacking() {
@@ -60,16 +63,16 @@ public class PackingManagerImpl implements PackingManager {
             .mapToLong(f -> f.getFileSize() != null ? f.getFileSize() : 0)
             .sum();
 
-        Integer maxPackageSize = configService.getIntValue("max_package_size", 209715200); // 200MB
+        long maxPackageSize = jobProperties.getBatchPackaging().getMaxPackageSize(); // 200MB
 
-        if (estimatedSize > maxPackageSize.longValue()) {
+        if (estimatedSize > maxPackageSize) {
             // 超过阈值，分批打包
             List<Long> fileIds = new java.util.ArrayList<>();
             long currentSize = 0;
 
             for (ProcessedFile file : pendingFiles) {
                 long fileSize = file.getFileSize() != null ? file.getFileSize() : 0;
-                if (currentSize + fileSize > maxPackageSize.longValue() && !fileIds.isEmpty()) {
+                if (currentSize + fileSize > maxPackageSize && !fileIds.isEmpty()) {
                     // 达到阈值，打包当前批次
                     packingService.pack(fileIds);
                     log.info("分批打包完成，已打包 {} 个文件，大小 {} bytes，剩余文件下一轮处理",

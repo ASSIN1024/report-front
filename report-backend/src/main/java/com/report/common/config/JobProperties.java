@@ -22,5 +22,6 @@ public class JobProperties {
     public static class BatchPackagingConfig {
         private boolean enabled = true;
         private int intervalMinutes = 1;
+        private long maxPackageSize = 209715200L; // 单包大小上限(字节),默认200MB
     }
 }
