@@ -41,7 +41,7 @@ public class ConfigTableGeneratorImpl implements ConfigTableGenerator {
             }
 
             Map<String, Object> record = new LinkedHashMap<>();
-            record.put("source_file", file.getFileName());
+            record.put("standard_file", file.getFileName());
             record.put("table_type", reportConfig != null ? reportConfig.getTargetTableType() : "hive");
             record.put("db_name", reportConfig != null ? reportConfig.getTargetDbName() : "");
             record.put("table_name", reportConfig != null ? reportConfig.getOutputTable() : "");
