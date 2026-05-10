@@ -1,0 +1,43 @@
+# ============================================================
+# 报表数据处理平台 - 部署配置文件
+# 说明: 此文件会覆盖JAR内置配置
+# ============================================================
+
+server:
+  port: 8082
+
+spring:
+  datasource:
+    # 数据库连接 (必须修改)
+    url: jdbc:mysql://localhost:3306/report_db?useUnicode=true&characterEncoding=UTF-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: report123
+
+ftp:
+  built-in:
+    enabled: true
+    port: 2021
+    username: rpa_user
+    password: rpa_password
+    root-directory: C:/data/ftp-root
+    max-connections: 10
+    idle-timeout: 300
+    passive-mode: true
+    passive-port-start: 50000
+    passive-port-end: 50100
+    max-threads: 5
+
+# FTP扫描任务配置
+job:
+  ftp-scan:
+    enabled: true
+    interval-minutes: 5
+  batch-packaging:
+    enabled: true
+    interval-minutes: 1
+    max-package-size: 209715200
+
+logging:
+  level:
+    root: INFO
+    com.report: DEBUG

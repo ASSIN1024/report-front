@@ -23,9 +23,6 @@ public class EmbeddedFtpServer {
 
     private final AtomicBoolean running = new AtomicBoolean(false);
 
-    @Autowired
-    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
-
     private FtpBuiltInProperties properties;
 
     private FtpServer ftpServer;
@@ -41,15 +38,17 @@ public class EmbeddedFtpServer {
             return true;
         }
 
-        BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
-        if (config == null) {
-            log.warn("内置FTP配置不存在");
+        if (properties == null) {
+            log.error("FTP配置未加载");
             return false;
         }
-        if (!config.getEnabled()) {
+
+        if (!properties.isEnabled()) {
             log.warn("内置FTP未启用");
             return false;
         }
+
+        log.info("使用YAML配置启动FTP服务: root={}", properties.getRootDirectory());
 
         return startWithProperties();
     }
@@ -70,6 +69,10 @@ public class EmbeddedFtpServer {
             if (!rootDir.exists()) {
                 rootDir.mkdirs();
             }
+
+            createSubDirectory(rootDir, "upload");
+            createSubDirectory(rootDir, "for-upload");
+            createSubDirectory(rootDir, "done");
 
             File userFile = new File(rootDir, "ftp-users.properties");
             userFile.createNewFile();
@@ -127,5 +130,16 @@ public class EmbeddedFtpServer {
 
     public int getConnectedClients() {
         return 0;
+    }
+
+    private void createSubDirectory(File parent, String subDirName) {
+        File subDir = new File(parent, subDirName);
+        if (!subDir.exists()) {
+            if (subDir.mkdir()) {
+                log.info("创建FTP子目录: {}", subDir.getAbsolutePath());
+            } else {
+                log.warn("创建FTP子目录失败: {}", subDir.getAbsolutePath());
+            }
+        }
     }
 }

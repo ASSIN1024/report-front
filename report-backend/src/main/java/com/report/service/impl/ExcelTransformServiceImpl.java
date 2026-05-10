@@ -96,7 +96,10 @@ public class ExcelTransformServiceImpl implements ExcelTransformService {
                         if (mapping == null) {
                             mapping = indexToMapping.get(colIdx - startCol);
                         }
-                        if (mapping != null && mapping.getCleanRules() != null && !mapping.getCleanRules().isEmpty()) {
+                        if (mapping == null) {
+                            continue;
+                        }
+                        if (mapping.getCleanRules() != null && !mapping.getCleanRules().isEmpty()) {
                             value = applyCleanRules(value, mapping.getCleanRules());
                         }
                         rowData.put(header, value);
@@ -130,6 +133,7 @@ public class ExcelTransformServiceImpl implements ExcelTransformService {
 
             List<String> mappedHeaders = new ArrayList<>();
             Map<String, String> sourceToFieldMap = new LinkedHashMap<>();
+            List<Integer> mappedColumnIndices = new ArrayList<>();
             for (int i = 0; i < originalHeaders.size(); i++) {
                 String originalHeader = originalHeaders.get(i);
                 String fieldName = headerToFieldNameMap.get(originalHeader);
@@ -137,10 +141,11 @@ public class ExcelTransformServiceImpl implements ExcelTransformService {
                     fieldName = indexToFieldNameMap.get(i);
                 }
                 if (fieldName == null) {
-                    fieldName = "field_" + (i + 1);
+                    continue;
                 }
                 mappedHeaders.add(fieldName);
                 sourceToFieldMap.put(originalHeader, fieldName);
+                mappedColumnIndices.add(i);
             }
 
             String fileNameForDate = (originalFileName != null && !originalFileName.isEmpty())
@@ -148,20 +153,19 @@ public class ExcelTransformServiceImpl implements ExcelTransformService {
             String ptDt = extractPtDt(fileNameForDate);
 
             List<String> standardHeaders = new ArrayList<>(mappedHeaders);
-            standardHeaders.add("pt_dt");
 
             List<Map<String, Object>> standardRows = new ArrayList<>();
             List<Map<String, Object>> mappedRowsForOds = new ArrayList<>();
             for (Map<String, Object> rawRow : rawRows) {
                 Map<String, Object> mappedRow = new LinkedHashMap<>();
-                for (int i = 0; i < originalHeaders.size(); i++) {
-                    String originalHeader = originalHeaders.get(i);
+                for (int i = 0; i < mappedHeaders.size(); i++) {
+                    int originalIndex = mappedColumnIndices.get(i);
+                    String originalHeader = originalHeaders.get(originalIndex);
                     String fieldName = mappedHeaders.get(i);
                     mappedRow.put(fieldName, rawRow.get(originalHeader));
                 }
                 mappedRowsForOds.add(new LinkedHashMap<>(mappedRow));
-                mappedRow.put("pt_dt", ptDt);
-                standardRows.add(mappedRow);
+                standardRows.add(new LinkedHashMap<>(mappedRow));
             }
 
             String outputDir = System.getProperty("java.io.tmpdir") + File.separator + "standard-excel";
@@ -273,10 +277,12 @@ public class ExcelTransformServiceImpl implements ExcelTransformService {
                             if (fieldType != null) {
                                 headerToTypeMap.put(excelCol.trim(), fieldType);
                             }
-                            int colIndex = excelColToIndex(excelCol);
-                            indexToFieldMap.put(colIndex, fieldName);
-                            if (fieldType != null) {
-                                indexToTypeMap.put(colIndex, fieldType);
+                            if (excelCol.matches("[A-Z]+")) {
+                                int colIndex = excelColToIndex(excelCol);
+                                indexToFieldMap.put(colIndex, fieldName);
+                                if (fieldType != null) {
+                                    indexToTypeMap.put(colIndex, fieldType);
+                                }
                             }
                         }
                     }
@@ -295,7 +301,7 @@ public class ExcelTransformServiceImpl implements ExcelTransformService {
                 }
 
                 if (fieldName == null) {
-                    fieldName = "field_" + (i + 1);
+                    continue;
                 }
 
                 String fieldType = headerToTypeMap.get(header);

@@ -60,8 +60,24 @@ public class ProcessedFile {
     private String errorMessage;
 
     /**
+     * 校验和
+     */
+    private String checksum;
+
+    /**
+     * 处理时间
+     */
+    private Date processTime;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
+
+    /**
+     * 更新时间
+     */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private Date updateTime;
 }

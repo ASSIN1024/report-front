@@ -2,8 +2,7 @@ package com.report.service.impl;
 
 import com.report.entity.ReportConfig;
 import com.report.ftp.BuiltInFtpConfig;
-import com.report.ftp.BuiltInFtpConfigMapper;
-import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.FtpConfigProvider;
 import com.report.service.ArchiveService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,10 +23,7 @@ import java.util.Date;
 public class ArchiveServiceImpl implements ArchiveService {
 
     @Autowired(required = false)
-    private BuiltInFtpConfigService builtInFtpConfigService;
-
-    @Autowired(required = false)
-    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+    private FtpConfigProvider ftpConfigProvider;
 
     @Override
     public void archiveToSuccess(File localFile, ReportConfig config) {
@@ -44,7 +40,7 @@ public class ArchiveServiceImpl implements ArchiveService {
             return;
         }
 
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
+        BuiltInFtpConfig ftpConfig = ftpConfigProvider != null ? ftpConfigProvider.getConfig() : null;
         if (ftpConfig == null) {
             log.warn("Built-in FTP config not found for archiving, keeping local file: {}", localFile.getName());
             return;

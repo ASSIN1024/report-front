@@ -4,10 +4,8 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.report.engine.MatchedFile;
 import com.report.engine.MiddlewareEngine;
 import com.report.entity.ReportConfig;
-import com.report.ftp.BuiltInFtpConfig;
-import com.report.ftp.BuiltInFtpConfigMapper;
-import com.report.ftp.BuiltInFtpConfigService;
 import com.report.ftp.EmbeddedFtpServer;
+import com.report.ftp.FtpBuiltInProperties;
 import com.report.service.ProcessedFileService;
 import com.report.service.ReportConfigService;
 import com.report.util.FileNameDateExtractor;
@@ -22,6 +20,7 @@ import org.springframework.stereotype.Component;
 import java.io.File;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.regex.Pattern;
 
 @Slf4j
 @Component
@@ -38,13 +37,10 @@ public class FtpScanJob implements Job {
     private MiddlewareEngine middlewareEngine;
 
     @Autowired(required = false)
-    private BuiltInFtpConfigService builtInFtpConfigService;
-
-    @Autowired(required = false)
-    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
-
-    @Autowired(required = false)
     private EmbeddedFtpServer embeddedFtpServer;
+
+    @Autowired(required = false)
+    private FtpBuiltInProperties ftpProperties;
 
     @Override
     public void execute(JobExecutionContext context) throws JobExecutionException {
@@ -61,20 +57,15 @@ public class FtpScanJob implements Job {
     }
 
     private void scanBuiltInFtp() {
-        if (builtInFtpConfigService == null) {
-            log.warn("内置FTP服务未配置");
+        if (ftpProperties == null || !ftpProperties.isEnabled()) {
+            log.info("内置FTP未启用，跳过扫描");
             return;
         }
 
-        BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
-        if (config == null || !config.getEnabled()) {
-            log.info("内置FTP未启用");
-            return;
-        }
+        String rootDir = ftpProperties.getRootDirectory();
+        log.info("开始扫描内置FTP目录: {}", rootDir);
 
-        log.info("开始扫描内置FTP目录: {}", config.getRootDirectory());
-
-        File ftpRoot = new File(config.getRootDirectory());
+        File ftpRoot = new File(rootDir);
 
         List<ReportConfig> reportConfigs = reportConfigService.list(
             new LambdaQueryWrapper<ReportConfig>()
@@ -88,7 +79,11 @@ public class FtpScanJob implements Job {
         }
 
         for (ReportConfig reportConfig : reportConfigs) {
-            scanReportDirectory(reportConfig, ftpRoot);
+            try {
+                scanReportDirectory(reportConfig, ftpRoot);
+            } catch (Exception e) {
+                log.error("扫描报表配置失败: id={}, name={}", reportConfig.getId(), reportConfig.getReportName(), e);
+            }
         }
     }
 
@@ -105,17 +100,31 @@ public class FtpScanJob implements Job {
         }
 
         String pattern = reportConfig.getFilePattern();
-        String fileRegex = pattern.replace("*", ".*").replace("?", ".");
+        if (pattern == null || pattern.trim().isEmpty()) {
+            pattern = "*";
+        }
 
-        File[] files = scanDir.listFiles((dir, name) -> name.matches(fileRegex));
+        Pattern fileRegex = globToRegex(pattern);
+
+        File[] files = scanDir.listFiles((dir, name) -> {
+            if (name.startsWith(".") || name.equalsIgnoreCase("archive") || name.equalsIgnoreCase("error")) {
+                return false;
+            }
+            return fileRegex.matcher(name).matches();
+        });
+
         if (files == null || files.length == 0) {
-            log.info("扫描目录没有匹配的文件: {}", reportConfig.getFilePattern());
+            log.info("扫描目录没有匹配的文件: pattern={}, dir={}", pattern, scanDir.getAbsolutePath());
             return;
         }
 
-        log.info("扫描到 {} 个匹配文件", files.length);
+        log.info("扫描到 {} 个匹配文件 (配置: {})", files.length, reportConfig.getReportName());
 
         for (File file : files) {
+            if (file.isDirectory()) {
+                continue;
+            }
+
             String fileName = file.getName();
             if (processedFileService.isFileProcessed(reportConfig.getId(), fileName)) {
                 log.info("文件已处理过，跳过: {}", fileName);
@@ -127,7 +136,8 @@ public class FtpScanJob implements Job {
             File tempFile = null;
             try {
                 tempFile = File.createTempFile("scan_", "_" + fileName);
-                java.nio.file.Files.copy(file.toPath(), tempFile.toPath());
+                java.nio.file.Files.copy(file.toPath(), tempFile.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING);
 
                 MatchedFile matchedFile = new MatchedFile();
                 matchedFile.setFileName(fileName);
@@ -142,9 +152,48 @@ public class FtpScanJob implements Job {
                 log.error("文件处理失败: {}", fileName, e);
             } finally {
                 if (tempFile != null && tempFile.exists()) {
-                    tempFile.delete();
+                    try {
+                        tempFile.delete();
+                    } catch (Exception e) {
+                        log.warn("删除临时文件失败: {}", tempFile.getAbsolutePath());
+                    }
                 }
             }
         }
+    }
+
+    private Pattern globToRegex(String glob) {
+        StringBuilder sb = new StringBuilder("^");
+        for (int i = 0; i < glob.length(); i++) {
+            char c = glob.charAt(i);
+            switch (c) {
+                case '*':
+                    sb.append(".*");
+                    break;
+                case '?':
+                    sb.append(".");
+                    break;
+                case '.':
+                    sb.append("\\.");
+                    break;
+                case '(':
+                case ')':
+                case '[':
+                case ']':
+                case '{':
+                case '}':
+                case '+':
+                case '^':
+                case '$':
+                case '|':
+                case '\\':
+                    sb.append("\\").append(c);
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        sb.append("$");
+        return Pattern.compile(sb.toString(), Pattern.CASE_INSENSITIVE);
     }
 }

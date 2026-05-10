@@ -4,8 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.report.entity.BatchRecord;
 import com.report.entity.ReportConfig;
 import com.report.ftp.BuiltInFtpConfig;
-import com.report.ftp.BuiltInFtpConfigMapper;
-import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.FtpConfigProvider;
 import com.report.mapper.BatchRecordMapper;
 import com.report.service.PackagingService;
 import com.report.service.TransformResult;
@@ -29,10 +28,7 @@ import java.util.*;
 public class PackagingServiceImpl implements PackagingService {
 
     @Autowired(required = false)
-    private BuiltInFtpConfigService builtInFtpConfigService;
-
-    @Autowired(required = false)
-    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+    private FtpConfigProvider ftpConfigProvider;
 
     @Autowired
     private BatchRecordMapper batchRecordMapper;
@@ -116,7 +112,7 @@ public class PackagingServiceImpl implements PackagingService {
 
         log.info("Found {} files to package", xlsxFiles.length);
 
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
+        BuiltInFtpConfig ftpConfig = ftpConfigProvider != null ? ftpConfigProvider.getConfig() : null;
         String targetStagingDir;
         if (ftpConfig != null) {
             targetStagingDir = ftpConfig.getRootDirectory() + File.separator + "staging";
@@ -234,7 +230,7 @@ public class PackagingServiceImpl implements PackagingService {
     private void packageBatch(List<File> files) {
         if (files.isEmpty()) return;
 
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
+        BuiltInFtpConfig ftpConfig = ftpConfigProvider != null ? ftpConfigProvider.getConfig() : null;
         String targetStagingDir;
         if (ftpConfig != null) {
             targetStagingDir = ftpConfig.getRootDirectory() + File.separator + "staging";
@@ -316,7 +312,7 @@ public class PackagingServiceImpl implements PackagingService {
 
     @Override
     public String packageToStaging(Long ftpConfigId, String standardExcelPath, String sourceFileName, TransformResult result) {
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
+        BuiltInFtpConfig ftpConfig = ftpConfigProvider != null ? ftpConfigProvider.getConfig() : null;
         String stagingDir;
         if (ftpConfig != null) {
             stagingDir = ftpConfig.getRootDirectory() + "/staging";

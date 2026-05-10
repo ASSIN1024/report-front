@@ -3,7 +3,7 @@ package com.report.service.impl;
 import com.report.common.enums.ProcessStep;
 import com.report.entity.ProcessMonitorLog;
 import com.report.ftp.BuiltInFtpConfig;
-import com.report.ftp.BuiltInFtpConfigMapper;
+import com.report.ftp.FtpConfigProvider;
 import com.report.service.FtpDirectoryService;
 import com.report.service.MonitorService;
 import lombok.extern.slf4j.Slf4j;
@@ -17,14 +17,14 @@ import java.io.File;
 public class FtpDirectoryServiceImpl implements FtpDirectoryService {
 
     @Autowired
-    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+    private FtpConfigProvider ftpConfigProvider;
 
     @Autowired
     private MonitorService monitorService;
 
     @Override
     public boolean createDirectoriesIfNotExist(String scanPath) {
-        BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
+        BuiltInFtpConfig config = ftpConfigProvider.getConfig();
         if (config == null) {
             log.error("[FtpDirectory] FTP配置不存在");
             return false;
@@ -66,7 +66,7 @@ public class FtpDirectoryServiceImpl implements FtpDirectoryService {
 
     @Override
     public boolean directoryExists(String path) {
-        BuiltInFtpConfig config = builtInFtpConfigMapper.getConfig();
+        BuiltInFtpConfig config = ftpConfigProvider.getConfig();
         if (config == null) {
             return false;
         }

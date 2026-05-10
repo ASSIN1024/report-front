@@ -15,9 +15,12 @@ public class AlertRecord implements Serializable {
     private String alertType;
     private String fileName;
     private Long reportConfigId;
+    private String alertLevel;
+    private String alertMessage;
     private String reason;
     private String status;
     private Date resolveTime;
+    private Date updateTime;
 
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;

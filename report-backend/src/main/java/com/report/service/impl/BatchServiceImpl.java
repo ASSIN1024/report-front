@@ -5,8 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.report.entity.BatchRecord;
 import com.report.ftp.BuiltInFtpConfig;
-import com.report.ftp.BuiltInFtpConfigMapper;
-import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.FtpConfigProvider;
 import com.report.mapper.BatchRecordMapper;
 import com.report.service.BatchService;
 import lombok.extern.slf4j.Slf4j;
@@ -22,10 +21,7 @@ import java.util.List;
 public class BatchServiceImpl extends ServiceImpl<BatchRecordMapper, BatchRecord> implements BatchService {
 
     @Autowired(required = false)
-    private BuiltInFtpConfigService builtInFtpConfigService;
-
-    @Autowired(required = false)
-    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+    private FtpConfigProvider ftpConfigProvider;
 
     @Override
     public Page<BatchRecord> pageList(Integer pageNum, Integer pageSize, String status) {
@@ -39,7 +35,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchRecordMapper, BatchRecord
 
     @Override
     public void deliverZipIfReady(Long ftpConfigId) {
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper != null ? builtInFtpConfigMapper.getConfig() : null;
+        BuiltInFtpConfig ftpConfig = ftpConfigProvider != null ? ftpConfigProvider.getConfig() : null;
         if (ftpConfig == null) {
             log.warn("FTP config not found, cannot deliver zip");
             return;

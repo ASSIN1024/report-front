@@ -278,38 +278,6 @@ CREATE TABLE `built_in_ftp_config` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `ftp_config`
---
-
-DROP TABLE IF EXISTS `ftp_config`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!50503 SET character_set_client = utf8mb4 */;
-CREATE TABLE `ftp_config` (
-  `id` bigint NOT NULL COMMENT '主键ID',
-  `config_name` varchar(100) NOT NULL COMMENT '配置名称',
-  `host` varchar(100) NOT NULL COMMENT 'FTP服务器地址',
-  `port` int NOT NULL DEFAULT '21' COMMENT 'FTP端口',
-  `username` varchar(50) NOT NULL COMMENT '用户名',
-  `password` varchar(100) NOT NULL COMMENT '密码',
-  `scan_path` varchar(200) DEFAULT NULL COMMENT '扫描路径',
-  `file_pattern` varchar(100) DEFAULT NULL COMMENT '文件匹配模式',
-  `scan_interval` int NOT NULL DEFAULT '300' COMMENT '扫描间隔(秒)',
-  `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态: 0-禁用, 1-启用',
-  `remark` varchar(500) DEFAULT NULL COMMENT '备注',
-  `deleted` tinyint NOT NULL DEFAULT '0' COMMENT '删除标记: 0-未删除, 1-已删除',
-  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-  `staging_dir` varchar(200) DEFAULT NULL COMMENT '暂存目录',
-  `for_upload_dir` varchar(200) DEFAULT NULL COMMENT '上传目录',
-  `archive_dir` varchar(200) DEFAULT NULL COMMENT '归档目录',
-  `error_dir` varchar(200) DEFAULT NULL COMMENT '错误目录',
-  PRIMARY KEY (`id`),
-  KEY `idx_config_name` (`config_name`),
-  KEY `idx_status` (`status`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='FTP配置表';
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
 -- Table structure for table `operation_log`
 --
 
@@ -331,6 +299,7 @@ CREATE TABLE `operation_log` (
   `operator_name` varchar(50) DEFAULT NULL COMMENT '操作者名称',
   `duration` bigint DEFAULT NULL COMMENT '执行时长(毫秒)',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
   PRIMARY KEY (`id`),
   KEY `idx_module` (`module`),
   KEY `idx_operation_type` (`operation_type`),
@@ -374,8 +343,10 @@ CREATE TABLE `processed_file` (
   `file_name` varchar(200) NOT NULL COMMENT '文件名',
   `file_path` varchar(500) DEFAULT NULL COMMENT '文件路径',
   `file_size` bigint DEFAULT NULL COMMENT '文件大小',
+  `pt_dt` varchar(20) DEFAULT NULL COMMENT '分区日期',
   `checksum` varchar(64) DEFAULT NULL COMMENT '文件校验和',
   `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING-待处理, PROCESSING-处理中, PROCESSED-已处理, FAILED-失败',
+  `batch_no` varchar(50) DEFAULT NULL COMMENT '打包批次号',
   `error_message` text COMMENT '错误信息',
   `process_time` datetime DEFAULT NULL COMMENT '处理时间',
   `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -383,8 +354,32 @@ CREATE TABLE `processed_file` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_report_file` (`report_config_id`,`file_name`),
   KEY `idx_status` (`status`),
+  KEY `idx_batch_no` (`batch_no`),
   KEY `idx_create_time` (`create_time`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='已处理文件记录表';
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ods_backup`
+--
+
+DROP TABLE IF EXISTS `ods_backup`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `ods_backup` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `source_file` varchar(200) NOT NULL COMMENT '源文件名',
+  `pt_dt` varchar(20) DEFAULT NULL COMMENT '分区日期',
+  `db_name` varchar(128) DEFAULT NULL COMMENT '数据库名',
+  `table_name` varchar(128) DEFAULT NULL COMMENT '表名',
+  `report_config_id` bigint DEFAULT NULL COMMENT '报表配置ID',
+  `file_size` bigint DEFAULT NULL COMMENT '文件大小',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_pt_dt` (`pt_dt`),
+  KEY `idx_source_file` (`source_file`),
+  KEY `idx_report_config_id` (`report_config_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='ODS备份记录表';
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -398,7 +393,8 @@ CREATE TABLE `report_config` (
   `id` bigint NOT NULL COMMENT '主键ID',
   `report_code` varchar(50) NOT NULL COMMENT '报表编码',
   `report_name` varchar(100) NOT NULL COMMENT '报表名称',
-  `ftp_config_id` bigint DEFAULT NULL COMMENT '关联FTP配置ID',
+  `ftp_config_id` bigint DEFAULT NULL COMMENT '关联FTP配置ID(已废弃,仅保留兼容)',
+  `scan_path` varchar(200) DEFAULT '/upload' COMMENT '扫描路径',
   `file_pattern` varchar(100) DEFAULT NULL COMMENT '文件匹配模式',
   `sheet_index` int NOT NULL DEFAULT '0' COMMENT 'Sheet索引',
   `header_row` int NOT NULL DEFAULT '0' COMMENT '表头行号',
@@ -407,7 +403,6 @@ CREATE TABLE `report_config` (
   `date_extract_pattern` varchar(50) DEFAULT NULL COMMENT '日期提取规则: AUTO/yyyyMMdd/yyyy-MM-dd等',
   `column_mapping` text NOT NULL COMMENT '列映射配置(JSON)',
   `output_table` varchar(50) NOT NULL COMMENT '输出表名',
-  `output_mode` varchar(20) NOT NULL DEFAULT 'APPEND' COMMENT '输出模式: APPEND-追加, OVERWRITE-覆盖',
   `start_row` int DEFAULT '0' COMMENT '起始行',
   `status` tinyint NOT NULL DEFAULT '1' COMMENT '状态: 0-禁用, 1-启用',
   `remark` varchar(500) DEFAULT NULL COMMENT '备注',
@@ -420,6 +415,16 @@ CREATE TABLE `report_config` (
   `mapping_mode` varchar(20) DEFAULT 'AUTO' COMMENT '映射模式',
   `duplicate_col_strategy` varchar(20) DEFAULT 'SKIP' COMMENT '重复列策略',
   `ods_backup_enabled` tinyint DEFAULT '0' COMMENT '是否ODS备份',
+  `target_table_type` varchar(20) DEFAULT NULL COMMENT '目标表类型: hive/mpp',
+  `target_db_name` varchar(128) DEFAULT NULL COMMENT '目标库名',
+  `is_overseas` tinyint DEFAULT '0' COMMENT '是否境外: 0-否, 1-是',
+  `field_type_json` text COMMENT '字段类型JSON',
+  `spark_executor_num` int DEFAULT '4' COMMENT 'Spark executor数量',
+  `spark_executor_cores` int DEFAULT '4' COMMENT 'Spark executor核数',
+  `spark_executor_memory` varchar(20) DEFAULT '8G' COMMENT 'Spark executor内存',
+  `spark_driver_num` int DEFAULT '2' COMMENT 'Spark driver数量',
+  `spark_driver_memory` varchar(20) DEFAULT '2G' COMMENT 'Spark driver内存',
+  `partition_info` varchar(500) DEFAULT NULL COMMENT '分区信息',
   PRIMARY KEY (`id`),
   UNIQUE KEY `uk_report_code` (`report_code`),
   KEY `idx_report_name` (`report_name`),
@@ -607,6 +612,74 @@ CREATE TABLE `trigger_state_record` (
   KEY `idx_triggered` (`triggered`),
   KEY `idx_instance_id` (`instance_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='触发器状态持久化表';
+
+--
+-- Table structure for table `packing_config`
+--
+DROP TABLE IF EXISTS `packing_config`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `packing_config` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `config_key` varchar(100) NOT NULL COMMENT '配置键',
+  `config_value` varchar(500) DEFAULT NULL COMMENT '配置值',
+  `config_type` varchar(50) DEFAULT NULL COMMENT '配置类型',
+  `description` varchar(200) DEFAULT NULL COMMENT '描述',
+  `deleted` tinyint NOT NULL DEFAULT 0 COMMENT '删除标记',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_config_key` (`config_key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='打包配置表';
+
+--
+-- Table structure for table `packing_batch`
+--
+DROP TABLE IF EXISTS `packing_batch`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `packing_batch` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `batch_no` varchar(50) NOT NULL COMMENT '批次号',
+  `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING-待打包, UPLOADING-上传中, CONSUMING-消费中, DONE-已完成',
+  `total_size` bigint DEFAULT 0 COMMENT '总大小(字节)',
+  `file_count` int DEFAULT 0 COMMENT '文件数量',
+  `for_upload_path` varchar(500) DEFAULT NULL COMMENT '上传路径',
+  `done_dir_path` varchar(500) DEFAULT NULL COMMENT 'Done目录路径',
+  `start_time` datetime DEFAULT NULL COMMENT '开始时间',
+  `end_time` datetime DEFAULT NULL COMMENT '结束时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `uk_batch_no` (`batch_no`),
+  KEY `idx_status` (`status`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='打包批次表';
+
+--
+-- Table structure for table `alert_record`
+--
+DROP TABLE IF EXISTS `alert_record`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `alert_record` (
+  `id` bigint NOT NULL AUTO_INCREMENT COMMENT '主键',
+  `alert_type` varchar(20) NOT NULL COMMENT '告警类型',
+  `file_name` varchar(200) DEFAULT NULL COMMENT '相关文件名',
+  `report_config_id` bigint DEFAULT NULL COMMENT '关联报表配置ID',
+  `alert_level` varchar(20) DEFAULT NULL COMMENT '告警级别',
+  `alert_message` varchar(500) DEFAULT NULL COMMENT '告警消息',
+  `reason` varchar(500) DEFAULT NULL COMMENT '告警原因',
+  `status` varchar(20) NOT NULL DEFAULT 'PENDING' COMMENT '状态: PENDING-待处理, RESOLVED-已解决, IGNORED-已忽略',
+  `resolve_time` datetime DEFAULT NULL COMMENT '解决时间',
+  `create_time` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  PRIMARY KEY (`id`),
+  KEY `idx_alert_type` (`alert_type`),
+  KEY `idx_status` (`status`),
+  KEY `idx_create_time` (`create_time`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci COMMENT='告警记录表';
+
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -618,4 +691,4 @@ CREATE TABLE `trigger_state_record` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2026-04-27 16:59:29
+/* Dump completed on 2026-04-28 */

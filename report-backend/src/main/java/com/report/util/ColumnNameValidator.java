@@ -6,7 +6,6 @@ public class ColumnNameValidator {
 
     private static final Pattern VALID_COLUMN_NAME_PATTERN = Pattern.compile("^[a-zA-Z_][a-zA-Z0-9_]*$");
     private static final Pattern VALID_COLUMN_NAME_WITH_UNDERSCORE_ONLY = Pattern.compile("^_+$");
-    private static final Pattern VALID_EXCEL_COLUMN_PATTERN = Pattern.compile("^[A-Z]+$");
 
     private static final int MAX_COLUMN_NAME_LENGTH = 64;
 
@@ -35,14 +34,7 @@ public class ColumnNameValidator {
         if (name == null || name.trim().isEmpty()) {
             return false;
         }
-
-        String trimmedName = name.trim();
-
-        if (trimmedName.length() > MAX_COLUMN_NAME_LENGTH) {
-            return false;
-        }
-
-        return VALID_EXCEL_COLUMN_PATTERN.matcher(trimmedName).matches();
+        return true;
     }
 
     public static String getValidationMessage(String name) {
@@ -70,12 +62,6 @@ public class ColumnNameValidator {
     public static String getExcelColumnValidationMessage(String name) {
         if (name == null || name.trim().isEmpty()) {
             return "Excel列名不能为空";
-        }
-
-        String trimmedName = name.trim();
-
-        if (!VALID_EXCEL_COLUMN_PATTERN.matcher(trimmedName).matches()) {
-            return "Excel列名只能是英文字母（A-Z），如A、B、C等";
         }
 
         return null;

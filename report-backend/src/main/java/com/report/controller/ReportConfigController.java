@@ -9,8 +9,8 @@ import com.report.entity.dto.ReportConfigDTO;
 import com.report.engine.MatchedFile;
 import com.report.engine.MiddlewareEngine;
 import com.report.ftp.BuiltInFtpConfig;
-import com.report.ftp.BuiltInFtpConfigMapper;
 import com.report.ftp.BuiltInFtpConfigService;
+import com.report.ftp.FtpConfigProvider;
 import com.report.ftp.EmbeddedFtpServer;
 import com.report.service.FtpDirectoryService;
 import com.report.service.LogService;
@@ -45,7 +45,7 @@ public class ReportConfigController {
     private BuiltInFtpConfigService builtInFtpConfigService;
 
     @Autowired(required = false)
-    private BuiltInFtpConfigMapper builtInFtpConfigMapper;
+    private FtpConfigProvider ftpConfigProvider;
 
     @Autowired(required = false)
     private EmbeddedFtpServer embeddedFtpServer;
@@ -268,7 +268,7 @@ public class ReportConfigController {
             return Result.fail("内置FTP服务未运行");
         }
 
-        BuiltInFtpConfig ftpConfig = builtInFtpConfigMapper.getConfig();
+        BuiltInFtpConfig ftpConfig = ftpConfigProvider.getConfig();
         if (ftpConfig == null) {
             return Result.fail("FTP配置不存在");
         }
@@ -296,9 +296,17 @@ public class ReportConfigController {
             logService.logInfo(taskId, "扫描目录: " + scanDir.getAbsolutePath());
 
             String pattern = config.getFilePattern();
-            String fileRegex = pattern.replace("*", ".*").replace("?", ".");
+            if (pattern == null || pattern.trim().isEmpty()) {
+                pattern = "*";
+            }
+            java.util.regex.Pattern fileRegex = globToRegex(pattern);
 
-            File[] files = scanDir.listFiles((dir, name) -> name.matches(fileRegex));
+            File[] files = scanDir.listFiles((dir, name) -> {
+                if (name.startsWith(".") || name.equalsIgnoreCase("archive") || name.equalsIgnoreCase("error")) {
+                    return false;
+                }
+                return fileRegex.matcher(name).matches();
+            });
             if (files == null || files.length == 0) {
                 taskService.finishTask(taskId, "FAILED", "目录中没有找到匹配的文件");
                 logService.logError(taskId, "目录中没有找到匹配的文件");
@@ -344,5 +352,23 @@ public class ReportConfigController {
                 tempFile.delete();
             }
         }
+    }
+
+    private java.util.regex.Pattern globToRegex(String glob) {
+        StringBuilder sb = new StringBuilder("^");
+        for (int i = 0; i < glob.length(); i++) {
+            char c = glob.charAt(i);
+            switch (c) {
+                case '*': sb.append(".*"); break;
+                case '?': sb.append("."); break;
+                case '.': sb.append("\\."); break;
+                case '(': case ')': case '[': case ']': case '{': case '}':
+                case '+': case '^': case '$': case '|': case '\\':
+                    sb.append("\\").append(c); break;
+                default: sb.append(c);
+            }
+        }
+        sb.append("$");
+        return java.util.regex.Pattern.compile(sb.toString(), java.util.regex.Pattern.CASE_INSENSITIVE);
     }
 }

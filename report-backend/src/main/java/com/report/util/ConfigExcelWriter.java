@@ -14,9 +14,12 @@ public class ConfigExcelWriter {
 
     private static final Logger log = LoggerFactory.getLogger(ConfigExcelWriter.class);
 
+    private static final short DATA_ROW_STYLE_INDEX = 5;
+
     public static String write(String outputPath, List<Map<String, Object>> configRecords) throws Exception {
         Workbook workbook;
         Sheet sheet;
+        CellStyle[] dataRowStyles = null;
 
         InputStream templateStream = ConfigExcelWriter.class.getClassLoader()
             .getResourceAsStream("informationTemplate.xlsx");
@@ -25,6 +28,7 @@ public class ConfigExcelWriter {
             try (InputStream is = templateStream) {
                 workbook = new XSSFWorkbook(is);
                 sheet = workbook.getSheetAt(0);
+                dataRowStyles = extractDataRowStyles(sheet, workbook);
                 log.info("Loaded informationTemplate.xlsx from classpath");
             }
         } else {
@@ -32,6 +36,7 @@ public class ConfigExcelWriter {
             if (templateFile.exists()) {
                 workbook = new XSSFWorkbook(new java.io.FileInputStream(templateFile));
                 sheet = workbook.getSheetAt(0);
+                dataRowStyles = extractDataRowStyles(sheet, workbook);
                 log.info("Loaded informationTemplate.xlsx from file system");
             } else {
                 workbook = new XSSFWorkbook();
@@ -53,16 +58,55 @@ public class ConfigExcelWriter {
         for (int i = 0; i < configRecords.size(); i++) {
             Map<String, Object> record = configRecords.get(i);
             Row row = sheet.createRow(startRow + i);
-            writeRecord(row, record, i + 1);
+            writeRecord(row, record, i + 1, dataRowStyles);
         }
 
-        new File(outputPath).getParentFile().mkdirs();
-        try (FileOutputStream fos = new FileOutputStream(outputPath)) {
+        File outputFile = new File(outputPath);
+        File parentDir = outputFile.getParentFile();
+        if (parentDir != null) {
+            parentDir.mkdirs();
+        }
+        try (FileOutputStream fos = new FileOutputStream(outputFile)) {
             workbook.write(fos);
         }
         workbook.close();
         log.info("informationTemplate.xlsx written: {} ({} records)", outputPath, configRecords.size());
         return outputPath;
+    }
+
+    private static CellStyle[] extractDataRowStyles(Sheet sheet, Workbook workbook) {
+        CellStyle[] styles = new CellStyle[9];
+        Row templateRow = sheet.getRow(3);
+        if (templateRow == null) {
+            templateRow = sheet.getRow(2);
+        }
+        if (templateRow == null) {
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row r = sheet.getRow(i);
+                if (r != null && r.getRowNum() > 1) {
+                    templateRow = r;
+                    break;
+                }
+            }
+        }
+
+        if (templateRow != null) {
+            for (int i = 0; i < 9; i++) {
+                Cell cell = templateRow.getCell(i);
+                if (cell != null && cell.getCellStyle() != null) {
+                    styles[i] = cell.getCellStyle();
+                } else {
+                    styles[i] = workbook.getCellStyleAt(DATA_ROW_STYLE_INDEX);
+                }
+            }
+            log.info("Extracted data row styles from template row {}", templateRow.getRowNum());
+        } else {
+            for (int i = 0; i < 9; i++) {
+                styles[i] = workbook.getCellStyleAt(DATA_ROW_STYLE_INDEX);
+            }
+            log.info("Using default style index {}", DATA_ROW_STYLE_INDEX);
+        }
+        return styles;
     }
 
     private static int findDataStartRow(Sheet sheet) {
@@ -101,15 +145,10 @@ public class ConfigExcelWriter {
             "是否境外",
             "字段类型列表",
             "数据载入模式",
-            "分区信息",
-            "executor数量",
-            "executor核数",
-            "executor内存",
-            "driver数量",
-            "driver内存"
+            "分区信息"
         };
 
-        Row headerRow = sheet.createRow(0);
+        Row headerRow = sheet.createRow(1);
         headerRow.setHeight((short) 600);
         CellStyle headerStyle = sheet.getWorkbook().createCellStyle();
         Font headerFont = sheet.getWorkbook().createFont();
@@ -126,30 +165,36 @@ public class ConfigExcelWriter {
         }
     }
 
-    private static void writeRecord(Row row, Map<String, Object> record, int seq) {
-        CellStyle style = row.getSheet().getWorkbook().createCellStyle();
-        style.setVerticalAlignment(VerticalAlignment.CENTER);
-        style.setWrapText(true);
+    private static void writeRecord(Row row, Map<String, Object> record, int seq, CellStyle[] styles) {
+        if (styles != null) {
+            for (int i = 0; i < 9; i++) {
+                Cell cell = row.createCell(i);
+                if (styles[i] != null) {
+                    CellStyle newStyle = row.getSheet().getWorkbook().createCellStyle();
+                    newStyle.cloneStyleFrom(styles[i]);
+                    newStyle.setAlignment(HorizontalAlignment.CENTER);
+                    newStyle.setVerticalAlignment(VerticalAlignment.CENTER);
+                    cell.setCellStyle(newStyle);
+                }
+            }
+        }
 
-        setCell(row, 0, seq, style);
-        setCell(row, 1, record.get("standard_file"), style);
-        setCell(row, 2, record.get("table_type"), style);
-        setCell(row, 3, record.get("db_name"), style);
-        setCell(row, 4, record.get("table_name"), style);
-        setCell(row, 5, record.get("is_overseas"), style);
-        setCell(row, 6, record.get("field_type_json"), style);
-        setCell(row, 7, record.get("load_mode"), style);
-        setCell(row, 8, record.get("partition_info"), style);
-        setCell(row, 9, record.get("executor_num"), style);
-        setCell(row, 10, record.get("executor_cores"), style);
-        setCell(row, 11, record.get("executor_memory"), style);
-        setCell(row, 12, record.get("driver_num"), style);
-        setCell(row, 13, record.get("driver_memory"), style);
+        setCellValue(row, 0, seq);
+        setCellValue(row, 1, record.get("standard_file"));
+        setCellValue(row, 2, record.get("table_type"));
+        setCellValue(row, 3, record.get("db_name"));
+        setCellValue(row, 4, record.get("table_name"));
+        setCellValue(row, 5, record.get("is_overseas"));
+        setCellValue(row, 6, record.get("field_type_json"));
+        setCellValue(row, 7, record.get("load_mode"));
+        setCellValue(row, 8, record.get("partition_info"));
     }
 
-    private static void setCell(Row row, int col, Object value, CellStyle style) {
-        Cell cell = row.createCell(col);
-        cell.setCellStyle(style);
+    private static void setCellValue(Row row, int col, Object value) {
+        Cell cell = row.getCell(col);
+        if (cell == null) {
+            cell = row.createCell(col);
+        }
         if (value == null) {
             cell.setCellValue("");
         } else if (value instanceof Number) {

@@ -139,7 +139,7 @@
         <el-table :data="form.columnMappings" border style="margin-top: 10px;">
           <el-table-column label="Excel列" prop="excelColumn" width="120">
             <template slot-scope="{ row, $index }">
-              <el-input v-model="row.excelColumn" :disabled="readonly" placeholder="如: A" />
+              <el-input v-model="row.excelColumn" :disabled="readonly" placeholder="如: A 或 姓名" />
             </template>
           </el-table-column>
           <el-table-column label="字段名称" prop="fieldName" width="150">
@@ -350,7 +350,6 @@ export default {
         filePattern: [{ required: true, message: '请输入文件匹配模式', trigger: 'blur' }],
         outputTable: [{ required: true, message: '请输入输出表名', trigger: 'blur' }]
       },
-      excelColumnPattern: /^[A-Z]+$/,
       fieldNamePattern: /^[a-zA-Z_][a-zA-Z0-9_]*$/
     }
   },
@@ -384,8 +383,6 @@ export default {
       const errors = []
       if (!row.excelColumn) {
         errors.push('Excel列名不能为空')
-      } else if (!this.excelColumnPattern.test(row.excelColumn)) {
-        errors.push('Excel列名只能是英文字母（A-Z），如A、B、C等')
       }
       if (!row.fieldName) {
         errors.push('字段名称不能为空')

@@ -2,6 +2,7 @@ package com.report.packing.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.report.entity.ProcessedFile;
+import com.report.ftp.FtpBuiltInProperties;
 import com.report.mapper.ProcessedFileMapper;
 import com.report.packing.entity.PackingBatch;
 import com.report.packing.generator.ConfigTableGenerator;
@@ -34,6 +35,8 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
     private ConfigTableGenerator configTableGenerator;
     @Autowired
     private ConsumptionWatcher consumptionWatcher;
+    @Autowired(required = false)
+    private FtpBuiltInProperties ftpProperties;
     
     // FtpUtil is a static utility class, use FtpUtil.method() directly
 
@@ -125,6 +128,9 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
     }
 
     private String getStagingDir() {
+        if (ftpProperties != null) {
+            return ftpProperties.getRootDirectory() + "/staging";
+        }
         return configService.getStringValue("staging_dir", "/data/ftp-root/staging");
     }
 
@@ -153,11 +159,17 @@ public class PackingServiceImpl extends ServiceImpl<PackingBatchMapper, PackingB
 
     @Override
     public String getUploadDir() {
+        if (ftpProperties != null) {
+            return ftpProperties.getRootDirectory() + "/for-upload";
+        }
         return configService.getStringValue("upload_dir", "/data/ftp-root/for-upload");
     }
 
     @Override
     public String getDoneDir() {
+        if (ftpProperties != null) {
+            return ftpProperties.getRootDirectory() + "/done";
+        }
         return configService.getStringValue("done_dir", "/data/ftp-root/done");
     }
 
